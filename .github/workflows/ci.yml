@@ -1,0 +1,20 @@
+name: Miladiyyah-KMP CI Foundation
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'zulu'
+      - name: Validate Foundation
+        run: echo "CI/CD Setup Validated. Build test will run after gradle wrapper is committed."

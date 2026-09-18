@@ -1,0 +1,19 @@
+# IDE & Build
+.idea/
+.gradle/
+build/
+**/build/
+local.properties
+
+# iOS & macOS
+.DS_Store
+iosApp/build/
+iosApp/DerivedData/
+Pods/
+
+# Keamanan (DILARANG KERAS MASUK REPO)
+*.jks
+*.keystore
+secrets.properties
+google-services.json
+GoogleService-Info.plist

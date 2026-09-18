@@ -1,0 +1,25 @@
+[versions]
+agp = "8.2.2"
+kotlin = "1.9.23"
+compose = "1.6.10"
+coroutines = "1.8.0"
+serialization = "1.6.3"
+ktor = "2.3.9"
+room = "2.7.0-alpha01"
+
+[libraries]
+compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose" }
+compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "compose" }
+coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+
+[plugins]
+androidApplication = { id = "com.android.application", version.ref = "agp" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose" }
+kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
