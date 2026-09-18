@@ -3,9 +3,10 @@ package id.wahidiyah.miladiyyah.ui.screens.home
 import id.wahidiyah.miladiyyah.core.domain.repository.Announcement
 
 data class HomeUiState(
-    val masehiDate: String = "18 September 2026",
-    val hijriyahDate: String = "26 Rabiul Akhir 1448 H",
-    val pasaran: String = "Jumat Kliwon",
+    val dayOfWeek: String = "",
+    val masehiDate: String = "",
+    val hijriyahDate: String = "",
+    val pasaran: String = "",
     val location: String = "Kediri, Jawa Timur",
     val nextPrayerName: String = "Ashar",
     val nextPrayerTime: String = "14:48",

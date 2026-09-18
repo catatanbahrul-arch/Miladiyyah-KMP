@@ -1,3 +1,130 @@
+#!/bin/bash
+
+echo "🚀 Menjalankan Perbaikan Total: Kalender, ViewModel, dan UI Beranda..."
+
+# 1. PASTIKAN FOLDER KALENDER DIBUAT
+mkdir -p composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/core/domain/calendar
+
+# 2. BUAT MODEL KALENDER
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/core/domain/calendar/MiladiyyahDate.kt
+package id.wahidiyah.miladiyyah.core.domain.calendar
+
+data class MiladiyyahDate(
+    val dayOfWeek: String,
+    val dayMasehi: Int,
+    val monthMasehiName: String,
+    val yearMasehi: Int,
+    val dayHijriyah: Int,
+    val monthHijriyahName: String,
+    val yearHijriyah: Int,
+    val pasaran: String
+) {
+    val formattedMasehi: String get() = "$dayMasehi $monthMasehiName $yearMasehi"
+    val formattedHijriyah: String get() = "$dayHijriyah $monthHijriyahName $yearHijriyah H"
+}
+EOF
+
+# 3. BUAT ENGINE KALENDER
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/core/domain/calendar/CalendarEngine.kt
+package id.wahidiyah.miladiyyah.core.domain.calendar
+
+interface CalendarEngine {
+    fun getTodayDate(): MiladiyyahDate
+}
+EOF
+
+# 4. BUAT IMPLEMENTASI KALENDER
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/core/domain/calendar/CalendarEngineImpl.kt
+package id.wahidiyah.miladiyyah.core.domain.calendar
+
+class CalendarEngineImpl : CalendarEngine {
+    override fun getTodayDate(): MiladiyyahDate {
+        return MiladiyyahDate(
+            dayOfWeek = "Jumat", dayMasehi = 18, monthMasehiName = "September", yearMasehi = 2026,
+            dayHijriyah = 26, monthHijriyahName = "Rabiul Akhir", yearHijriyah = 1448, pasaran = "Kliwon"
+        )
+    }
+}
+EOF
+
+# 5. PERBARUI HOME UI STATE
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/home/HomeUiState.kt
+package id.wahidiyah.miladiyyah.ui.screens.home
+
+import id.wahidiyah.miladiyyah.core.domain.repository.Announcement
+
+data class HomeUiState(
+    val dayOfWeek: String = "",
+    val masehiDate: String = "",
+    val hijriyahDate: String = "",
+    val pasaran: String = "",
+    val location: String = "Kediri, Jawa Timur",
+    val nextPrayerName: String = "Ashar",
+    val nextPrayerTime: String = "14:48",
+    val nextPrayerCountdown: String = "16 menit lagi",
+    val activeImportantAnnouncements: List<Announcement> = emptyList(),
+    val summaryActivitiesCount: Int = 2,
+    val summaryDanaBoxTime: String = "19:00"
+)
+EOF
+
+# 6. PERBARUI HOME VIEW MODEL
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/home/HomeViewModel.kt
+package id.wahidiyah.miladiyyah.ui.screens.home
+
+import id.wahidiyah.miladiyyah.core.domain.calendar.CalendarEngine
+import id.wahidiyah.miladiyyah.core.domain.repository.AnnouncementPriority
+import id.wahidiyah.miladiyyah.core.domain.repository.AnnouncementRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
+class HomeViewModel(
+    private val repository: AnnouncementRepository,
+    private val calendarEngine: CalendarEngine
+) {
+    private val scope = CoroutineScope(Dispatchers.Main)
+    private val _uiState = MutableStateFlow(HomeUiState())
+    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    init {
+        loadTodayDate()
+        observeAnnouncements()
+    }
+
+    private fun loadTodayDate() {
+        val today = calendarEngine.getTodayDate()
+        _uiState.update { currentState ->
+            currentState.copy(
+                masehiDate = today.formattedMasehi,
+                hijriyahDate = today.formattedHijriyah,
+                pasaran = today.pasaran,
+                dayOfWeek = today.dayOfWeek
+            )
+        }
+    }
+
+    private fun observeAnnouncements() {
+        scope.launch {
+            repository.getActiveAnnouncements().collect { announcements ->
+                val importantAnnouncements = announcements.filter { 
+                    it.priority == AnnouncementPriority.IMPORTANT || it.priority == AnnouncementPriority.URGENT
+                }
+                _uiState.update { currentState ->
+                    currentState.copy(activeImportantAnnouncements = importantAnnouncements)
+                }
+            }
+        }
+    }
+}
+EOF
+
+# 7. PERBARUI HOME SCREEN (FINAL)
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/home/HomeScreen.kt
 package id.wahidiyah.miladiyyah.ui.screens.home
 
 import androidx.compose.foundation.background
@@ -196,3 +323,7 @@ private fun ActivitySection() {
         }
     }
 }
+EOF
+
+echo "✅ SELURUH FILE BERHASIL DISELARASKAN!"
+EOF
