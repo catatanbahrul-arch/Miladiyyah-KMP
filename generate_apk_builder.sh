@@ -1,3 +1,8 @@
+#!/bin/bash
+
+echo "⚙️ Memerintahkan GitHub untuk merakit APK..."
+
+cat << 'EOF' > .github/workflows/ci.yml
 name: Build Android APK
 
 on:
@@ -27,3 +32,7 @@ jobs:
         with:
           name: Miladiyyah-Beranda-UI-APK
           path: composeApp/build/outputs/apk/debug/*.apk
+EOF
+
+echo "✅ Perintah Build APK siap dikirim ke GitHub!"
+EOF
