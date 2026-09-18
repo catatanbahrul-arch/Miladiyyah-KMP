@@ -1,3 +1,8 @@
+#!/bin/bash
+
+echo "🔧 Memperbaiki konfigurasi Gradle di GitHub Actions..."
+
+cat << 'EOF' > .github/workflows/ci.yml
 name: Build Android APK
 
 on:
@@ -30,3 +35,7 @@ jobs:
         with:
           name: Miladiyyah-Beranda-UI-APK
           path: composeApp/build/outputs/apk/debug/*.apk
+EOF
+
+echo "✅ File CI diperbarui dengan Setup Gradle 8.6"
+EOF
