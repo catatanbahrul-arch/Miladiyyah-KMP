@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.sp
 import id.wahidiyah.miladiyyah.core.domain.calendar.engine.CalendarEngine
 import id.wahidiyah.miladiyyah.core.domain.calendar.model.CalendarDay
 import id.wahidiyah.miladiyyah.theme.*
-import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
@@ -42,23 +42,29 @@ fun CalendarScreen(engine: CalendarEngine) {
         val firstDay = LocalDate(currentDisplayMonth.year, currentDisplayMonth.monthNumber, 1)
         val days = mutableListOf<CalendarDay>()
         val startOffset = firstDay.dayOfWeek.value - 1
-        for (i in 0 until startOffset) days.add(engine.getCalendarDay(firstDay.minus(startOffset - i, DateTimeUnit.DAY)))
+        
+        for (i in 0 until startOffset) {
+            val pastDate = firstDay.minus(DatePeriod(days = startOffset - i))
+            days.add(engine.getCalendarDay(pastDate))
+        }
         
         var current = firstDay
         while (current.monthNumber == firstDay.monthNumber) {
             days.add(engine.getCalendarDay(current))
-            current = current.plus(1, DateTimeUnit.DAY)
+            current = current.plus(DatePeriod(days = 1))
         }
         days
     }
 
+    val monthNames = listOf("", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember")
+
     Column(modifier = Modifier.fillMaxSize().background(SoftCream).padding(16.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { currentDisplayMonth = currentDisplayMonth.minus(1, DateTimeUnit.MONTH) }) {
+            IconButton(onClick = { currentDisplayMonth = currentDisplayMonth.minus(DatePeriod(months = 1)) }) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Bulan Sebelumnya")
             }
-            Text("${getMonthName(currentDisplayMonth.monthNumber)} ${currentDisplayMonth.year}", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-            IconButton(onClick = { currentDisplayMonth = currentDisplayMonth.plus(1, DateTimeUnit.MONTH) }) {
+            Text("${monthNames[currentDisplayMonth.monthNumber]} ${currentDisplayMonth.year}", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            IconButton(onClick = { currentDisplayMonth = currentDisplayMonth.plus(DatePeriod(months = 1)) }) {
                 Icon(Icons.Default.ArrowForward, contentDescription = "Bulan Berikutnya")
             }
         }
@@ -97,9 +103,7 @@ fun CalendarScreen(engine: CalendarEngine) {
             colors = ButtonDefaults.buttonColors(containerColor = DeepForestGreen),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Kembali ke Hari Ini")
+            Text("Kembali ke Hari Ini", color = Color.White)
         }
     }
 }
-
-fun getMonthName(month: Int): String = listOf("", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember")[month]
