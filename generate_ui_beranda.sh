@@ -1,3 +1,9 @@
+#!/bin/bash
+
+echo "🎨 Membangun Premium UI Dashboard Beranda Miladiyyah..."
+
+# 1. Update HomeScreen.kt dengan High-Fidelity UI Compose
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/home/HomeScreen.kt
 package id.wahidiyah.miladiyyah.ui.screens.home
 
 import androidx.compose.foundation.background
@@ -259,3 +265,7 @@ private fun ActivitySection() {
         }
     }
 }
+EOF
+
+echo "✅ UI Dashboard Premium telah ter-generate!"
+EOF
