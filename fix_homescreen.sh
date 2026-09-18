@@ -1,3 +1,8 @@
+#!/bin/bash
+
+echo "🚀 Menyelaraskan HomeScreen.kt dengan arsitektur Kalender terbaru..."
+
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/home/HomeScreen.kt
 package id.wahidiyah.miladiyyah.ui.screens.home
 
 import androidx.compose.foundation.background
@@ -198,3 +203,7 @@ private fun ActivitySection() {
         }
     }
 }
+EOF
+
+echo "✅ File HomeScreen.kt telah diselaraskan dengan sukses!"
+EOF
