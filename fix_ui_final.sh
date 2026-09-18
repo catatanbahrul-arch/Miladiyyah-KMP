@@ -1,3 +1,8 @@
+#!/bin/bash
+
+echo "🚀 Menyempurnakan HomeScreen.kt untuk lolos kompilasi KMP..."
+
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/home/HomeScreen.kt
 package id.wahidiyah.miladiyyah.ui.screens.home
 
 import androidx.compose.foundation.background
@@ -198,3 +203,7 @@ private fun ActivitySection() {
         }
     }
 }
+EOF
+
+echo "✅ File telah di-patch (LaunchedEffect & Default Icons)!"
+EOF
