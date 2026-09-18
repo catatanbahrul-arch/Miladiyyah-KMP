@@ -1,3 +1,116 @@
+#!/bin/bash
+
+echo "🛠 Memperbaiki Error Kompilasi (Dependencies & Imports)..."
+
+# 1. Update build.gradle.kts untuk menambahkan androidx.activity:activity-compose
+cat << 'EOF' > composeApp/build.gradle.kts
+plugins {
+    alias(libs.plugins.kotlinMultiplatform)
+    alias(libs.plugins.androidApplication)
+    alias(libs.plugins.composeMultiplatform)
+}
+
+kotlin {
+    androidTarget {
+        compilations.all {
+            kotlinOptions {
+                jvmTarget = "17"
+            }
+        }
+    }
+    
+    listOf(
+        iosX64(),
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "ComposeApp"
+            isStatic = true
+        }
+    }
+    
+    sourceSets {
+        commonMain.dependencies {
+            implementation(compose.runtime)
+            implementation(compose.foundation)
+            implementation(compose.material3)
+            implementation(compose.ui)
+            implementation(compose.components.resources)
+            implementation(libs.coroutines.core)
+        }
+        androidMain.dependencies {
+            // FIX: Menambahkan library ComponentActivity & setContent untuk Android
+            implementation("androidx.activity:activity-compose:1.8.2")
+        }
+        iosMain.dependencies {}
+    }
+}
+
+android {
+    namespace = "id.wahidiyah.miladiyyah"
+    compileSdk = 34
+
+    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
+    sourceSets["main"].res.srcDirs("src/androidMain/res")
+    sourceSets["main"].resources.srcDirs("src/commonMain/resources")
+
+    defaultConfig {
+        applicationId = "id.wahidiyah.miladiyyah"
+        minSdk = 24
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0.0"
+    }
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = false
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+EOF
+
+# 2. Update Theme.kt untuk menyertakan import Color
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/theme/Theme.kt
+package id.wahidiyah.miladiyyah.theme
+
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+
+private val MiladiyyahLightColorScheme = lightColorScheme(
+    primary = DeepForestGreen,
+    secondary = SubtleGold,
+    background = SoftCream,
+    surface = WarmWhite,
+    onPrimary = Color.White,
+    onBackground = TextPrimary,
+    onSurface = TextPrimary
+)
+
+@Composable
+fun MiladiyyahTheme(
+    content: @Composable () -> Unit
+) {
+    MaterialTheme(
+        colorScheme = MiladiyyahLightColorScheme,
+        content = content
+    )
+}
+EOF
+
+# 3. Update HomeScreen.kt untuk menyertakan import Coroutines
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/home/HomeScreen.kt
 package id.wahidiyah.miladiyyah.ui.screens.home
 
 import androidx.compose.foundation.background
@@ -200,3 +313,7 @@ private fun ActivitySection() {
         }
     }
 }
+EOF
+
+echo "✅ File telah di-patch dengan import dan library yang benar!"
+EOF

@@ -34,11 +34,10 @@ kotlin {
             implementation(libs.coroutines.core)
         }
         androidMain.dependencies {
-            // Dependency khusus Android jika ada nantinya (contoh: Ktor OkHttp, Room Android)
+            // FIX: Menambahkan library ComponentActivity & setContent untuk Android
+            implementation("androidx.activity:activity-compose:1.8.2")
         }
-        iosMain.dependencies {
-            // Dependency khusus iOS jika ada nantinya (contoh: Ktor Darwin)
-        }
+        iosMain.dependencies {}
     }
 }
 
