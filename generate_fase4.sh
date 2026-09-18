@@ -1,3 +1,76 @@
+#!/bin/bash
+
+echo "🚀 Memulai eksekusi FASE 4: Presentation Layer & Dashboard UI..."
+
+# 1. Buat State Holder (HomeUiState)
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/home/HomeUiState.kt
+package id.wahidiyah.miladiyyah.ui.screens.home
+
+import id.wahidiyah.miladiyyah.core.domain.repository.Announcement
+
+data class HomeUiState(
+    val masehiDate: String = "18 September 2026",
+    val hijriyahDate: String = "26 Rabiul Akhir 1448 H",
+    val pasaran: String = "Jumat Kliwon",
+    val location: String = "Kediri, Jawa Timur",
+    val nextPrayerName: String = "Ashar",
+    val nextPrayerTime: String = "14:48",
+    val nextPrayerCountdown: String = "16 menit lagi",
+    val activeImportantAnnouncements: List<Announcement> = emptyList(),
+    val summaryActivitiesCount: Int = 2,
+    val summaryDanaBoxTime: String = "19:00"
+)
+EOF
+
+# 2. Buat HomeViewModel (Logika Pengambilan Data dari Database Lokal)
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/home/HomeViewModel.kt
+package id.wahidiyah.miladiyyah.ui.screens.home
+
+import id.wahidiyah.miladiyyah.core.domain.repository.AnnouncementPriority
+import id.wahidiyah.miladiyyah.core.domain.repository.AnnouncementRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
+class HomeViewModel(
+    private val repository: AnnouncementRepository
+) {
+    private val scope = CoroutineScope(Dispatchers.Main)
+    
+    private val _uiState = MutableStateFlow(HomeUiState())
+    val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    init {
+        observeAnnouncements()
+    }
+
+    private fun observeAnnouncements() {
+        scope.launch {
+            // UI HANYA mengambil data dari Repository (yang membaca DB Lokal)
+            repository.getActiveAnnouncements().collect { announcements ->
+                
+                // Aturan: Tampilkan di dashboard HANYA jika Penting/Urgent
+                val importantAnnouncements = announcements.filter { 
+                    it.priority == AnnouncementPriority.IMPORTANT || it.priority == AnnouncementPriority.URGENT
+                }
+                
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        activeImportantAnnouncements = importantAnnouncements
+                    )
+                }
+            }
+        }
+    }
+}
+EOF
+
+# 3. Update HomeScreen.kt (Implementasi Hierarki Visual Sesuai Master Prompt)
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/home/HomeScreen.kt
 package id.wahidiyah.miladiyyah.ui.screens.home
 
 import androidx.compose.foundation.background
@@ -117,3 +190,7 @@ fun SummaryCard(title: String, value: String, modifier: Modifier = Modifier) {
         }
     }
 }
+EOF
+
+echo "✅ FASE 4 Selesai! ViewModel dan Dashboard UI berhasil diimplementasikan."
+EOF
