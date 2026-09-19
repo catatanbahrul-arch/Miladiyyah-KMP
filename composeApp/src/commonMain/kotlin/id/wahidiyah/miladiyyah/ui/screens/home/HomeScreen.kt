@@ -51,7 +51,6 @@ fun HomeScreen() {
     
     val dateString = "${dayNames[todayDayIndex]}, ${today.gregorian.day} ${monthNames[today.gregorian.month]} ${today.gregorian.year}"
     val hijriString = "${today.hijri.day} ${hijriMonthNames[today.hijri.month]} ${today.hijri.year} H • ${today.pasaran.name}"
-    val isRamadhan = today.hijri.month == 9
 
     var currentTime by remember { mutableStateOf(Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).time) }
 
@@ -63,14 +62,13 @@ fun HomeScreen() {
         }
     }
 
-    val nextPrayer = PrayerTimeEngine.getNextPrayer(currentTime, isRamadhan)
+    val nextPrayer = PrayerTimeEngine.getNextPrayer(currentTime)
     val currentMins = currentTime.hour * 60 + currentTime.minute
     val nextMins = nextPrayer.time.hour * 60 + nextPrayer.time.minute
     val diffMins = if (nextMins >= currentMins) nextMins - currentMins else (nextMins + 1440) - currentMins
     val isWarningTime = diffMins in 0..10
 
     Column(modifier = Modifier.fillMaxSize().background(SoftCream).verticalScroll(scrollState)) {
-        // Header
         Box(modifier = Modifier.fillMaxWidth().background(Color.White).padding(16.dp)) {
             Column {
                 Text("Miladiyyah", color = DeepForestGreen, fontSize = 22.sp, fontWeight = FontWeight.Bold)
@@ -80,7 +78,6 @@ fun HomeScreen() {
 
         Column(modifier = Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             
-            // Info Tanggal Lengkap
             Column(modifier = Modifier.padding(top = 8.dp)) {
                 Text(dateString, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                 Spacer(modifier = Modifier.height(4.dp))
@@ -91,7 +88,6 @@ fun HomeScreen() {
                 }
             }
 
-            // Peringatan 10 Menit Adzan
             if (isWarningTime) {
                 Card(
                     shape = RoundedCornerShape(12.dp),
@@ -110,7 +106,6 @@ fun HomeScreen() {
                 }
             }
 
-            // Pengumuman Dinamis dengan Tautan Drive
             if (pengumuman != null && (!pengumuman!!.title.isEmpty() || !pengumuman!!.content.isEmpty())) {
                 Card(
                     shape = RoundedCornerShape(12.dp),
@@ -122,12 +117,7 @@ fun HomeScreen() {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.Notifications, contentDescription = null, tint = Color(0xFFF57F17), modifier = Modifier.size(22.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = if (pengumuman!!.title.isNotEmpty()) pengumuman!!.title else "Pengumuman Penting",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFF57F17)
-                            )
+                            Text(if (pengumuman!!.title.isNotEmpty()) pengumuman!!.title else "Pengumuman Penting", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFFF57F17))
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(pengumuman!!.content, fontSize = 13.sp, color = TextPrimary, lineHeight = 18.sp)
@@ -143,7 +133,7 @@ fun HomeScreen() {
                                         val url = pengumuman!!.link ?: ""
                                         if (url.isNotBlank()) {
                                             val validUrl = if (!url.startsWith("http")) "https://$url" else url
-                                            try { uriHandler.openUri(validUrl) } catch (e: Exception) { println("Gagal buka link") }
+                                            try { uriHandler.openUri(validUrl) } catch (e: Exception) {}
                                         }
                                     }
                                     .padding(vertical = 4.dp),
@@ -158,7 +148,6 @@ fun HomeScreen() {
                 }
             }
 
-            // Kartu Jadwal Salat Hijau Elegan
             Card(
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = DeepForestGreen),
@@ -168,15 +157,12 @@ fun HomeScreen() {
                     modifier = Modifier.padding(20.dp).fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
-                        modifier = Modifier.size(50.dp).background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
+                    Box(modifier = Modifier.size(50.dp).background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
                         Icon(Icons.Default.Home, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(if (nextPrayer.type == id.wahidiyah.miladiyyah.core.domain.prayer.PrayerType.IMSAK) "Jadwal Berikutnya" else "Salat berikutnya", color = Color.White.copy(alpha = 0.8f), fontSize = 12.sp)
+                        Text(if (nextPrayer.type == id.wahidiyah.miladiyyah.core.domain.prayer.PrayerType.TARHIM) "Jadwal Berikutnya" else "Salat berikutnya", color = Color.White.copy(alpha = 0.8f), fontSize = 12.sp)
                         Text(nextPrayer.type.title, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                         Row(verticalAlignment = Alignment.Bottom) {
                             val timeString = "${nextPrayer.time.hour.toString().padStart(2, '0')}:${nextPrayer.time.minute.toString().padStart(2, '0')}"

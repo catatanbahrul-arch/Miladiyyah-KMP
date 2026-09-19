@@ -20,7 +20,7 @@ import id.wahidiyah.miladiyyah.theme.*
 @Composable
 fun SettingsScreen() {
     var adzanEnabled by remember { mutableStateOf(true) }
-    var imsakEnabled by remember { mutableStateOf(true) }
+    var tarhimEnabled by remember { mutableStateOf(true) }
     var danaBoxEnabled by remember { mutableStateOf(true) }
 
     Column(modifier = Modifier.fillMaxSize().background(SoftCream)) {
@@ -28,13 +28,13 @@ fun SettingsScreen() {
             Column {
                 Text("Pengaturan Notifikasi", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text("Kelola pengingat salat, Imsak, dan Dana Box", color = Color.White.copy(alpha = 0.8f), fontSize = 12.sp)
+                Text("Kelola pengingat salat, Tarhim, dan Dana Box", color = Color.White.copy(alpha = 0.8f), fontSize = 12.sp)
             }
         }
 
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             
-            // 1. PENGINGAT ADZAN
+            // 1. PENGINGAT ADZAN & POP-UP
             Card(
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -45,15 +45,15 @@ fun SettingsScreen() {
                         Icon(Icons.Default.Notifications, contentDescription = null, tint = DeepForestGreen, modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
-                            Text("Pengingat Waktu Salat", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                            Text("Notifikasi 10 menit sebelum adzan", fontSize = 11.sp, color = TextSecondary, lineHeight = 16.sp)
+                            Text("Adzan & Pengingat Salat", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                            Text("Pop-up (10 mnt sblm) & Suara Adzan pas masuk waktu", fontSize = 11.sp, color = TextSecondary, lineHeight = 16.sp)
                         }
                     }
                     Switch(checked = adzanEnabled, onCheckedChange = { adzanEnabled = it }, colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = DeepForestGreen))
                 }
             }
 
-            // 2. PENGINGAT IMSAK
+            // 2. PENGINGAT TARHIM & SYAFA'AN (Setiap Hari)
             Card(
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -64,11 +64,11 @@ fun SettingsScreen() {
                         Icon(Icons.Default.Warning, contentDescription = null, tint = DeepForestGreen, modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
-                            Text("Pengingat Imsak & Tarhim", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                            Text("Otomatis aktif hanya di bulan Ramadhan", fontSize = 11.sp, color = TextSecondary, lineHeight = 16.sp)
+                            Text("Tarhim & Syafa'an", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                            Text("Syafa'an (03:00) & Tarhim setiap hari sebelum Subuh", fontSize = 11.sp, color = TextSecondary, lineHeight = 16.sp)
                         }
                     }
-                    Switch(checked = imsakEnabled, onCheckedChange = { imsakEnabled = it }, colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = DeepForestGreen))
+                    Switch(checked = tarhimEnabled, onCheckedChange = { tarhimEnabled = it }, colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = DeepForestGreen))
                 }
             }
 
