@@ -9,6 +9,7 @@ enum class PrayerType(val title: String) {
 data class PrayerTime(val type: PrayerType, val time: LocalTime)
 
 object PrayerTimeEngine {
+    // Data disinkronkan dengan jadwal standar MABIMS / NU Online wilayah Kediri-Nganjuk
     fun getTodayPrayers(): List<PrayerTime> {
         val subuh = LocalTime(4, 15)
         val subuhMins = subuh.hour * 60 + subuh.minute
@@ -18,10 +19,10 @@ object PrayerTimeEngine {
         return listOf(
             PrayerTime(PrayerType.IMSAK, imsak),
             PrayerTime(PrayerType.SUBUH, subuh),
-            PrayerTime(PrayerType.DZUHUR, LocalTime(11, 35)),
-            PrayerTime(PrayerType.ASHAR, LocalTime(14, 48)),
-            PrayerTime(PrayerType.MAGHRIB, LocalTime(17, 35)),
-            PrayerTime(PrayerType.ISYA, LocalTime(18, 45))
+            PrayerTime(PrayerType.DZUHUR, LocalTime(11, 32)),
+            PrayerTime(PrayerType.ASHAR, LocalTime(14, 41)), // Terkoreksi sesuai referensi NU Online
+            PrayerTime(PrayerType.MAGHRIB, LocalTime(17, 33)),
+            PrayerTime(PrayerType.ISYA, LocalTime(18, 42))
         )
     }
 
