@@ -182,7 +182,7 @@ fun HomeScreen(onNavigateToKiblat: () -> Unit = {}, onUpdateLocation: () -> Unit
                             if (prayer.type == PrayerType.IMSAK || prayer.type == PrayerType.TERBIT || prayer.type == PrayerType.DHUHA) {
                                 Icon(Icons.Default.Clear, contentDescription = null, tint = Border, modifier = Modifier.size(18.dp))
                             } else {
-                                Icon(Icons.Outlined.Notifications, contentDescription = null, tint = BrandPrimaryLight, modifier = Modifier.size(18.dp))
+                                Icon(Icons.Outlined.Notifications, contentDescription = null, tint = BrandAccentLight, modifier = Modifier.size(18.dp))
                             }
                         }
                         if (index < prayers.size - 1) {

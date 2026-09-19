@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.outlined.LibraryBooks
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -34,25 +34,18 @@ fun PustakaScreen() {
                     Text("Pustaka Jamaah", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                     Text("Update terakhir: $lastUpdated", color = TextSecondary, fontSize = 12.sp)
                 }
-                
                 Button(
                     onClick = {
                         scope.launch {
-                            isUpdating = true
-                            delay(1500L) 
-                            val currentDate = "Baru saja" 
-                            AppCache.save("PUSTAKA_LAST_UPDATE", currentDate)
-                            lastUpdated = currentDate
-                            isUpdating = false
+                            isUpdating = true; delay(1500L); val currentDate = "Baru saja" 
+                            AppCache.save("PUSTAKA_LAST_UPDATE", currentDate); lastUpdated = currentDate; isUpdating = false
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = BrandAccentLight, contentColor = BrandPrimary),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                 ) {
-                    if (isUpdating) {
-                        CircularProgressIndicator(modifier = Modifier.size(16.dp), color = BrandPrimary, strokeWidth = 2.dp)
-                    } else {
+                    if (isUpdating) { CircularProgressIndicator(modifier = Modifier.size(16.dp), color = BrandPrimary, strokeWidth = 2.dp) } else {
                         Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
                         Text("Sinkron", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
@@ -65,18 +58,12 @@ fun PustakaScreen() {
         Box(modifier = Modifier.fillMaxSize().padding(20.dp), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Box(modifier = Modifier.size(80.dp).clip(CircleShape).background(BrandAccentLight), contentAlignment = Alignment.Center) {
-                    Icon(Icons.Outlined.LibraryBooks, contentDescription = null, tint = BrandPrimary, modifier = Modifier.size(40.dp))
+                    Icon(Icons.Default.Info, contentDescription = null, tint = BrandPrimary, modifier = Modifier.size(40.dp))
                 }
                 Spacer(modifier = Modifier.height(20.dp))
                 Text("Pustaka Offline", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Kitab dan materi tersimpan di perangkat.\nTekan Sinkron jika ada penambahan materi dari pusat.",
-                    textAlign = TextAlign.Center, 
-                    color = TextSecondary,
-                    fontSize = 14.sp,
-                    lineHeight = 22.sp
-                )
+                Text("Kitab dan materi tersimpan di perangkat.\nTekan Sinkron jika ada penambahan materi dari pusat.", textAlign = TextAlign.Center, color = TextSecondary, fontSize = 14.sp, lineHeight = 22.sp)
             }
         }
     }

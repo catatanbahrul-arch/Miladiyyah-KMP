@@ -139,7 +139,7 @@ fun CalendarScreen(engine: CalendarEngine) {
     } else ""
 
     Column(modifier = Modifier.fillMaxSize().background(Color.White).verticalScroll(scrollState)) {
-        Box(modifier = Modifier.fillMaxWidth().background(DeepForestGreen).padding(16.dp)) {
+        Box(modifier = Modifier.fillMaxWidth().background(BrandPrimary).padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top) {
                 Column {
                     val todayDayIndex = if (today.dayOfWeek == 7) 0 else today.dayOfWeek
@@ -160,14 +160,14 @@ fun CalendarScreen(engine: CalendarEngine) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             IconButton(onClick = { currentDisplayMonth = currentDisplayMonth.minus(DatePeriod(months = 1)) }) {
-                Icon(Icons.Default.KeyboardArrowLeft, contentDescription = "Bulan Sebelumnya", tint = DeepForestGreen)
+                Icon(Icons.Default.KeyboardArrowLeft, contentDescription = "Bulan Sebelumnya", tint = BrandPrimary)
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text("${monthNames[currentDisplayMonth.monthNumber]} ${currentDisplayMonth.year}", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                 Text(hijriRangeText, fontSize = 12.sp, color = TextPrimary)
             }
             IconButton(onClick = { currentDisplayMonth = currentDisplayMonth.plus(DatePeriod(months = 1)) }) {
-                Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Bulan Berikutnya", tint = DeepForestGreen)
+                Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Bulan Berikutnya", tint = BrandPrimary)
             }
         }
 
@@ -204,8 +204,8 @@ fun CalendarScreen(engine: CalendarEngine) {
                     val hasEvent = eventDateSet.contains(dateKey) && isCurrentMonth
 
                     val mainColor = if (!isCurrentMonth) Color.LightGray.copy(alpha=0.5f)
-                        else if (isSunday) UrgentRed
-                        else if (isFriday) DeepForestGreen
+                        else if (isSunday) Error
+                        else if (isFriday) BrandPrimary
                         else TextPrimary
 
                     Box(
@@ -218,7 +218,7 @@ fun CalendarScreen(engine: CalendarEngine) {
                             .border(
                                 BorderStroke(
                                     if (isToday) 2.dp else 0.5.dp, 
-                                    if (isToday) DeepForestGreen else Color(0xFFF5F5F5)
+                                    if (isToday) BrandPrimary else Color(0xFFF5F5F5)
                                 ),
                                 RoundedCornerShape(6.dp)
                             )
@@ -239,7 +239,7 @@ fun CalendarScreen(engine: CalendarEngine) {
                             
                             if (isCurrentMonth && (day.gregorian.day % 8 == 0 || day.gregorian.day == 19)) {
                                 Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                                    Box(modifier = Modifier.size(4.dp).background(if(day.gregorian.day == 19) Color(0xFF1976D2) else SubtleGold, CircleShape))
+                                    Box(modifier = Modifier.size(4.dp).background(if(day.gregorian.day == 19) Color(0xFF1976D2) else BrandAccent, CircleShape))
                                 }
                             } else {
                                 Spacer(modifier = Modifier.height(4.dp))
@@ -283,7 +283,7 @@ fun CalendarScreen(engine: CalendarEngine) {
                                         .padding(horizontal = 6.dp, vertical = 4.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(item.date, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = DeepForestGreen)
+                                    Text(item.date, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = BrandPrimary)
                                 }
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Text(

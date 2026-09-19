@@ -6,14 +6,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material.icons.outlined.NotificationsActive
-import androidx.compose.material.icons.outlined.VolunteerActivism
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -43,25 +42,22 @@ fun SettingsScreen() {
 
         Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Text("NOTIFIKASI", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMuted, letterSpacing = 1.sp)
-            
             Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Surface), elevation = CardDefaults.cardElevation(1.dp)) {
                 Column {
-                    SettingsItem(icon = Icons.Outlined.NotificationsActive, title = "Adzan & Waktu Salat", subtitle = "Peringatan 10 menit & Suara Adzan", checked = adzanEnabled) { adzanEnabled = it }
+                    SettingsItem(icon = Icons.Default.Notifications, title = "Adzan & Waktu Salat", subtitle = "Peringatan 10 menit & Suara Adzan", checked = adzanEnabled) { adzanEnabled = it }
                     HorizontalDivider(color = Border.copy(alpha = 0.5f), modifier = Modifier.padding(start = 56.dp))
-                    SettingsItem(icon = Icons.Outlined.NotificationsActive, title = "Pengingat Tarhim", subtitle = "Setiap hari sebelum Subuh", checked = tarhimEnabled) { tarhimEnabled = it }
+                    SettingsItem(icon = Icons.Default.Notifications, title = "Pengingat Tarhim", subtitle = "Setiap hari sebelum Subuh", checked = tarhimEnabled) { tarhimEnabled = it }
                 }
             }
 
             Text("PENGINGAT KHUSUS", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMuted, letterSpacing = 1.sp, modifier = Modifier.padding(top = 8.dp))
-            
             Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Surface), elevation = CardDefaults.cardElevation(1.dp)) {
                 Column {
-                    SettingsItem(icon = Icons.Outlined.Info, title = "Pengingat Syafa'an", subtitle = "Setiap jam 03:00 pagi", checked = tasyafuanEnabled) { tasyafuanEnabled = it }
+                    SettingsItem(icon = Icons.Default.Info, title = "Pengingat Syafa'an", subtitle = "Setiap jam 03:00 pagi", checked = tasyafuanEnabled) { tasyafuanEnabled = it }
                     HorizontalDivider(color = Border.copy(alpha = 0.5f), modifier = Modifier.padding(start = 56.dp))
-                    SettingsItem(icon = Icons.Outlined.VolunteerActivism, title = "Pengingat Dana Box", subtitle = "Setiap jam 06:00 & 19:00", checked = danaBoxEnabled) { danaBoxEnabled = it }
+                    SettingsItem(icon = Icons.Default.Favorite, title = "Pengingat Dana Box", subtitle = "Setiap jam 06:00 & 19:00", checked = danaBoxEnabled) { danaBoxEnabled = it }
                 }
             }
-            
             Spacer(modifier = Modifier.height(20.dp))
         }
     }

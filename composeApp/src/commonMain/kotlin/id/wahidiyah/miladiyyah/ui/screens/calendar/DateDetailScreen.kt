@@ -23,10 +23,10 @@ fun DateDetailScreen(day: CalendarDay, onBack: () -> Unit) {
     val hijriMonths = listOf("", "Muharram", "Safar", "Rabiul Awal", "Rabiul Akhir", "Jumadil Awal", "Jumadil Akhir", "Rajab", "Syaban", "Ramadhan", "Syawal", "Dzulqaidah", "Dzulhijjah")
     val monthNames = listOf("", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember")
 
-    Column(modifier = Modifier.fillMaxSize().background(SoftCream)) {
+    Column(modifier = Modifier.fillMaxSize().background(Background)) {
         Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Kembali") }
-            Text("Detail Tanggal", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DeepForestGreen)
+            Text("Detail Tanggal", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = BrandPrimary)
         }
         Card(
             shape = RoundedCornerShape(16.dp),
@@ -37,7 +37,7 @@ fun DateDetailScreen(day: CalendarDay, onBack: () -> Unit) {
                 Text(dayNames[day.dayOfWeek], fontSize = 14.sp, color = TextSecondary)
                 Text("${day.gregorian.day} ${monthNames[day.gregorian.month]} ${day.gregorian.year}", fontSize = 24.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                 Spacer(modifier = Modifier.height(12.dp))
-                HorizontalDivider(color = SoftCream)
+                HorizontalDivider(color = Background)
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("Hijriyah", color = TextSecondary)
@@ -59,7 +59,7 @@ fun DateDetailScreen(day: CalendarDay, onBack: () -> Unit) {
 fun EmptyStateCard(message: String) {
     Card(
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = WarmWhite),
+        colors = CardDefaults.cardColors(containerColor = Surface),
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
         Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {

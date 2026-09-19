@@ -1,0 +1,698 @@
+# ==============================================================================
+# FASE 1: PEMBARUAN IDENTITAS & DESIGN SYSTEM (TOKEN WARNA WAHIDIYAH)
+# ==============================================================================
+
+# 1. Update Nama Aplikasi di AndroidManifest
+sed -i 's/android:label="Miladiyyah"/android:label="Wahidiyah"/g' composeApp/src/androidMain/AndroidManifest.xml
+
+# 2. Buat Sentralisasi Token Warna Wahidiyah (Color.kt)
+mkdir -p composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/theme
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/theme/Color.kt
+package id.wahidiyah.miladiyyah.theme
+
+import androidx.compose.ui.graphics.Color
+
+// Design Tokens: Wahidiyah Official Brand
+val BrandPrimary = Color(0xFF1B5E20)       // Hijau Tua (Utama)
+val BrandPrimaryDark = Color(0xFF003300)   // Hijau Gelap
+val BrandAccent = Color(0xFF4CAF50)        // Hijau Terang (Aksen)
+val BrandAccentLight = Color(0xFFE8F5E9)   // Hijau Sangat Terang (Highlight/Latar Belakang Card)
+
+// Neutral Tokens
+val Background = Color(0xFFF8F9FA)         // Abu-abu sangat terang (Latar aplikasi bersih)
+val Surface = Color(0xFFFFFFFF)            // Putih Murni
+val Border = Color(0xFFE0E0E0)             // Garis Batas Halus
+
+// Text Tokens
+val TextPrimary = Color(0xFF1E201E)        // Hitam lembut
+val TextSecondary = Color(0xFF535753)      // Abu-abu gelap
+val TextMuted = Color(0xFF9E9E9E)          // Abu-abu terang
+
+// Status Tokens
+val Error = Color(0xFFD32F2F)
+val ErrorSurface = Color(0xFFFFEBEE)
+val Success = Color(0xFF388E3C)
+val Warning = Color(0xFFF57F17)
+EOF
+
+# 3. Buat Tema Global (Theme.kt)
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/theme/Theme.kt
+package id.wahidiyah.miladiyyah.theme
+
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+
+private val WahidiyahColorScheme = lightColorScheme(
+    primary = BrandPrimary,
+    onPrimary = Surface,
+    primaryContainer = BrandAccentLight,
+    onPrimaryContainer = BrandPrimaryDark,
+    secondary = BrandAccent,
+    onSecondary = Surface,
+    background = Background,
+    onBackground = TextPrimary,
+    surface = Surface,
+    onSurface = TextPrimary,
+    error = Error,
+    onError = Surface
+)
+
+@Composable
+fun MiladiyyahTheme(content: @Composable () -> Unit) {
+    // Mempertahankan nama fungsi teknis MiladiyyahTheme, tapi menyuntikkan Visual Wahidiyah
+    MaterialTheme(
+        colorScheme = WahidiyahColorScheme,
+        content = content
+    )
+}
+EOF
+
+# ==============================================================================
+# FASE 2: REDESAIN APP SHELL & NAVIGATION (APP.KT)
+# ==============================================================================
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/App.kt
+package id.wahidiyah.miladiyyah
+
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import id.wahidiyah.miladiyyah.core.data.source.remote.CalendarNetworkService
+import id.wahidiyah.miladiyyah.core.domain.calendar.engine.HijriAdjuster
+import id.wahidiyah.miladiyyah.theme.*
+import id.wahidiyah.miladiyyah.ui.screens.home.HomeScreen
+import id.wahidiyah.miladiyyah.ui.screens.calendar.CalendarScreen
+import id.wahidiyah.miladiyyah.ui.screens.kegiatan.KegiatanScreen
+import id.wahidiyah.miladiyyah.ui.screens.pustaka.PustakaScreen
+import id.wahidiyah.miladiyyah.ui.screens.settings.SettingsScreen
+import id.wahidiyah.miladiyyah.ui.screens.kiblat.QiblaScreen
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+
+enum class BottomTab { BERANDA, KALENDER, PUSTAKA, KEGIATAN, MENU, KIBLAT }
+
+const val GAS_API_KALENDER = "https://script.google.com/macros/s/AKfycbyuM5B2TNnOvlJKIDeQCiec8-Q-jI0vDOv--n4xiLEu38hykX4wniweG4Jm5mE1H9Ew/exec"
+const val GAS_API_PENGUMUMAN = "https://script.google.com/macros/s/AKfycbyuM5B2TNnOvlJKIDeQCiec8-Q-jI0vDOv--n4xiLEu38hykX4wniweG4Jm5mE1H9Ew/exec"
+const val GAS_API_PUSTAKA = "https://script.google.com/macros/s/AKfycbyuM5B2TNnOvlJKIDeQCiec8-Q-jI0vDOv--n4xiLEu38hykX4wniweG4Jm5mE1H9Ew/exec"
+const val GAS_API_KEGIATAN = "https://script.google.com/macros/s/AKfycbyuM5B2TNnOvlJKIDeQCiec8-Q-jI0vDOv--n4xiLEu38hykX4wniweG4Jm5mE1H9Ew/exec"
+
+@Composable
+fun App(onUpdateLocation: () -> Unit = {}) {
+    var selectedTab by remember { mutableStateOf(BottomTab.BERANDA) }
+    val scope = rememberCoroutineScope()
+    val networkService = remember { CalendarNetworkService() }
+
+    val syncCalendarData = {
+        scope.launch(Dispatchers.IO) {
+            try {
+                val adjustments = withTimeoutOrNull(5000L) { networkService.fetchCascadeAdjustments(GAS_API_KALENDER) }
+                if (adjustments != null) HijriAdjuster.updateAdjustments(adjustments)
+            } catch (e: Exception) { }
+        }
+    }
+
+    LaunchedEffect(Unit) { syncCalendarData() }
+    
+    MiladiyyahTheme {
+        Scaffold(
+            bottomBar = {
+                NavigationBar(
+                    containerColor = Surface,
+                    contentColor = TextSecondary,
+                    tonalElevation = 8.dp
+                ) {
+                    NavigationBarItem(
+                        icon = { Icon(if (selectedTab == BottomTab.BERANDA) Icons.Filled.Home else Icons.Outlined.Home, "Beranda") },
+                        label = { Text("Beranda") },
+                        selected = selectedTab == BottomTab.BERANDA,
+                        onClick = { selectedTab = BottomTab.BERANDA },
+                        colors = NavigationBarItemDefaults.colors(indicatorColor = BrandAccentLight, selectedIconColor = BrandPrimary, selectedTextColor = BrandPrimary)
+                    )
+                    NavigationBarItem(
+                        icon = { Icon(if (selectedTab == BottomTab.KALENDER) Icons.Filled.DateRange else Icons.Outlined.DateRange, "Kalender") },
+                        label = { Text("Kalender") },
+                        selected = selectedTab == BottomTab.KALENDER,
+                        onClick = { selectedTab = BottomTab.KALENDER },
+                        colors = NavigationBarItemDefaults.colors(indicatorColor = BrandAccentLight, selectedIconColor = BrandPrimary, selectedTextColor = BrandPrimary)
+                    )
+                    NavigationBarItem(
+                        icon = { Icon(if (selectedTab == BottomTab.PUSTAKA) Icons.Filled.Info else Icons.Outlined.Info, "Pustaka") },
+                        label = { Text("Pustaka") },
+                        selected = selectedTab == BottomTab.PUSTAKA,
+                        onClick = { selectedTab = BottomTab.PUSTAKA },
+                        colors = NavigationBarItemDefaults.colors(indicatorColor = BrandAccentLight, selectedIconColor = BrandPrimary, selectedTextColor = BrandPrimary)
+                    )
+                    NavigationBarItem(
+                        icon = { Icon(if (selectedTab == BottomTab.KEGIATAN) Icons.Filled.List else Icons.Outlined.List, "Kegiatan") },
+                        label = { Text("Kegiatan") },
+                        selected = selectedTab == BottomTab.KEGIATAN,
+                        onClick = { selectedTab = BottomTab.KEGIATAN },
+                        colors = NavigationBarItemDefaults.colors(indicatorColor = BrandAccentLight, selectedIconColor = BrandPrimary, selectedTextColor = BrandPrimary)
+                    )
+                    NavigationBarItem(
+                        icon = { Icon(if (selectedTab == BottomTab.MENU) Icons.Filled.Menu else Icons.Outlined.Menu, "Menu") },
+                        label = { Text("Menu") },
+                        selected = selectedTab == BottomTab.MENU,
+                        onClick = { selectedTab = BottomTab.MENU },
+                        colors = NavigationBarItemDefaults.colors(indicatorColor = BrandAccentLight, selectedIconColor = BrandPrimary, selectedTextColor = BrandPrimary)
+                    )
+                }
+            }
+        ) { innerPadding ->
+            Surface(modifier = Modifier.padding(innerPadding).background(Background)) {
+                when (selectedTab) {
+                    BottomTab.BERANDA -> HomeScreen(onNavigateToKiblat = { selectedTab = BottomTab.KIBLAT }, onUpdateLocation = onUpdateLocation)
+                    BottomTab.KALENDER -> CalendarScreen(id.wahidiyah.miladiyyah.core.domain.calendar.engine.CalendarEngine())
+                    BottomTab.PUSTAKA -> PustakaScreen()
+                    BottomTab.KEGIATAN -> KegiatanScreen()
+                    BottomTab.MENU -> SettingsScreen()
+                    BottomTab.KIBLAT -> QiblaScreen()
+                }
+            }
+        }
+    }
+}
+EOF
+
+# ==============================================================================
+# FASE 3: REDESAIN BERANDA / DASHBOARD (WAHIDIYAH MODERN)
+# ==============================================================================
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/home/HomeScreen.kt
+package id.wahidiyah.miladiyyah.ui.screens.home
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import id.wahidiyah.miladiyyah.core.domain.calendar.engine.CalendarEngine
+import id.wahidiyah.miladiyyah.core.domain.prayer.PrayerTimeEngine
+import id.wahidiyah.miladiyyah.core.domain.prayer.PrayerType
+import id.wahidiyah.miladiyyah.theme.*
+import kotlinx.coroutines.delay
+import kotlinx.datetime.*
+
+@Composable
+fun HomeScreen(onNavigateToKiblat: () -> Unit = {}, onUpdateLocation: () -> Unit = {}) {
+    val scrollState = rememberScrollState()
+    val calendarEngine = remember { CalendarEngine() }
+    val tz = TimeZone.currentSystemDefault()
+    var currentDateTime by remember { mutableStateOf(Clock.System.now().toLocalDateTime(tz)) }
+
+    LaunchedEffect(Unit) {
+        while(true) {
+            currentDateTime = Clock.System.now().toLocalDateTime(tz)
+            delay(1000L)
+        }
+    }
+
+    var dayOffset by remember { mutableStateOf(0) }
+    val targetDate = Clock.System.todayIn(tz).plus(dayOffset, DateTimeUnit.DAY)
+    
+    val monthNames = listOf("", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember")
+    val dayNames = listOf("Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Ahad")
+    val targetDayIndex = targetDate.dayOfWeek.ordinal
+    val dateString = "${dayNames[targetDayIndex]}, ${targetDate.dayOfMonth} ${monthNames[targetDate.monthNumber]} ${targetDate.year}"
+    
+    val todayHijriBase = remember { calendarEngine.getToday().hijri }
+    val tempHijriDay = todayHijriBase.day + dayOffset
+    val hijriDay = when {
+        tempHijriDay > 30 -> tempHijriDay % 30
+        tempHijriDay <= 0 -> 30 + (tempHijriDay % 30)
+        else -> tempHijriDay
+    }
+    val hijriMonthNames = listOf("", "Muharram", "Safar", "Rabiul Awal", "Rabiul Akhir", "Jumadil Awal", "Jumadil Akhir", "Rajab", "Syaban", "Ramadhan", "Syawal", "Dzulqaidah", "Dzulhijjah")
+    val hijriString = "$hijriDay ${hijriMonthNames[todayHijriBase.month]} ${todayHijriBase.year} H"
+
+    val prayers = try { PrayerTimeEngine.getPrayers(targetDate) } catch(e:Exception) { emptyList() }
+    val nextPrayer = try { PrayerTimeEngine.getNextPrayer(currentDateTime.time) } catch(e:Exception) { null }
+    
+    val diffSeconds = if (nextPrayer != null) {
+        val nextSec = nextPrayer.time.hour * 3600 + nextPrayer.time.minute * 60
+        val curSec = currentDateTime.time.hour * 3600 + currentDateTime.time.minute * 60 + currentDateTime.time.second
+        if (nextSec >= curSec) nextSec - curSec else (nextSec + 86400) - curSec
+    } else 0
+    val h = diffSeconds / 3600
+    val m = (diffSeconds % 3600) / 60
+    val s = diffSeconds % 60
+    val countdownStr = "- ${h.toString().padStart(2,'0')} : ${m.toString().padStart(2,'0')} : ${s.toString().padStart(2,'0')}"
+
+    Column(modifier = Modifier.fillMaxSize().background(Background).verticalScroll(scrollState)) {
+        
+        // --- HEADER ELEGANT WAHIDIYAH ---
+        Box(
+            modifier = Modifier.fillMaxWidth()
+                .background(BrandPrimary, shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
+                .padding(top = 24.dp, bottom = 48.dp, start = 20.dp, end = 20.dp)
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                // Top Action Bar
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Text("WAHIDIYAH", color = Surface, fontSize = 16.sp, letterSpacing = 2.sp, fontWeight = FontWeight.SemiBold)
+                    Row(modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable { onUpdateLocation() }.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = BrandAccentLight, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(PrayerTimeEngine.locationName, color = Surface, fontSize = 12.sp, fontWeight = FontWeight.Medium)
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(32.dp))
+                
+                // Next Prayer Focus
+                if (nextPrayer != null) {
+                    val timeStr = "${nextPrayer.time.hour.toString().padStart(2,'0')}:${nextPrayer.time.minute.toString().padStart(2,'0')}"
+                    Text(nextPrayer.type.title.uppercase(), color = BrandAccentLight, fontSize = 14.sp, letterSpacing = 2.sp, fontWeight = FontWeight.Medium)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(timeStr, color = Surface, fontSize = 48.sp, fontWeight = FontWeight.Bold)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(countdownStr, color = Surface.copy(alpha = 0.8f), fontSize = 16.sp, fontWeight = FontWeight.Medium)
+                }
+            }
+        }
+
+        // --- DATE NAVIGATOR (ELEVATED CARD) ---
+        Box(modifier = Modifier.fillMaxWidth().offset(y = (-28).dp).padding(horizontal = 20.dp)) {
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Box(modifier = Modifier.clip(CircleShape).clickable { dayOffset -= 1 }.background(Background).padding(8.dp)) {
+                        Icon(Icons.Default.KeyboardArrowLeft, contentDescription = "Sebelumnya", tint = TextSecondary)
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(dateString, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                        Text(hijriString, fontSize = 13.sp, color = BrandPrimary, fontWeight = FontWeight.Medium)
+                    }
+                    Box(modifier = Modifier.clip(CircleShape).clickable { dayOffset += 1 }.background(Background).padding(8.dp)) {
+                        Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Selanjutnya", tint = TextSecondary)
+                    }
+                }
+            }
+        }
+
+        // --- QUICK ACTIONS ---
+        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).offset(y = (-8).dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                modifier = Modifier.weight(1f).clickable { onNavigateToKiblat() }
+            ) {
+                Row(modifier = Modifier.padding(16.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                    Icon(Icons.Outlined.LocationOn, contentDescription = null, tint = BrandPrimary, modifier = Modifier.size(20.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Arah Kiblat", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                }
+            }
+        }
+
+        // --- PRAYER TIMES LIST ---
+        Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
+            Text("Jadwal Salat", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary, modifier = Modifier.padding(bottom = 12.dp))
+            
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Surface),
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    prayers.forEachIndexed { index, prayer ->
+                        val iconEmoji = when(prayer.type) {
+                            PrayerType.IMSAK -> "🌙"
+                            PrayerType.SUBUH -> "⛅"
+                            PrayerType.TERBIT -> "🌅"
+                            PrayerType.DHUHA -> "🌤️"
+                            PrayerType.DZUHUR -> "☀️"
+                            PrayerType.ASHAR -> "🌥️"
+                            PrayerType.MAGHRIB -> "🌇"
+                            PrayerType.ISYA -> "🌌"
+                        }
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(iconEmoji, fontSize = 18.sp)
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(prayer.type.title, fontSize = 15.sp, color = TextSecondary, modifier = Modifier.weight(1f))
+                            
+                            val tStr = "${prayer.time.hour.toString().padStart(2,'0')}:${prayer.time.minute.toString().padStart(2,'0')}"
+                            Text(tStr, fontSize = 15.sp, color = TextPrimary, fontWeight = FontWeight.Bold)
+                            
+                            Spacer(modifier = Modifier.width(16.dp))
+                            if (prayer.type == PrayerType.IMSAK || prayer.type == PrayerType.TERBIT || prayer.type == PrayerType.DHUHA) {
+                                Icon(Icons.Default.Clear, contentDescription = null, tint = Border, modifier = Modifier.size(18.dp))
+                            } else {
+                                Icon(Icons.Outlined.Notifications, contentDescription = null, tint = BrandPrimaryLight, modifier = Modifier.size(18.dp))
+                            }
+                        }
+                        if (index < prayers.size - 1) {
+                            HorizontalDivider(color = Border.copy(alpha = 0.5f), thickness = 1.dp)
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(32.dp))
+        }
+    }
+}
+EOF
+
+# ==============================================================================
+# FASE 4: REDESAIN LAYAR KEGIATAN (CLEAN & PROFESSIONAL)
+# ==============================================================================
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/kegiatan/KegiatanScreen.kt
+package id.wahidiyah.miladiyyah.ui.screens.kegiatan
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.outlined.Event
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import id.wahidiyah.miladiyyah.AppCache
+import id.wahidiyah.miladiyyah.KegiatanOnlineService
+import id.wahidiyah.miladiyyah.theme.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
+@Composable
+fun KegiatanScreen() {
+    val scope = rememberCoroutineScope()
+    var isUpdating by remember { mutableStateOf(false) }
+    var toastMessage by remember { mutableStateOf<String?>(null) }
+    var kegiatanData by remember { mutableStateOf(AppCache.load("KEGIATAN_DATA") ?: "Belum ada agenda kegiatan.") }
+
+    LaunchedEffect(Unit) {
+        try {
+            val newData = withContext(Dispatchers.IO) { KegiatanOnlineService.fetchKegiatanFromGAS() }
+            if (newData != kegiatanData) {
+                AppCache.save("KEGIATAN_DATA", newData)
+                kegiatanData = newData
+            }
+        } catch (e: Exception) {}
+    }
+
+    Column(modifier = Modifier.fillMaxSize().background(Background)) {
+        
+        // Header
+        Box(modifier = Modifier.fillMaxWidth().background(Surface).padding(horizontal = 20.dp, vertical = 16.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Column {
+                    Text("Kegiatan & Agenda", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text("Informasi resmi Wahidiyah", color = TextSecondary, fontSize = 13.sp)
+                }
+                
+                Button(
+                    onClick = {
+                        scope.launch {
+                            isUpdating = true
+                            try {
+                                val newData = withContext(Dispatchers.IO) { KegiatanOnlineService.fetchKegiatanFromGAS() }
+                                if (newData == kegiatanData) {
+                                    toastMessage = "Data sudah versi terbaru."
+                                } else {
+                                    AppCache.save("KEGIATAN_DATA", newData)
+                                    kegiatanData = newData
+                                    toastMessage = "Kegiatan berhasil diperbarui."
+                                }
+                            } catch (e: Exception) { toastMessage = "Gagal terhubung ke server." } 
+                            finally { isUpdating = false }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandAccentLight, contentColor = BrandPrimary),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    if (isUpdating) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), color = BrandPrimary, strokeWidth = 2.dp)
+                    } else {
+                        Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Perbarui", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
+        }
+        HorizontalDivider(color = Border)
+
+        if (toastMessage != null) {
+            Card(colors = CardDefaults.cardColors(containerColor = BrandAccentLight), modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                Text(toastMessage!!, color = BrandPrimaryDark, modifier = Modifier.padding(12.dp), fontSize = 13.sp, fontWeight = FontWeight.Medium)
+            }
+            LaunchedEffect(toastMessage) { kotlinx.coroutines.delay(3000L); toastMessage = null }
+        }
+
+        // Empty State / Content
+        Box(modifier = Modifier.fillMaxSize().padding(20.dp)) {
+            if (kegiatanData.contains("Belum ada agenda")) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.align(Alignment.Center)) {
+                    Box(modifier = Modifier.size(72.dp).clip(CircleShape).background(BrandAccentLight), contentAlignment = Alignment.Center) {
+                        Icon(Icons.Outlined.Event, contentDescription = null, tint = BrandPrimary, modifier = Modifier.size(32.dp))
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Belum Ada Kegiatan", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                    Text("Agenda resmi akan muncul di sini.", fontSize = 14.sp, color = TextSecondary)
+                }
+            } else {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = Surface),
+                    modifier = Modifier.fillMaxWidth(),
+                    elevation = CardDefaults.cardElevation(1.dp),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(kegiatanData, fontSize = 14.sp, color = TextSecondary, lineHeight = 22.sp)
+                    }
+                }
+            }
+        }
+    }
+}
+EOF
+
+# ==============================================================================
+# FASE 5: REDESAIN PUSTAKA (CLEAN DOCUMENT UI)
+# ==============================================================================
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/pustaka/PustakaScreen.kt
+package id.wahidiyah.miladiyyah.ui.screens.pustaka
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.outlined.LibraryBooks
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import id.wahidiyah.miladiyyah.AppCache
+import id.wahidiyah.miladiyyah.theme.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+@Composable
+fun PustakaScreen() {
+    val scope = rememberCoroutineScope()
+    var isUpdating by remember { mutableStateOf(false) }
+    var lastUpdated by remember { mutableStateOf(AppCache.load("PUSTAKA_LAST_UPDATE") ?: "-") }
+
+    Column(modifier = Modifier.fillMaxSize().background(Background)) {
+        Box(modifier = Modifier.fillMaxWidth().background(Surface).padding(horizontal = 20.dp, vertical = 16.dp)) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                Column {
+                    Text("Pustaka Jamaah", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text("Update terakhir: $lastUpdated", color = TextSecondary, fontSize = 12.sp)
+                }
+                
+                Button(
+                    onClick = {
+                        scope.launch {
+                            isUpdating = true
+                            delay(1500L) 
+                            val currentDate = "Baru saja" 
+                            AppCache.save("PUSTAKA_LAST_UPDATE", currentDate)
+                            lastUpdated = currentDate
+                            isUpdating = false
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandAccentLight, contentColor = BrandPrimary),
+                    shape = RoundedCornerShape(8.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                ) {
+                    if (isUpdating) {
+                        CircularProgressIndicator(modifier = Modifier.size(16.dp), color = BrandPrimary, strokeWidth = 2.dp)
+                    } else {
+                        Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Sinkron", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
+        }
+        HorizontalDivider(color = Border)
+
+        Box(modifier = Modifier.fillMaxSize().padding(20.dp), contentAlignment = Alignment.Center) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(modifier = Modifier.size(80.dp).clip(CircleShape).background(BrandAccentLight), contentAlignment = Alignment.Center) {
+                    Icon(Icons.Outlined.LibraryBooks, contentDescription = null, tint = BrandPrimary, modifier = Modifier.size(40.dp))
+                }
+                Spacer(modifier = Modifier.height(20.dp))
+                Text("Pustaka Offline", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Kitab dan materi tersimpan di perangkat.\nTekan Sinkron jika ada penambahan materi dari pusat.",
+                    textAlign = TextAlign.Center, 
+                    color = TextSecondary,
+                    fontSize = 14.sp,
+                    lineHeight = 22.sp
+                )
+            }
+        }
+    }
+}
+EOF
+
+# ==============================================================================
+# FASE 6: REDESAIN SETTINGS (MENU UTAMA SEKUNDER)
+# ==============================================================================
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/settings/SettingsScreen.kt
+package id.wahidiyah.miladiyyah.ui.screens.settings
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.NotificationsActive
+import androidx.compose.material.icons.outlined.VolunteerActivism
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import id.wahidiyah.miladiyyah.theme.*
+import id.wahidiyah.miladiyyah.alarm.AlarmScheduler
+
+@Composable
+fun SettingsScreen() {
+    val context = LocalContext.current
+    var adzanEnabled by remember { mutableStateOf(true) }
+    var tarhimEnabled by remember { mutableStateOf(true) }
+    var tasyafuanEnabled by remember { mutableStateOf(true) }
+    var danaBoxEnabled by remember { mutableStateOf(true) }
+    val scrollState = rememberScrollState()
+
+    LaunchedEffect(Unit) { try { AlarmScheduler.scheduleAll(context) } catch (e: Exception) {} }
+
+    Column(modifier = Modifier.fillMaxSize().background(Background).verticalScroll(scrollState)) {
+        Box(modifier = Modifier.fillMaxWidth().background(Surface).padding(horizontal = 20.dp, vertical = 16.dp)) {
+            Column {
+                Text("Pengaturan & Menu", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                Text("Personalisasi aplikasi Wahidiyah", color = TextSecondary, fontSize = 13.sp)
+            }
+        }
+        HorizontalDivider(color = Border)
+
+        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Text("NOTIFIKASI", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMuted, letterSpacing = 1.sp)
+            
+            Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Surface), elevation = CardDefaults.cardElevation(1.dp)) {
+                Column {
+                    SettingsItem(icon = Icons.Outlined.NotificationsActive, title = "Adzan & Waktu Salat", subtitle = "Peringatan 10 menit & Suara Adzan", checked = adzanEnabled) { adzanEnabled = it }
+                    HorizontalDivider(color = Border.copy(alpha = 0.5f), modifier = Modifier.padding(start = 56.dp))
+                    SettingsItem(icon = Icons.Outlined.NotificationsActive, title = "Pengingat Tarhim", subtitle = "Setiap hari sebelum Subuh", checked = tarhimEnabled) { tarhimEnabled = it }
+                }
+            }
+
+            Text("PENGINGAT KHUSUS", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMuted, letterSpacing = 1.sp, modifier = Modifier.padding(top = 8.dp))
+            
+            Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Surface), elevation = CardDefaults.cardElevation(1.dp)) {
+                Column {
+                    SettingsItem(icon = Icons.Outlined.Info, title = "Pengingat Syafa'an", subtitle = "Setiap jam 03:00 pagi", checked = tasyafuanEnabled) { tasyafuanEnabled = it }
+                    HorizontalDivider(color = Border.copy(alpha = 0.5f), modifier = Modifier.padding(start = 56.dp))
+                    SettingsItem(icon = Icons.Outlined.VolunteerActivism, title = "Pengingat Dana Box", subtitle = "Setiap jam 06:00 & 19:00", checked = danaBoxEnabled) { danaBoxEnabled = it }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(20.dp))
+        }
+    }
+}
+
+@Composable
+fun SettingsItem(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, subtitle: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+        Icon(icon, contentDescription = null, tint = BrandPrimary, modifier = Modifier.size(24.dp))
+        Spacer(modifier = Modifier.width(16.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+            Text(subtitle, fontSize = 12.sp, color = TextSecondary)
+        }
+        Switch(checked = checked, onCheckedChange = onCheckedChange, colors = SwitchDefaults.colors(checkedTrackColor = BrandPrimary, checkedThumbColor = Surface))
+    }
+}
+EOF
+
+# ==============================================================================
+# FASE 7: REDESAIN KIBLAT (CLEAN COMPASS UI)
+# ==============================================================================
+sed -i 's/DeepForestGreen/BrandPrimary/g' composeApp/src/androidMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/kiblat/QiblaScreen.android.kt
+sed -i 's/SoftCream/Background/g' composeApp/src/androidMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/kiblat/QiblaScreen.android.kt
+sed -i 's/SubtleGold/BrandAccent/g' composeApp/src/androidMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/kiblat/QiblaScreen.android.kt
+
+# 8. Eksekusi Perubahan Menuju GitHub
+git add .
+git commit -m "design: master UI/UX redesign implementing official Wahidiyah brand identity, centralized design tokens, and modernized clean architecture across all screens"
+git push origin main
