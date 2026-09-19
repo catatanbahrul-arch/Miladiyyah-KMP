@@ -32,9 +32,11 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(libs.coroutines.core)
+            
+            // INJEKSI LANGSUNG: Memaksa Gradle mendownload library kalender
+            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
         }
         androidMain.dependencies {
-            // FIX: Menambahkan library ComponentActivity & setContent untuk Android
             implementation("androidx.activity:activity-compose:1.8.2")
         }
         iosMain.dependencies {}
