@@ -11,7 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Warning
@@ -62,22 +62,23 @@ fun HomeScreen(onNavigateToKiblat: () -> Unit = {}) {
         }
     }
 
-    val nextPrayer = PrayerTimeEngine.getNextPrayer(currentTime)
+    val nextPrayer = try { PrayerTimeEngine.getNextPrayer(currentTime) } catch(e:Exception) { null }
     val currentMins = currentTime.hour * 60 + currentTime.minute
-    val nextMins = nextPrayer.time.hour * 60 + nextPrayer.time.minute
-    val diffMins = if (nextMins >= currentMins) nextMins - currentMins else (nextMins + 1440) - currentMins
+    val diffMins = if (nextPrayer != null) {
+        val nextMins = nextPrayer.time.hour * 60 + nextPrayer.time.minute
+        if (nextMins >= currentMins) nextMins - currentMins else (nextMins + 1440) - currentMins
+    } else 0
     val isWarningTime = diffMins in 0..10
 
     Column(modifier = Modifier.fillMaxSize().background(SoftCream).verticalScroll(scrollState)) {
         Box(modifier = Modifier.fillMaxWidth().background(Color.White).padding(16.dp)) {
             Column {
                 Text("Miladiyyah", color = DeepForestGreen, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                Text("Kediri, Jawa Timur", color = TextSecondary, fontSize = 12.sp)
+                Text("App Resmi Jamaah", color = TextSecondary, fontSize = 12.sp)
             }
         }
 
-        Column(modifier = Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Column(modifier = Modifier.padding(top = 8.dp)) {
                 Text(dateString, fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                 Spacer(modifier = Modifier.height(4.dp))
@@ -88,7 +89,25 @@ fun HomeScreen(onNavigateToKiblat: () -> Unit = {}) {
                 }
             }
 
-            if (isWarningTime) {
+            // Tombol Arah Kiblat
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                modifier = Modifier.fillMaxWidth().clickable { onNavigateToKiblat() },
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            ) {
+                Row(modifier = Modifier.padding(16.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = DeepForestGreen, modifier = Modifier.size(28.dp))
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Kompas Arah Kiblat", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                        Text("Deteksi GPS Akurat", fontSize = 12.sp, color = TextSecondary)
+                    }
+                    Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = DeepForestGreen)
+                }
+            }
+
+            if (isWarningTime && nextPrayer != null) {
                 Card(
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)),
@@ -117,61 +136,36 @@ fun HomeScreen(onNavigateToKiblat: () -> Unit = {}) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.Notifications, contentDescription = null, tint = Color(0xFFF57F17), modifier = Modifier.size(22.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(if (pengumuman!!.title.isNotEmpty()) pengumuman!!.title else "Pengumuman Penting", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFFF57F17))
+                            Text(if (pengumuman!!.title.isNotEmpty()) pengumuman!!.title else "Pengumuman", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFFF57F17))
                         }
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(pengumuman!!.content, fontSize = 13.sp, color = TextPrimary, lineHeight = 18.sp)
-                        
-                        if (!pengumuman!!.link.isNullOrEmpty()) {
-                            Spacer(modifier = Modifier.height(12.dp))
-                            HorizontalDivider(color = Color(0xFFFFE082), thickness = 1.dp)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable {
-                                        val url = pengumuman!!.link ?: ""
-                                        if (url.isNotBlank()) {
-                                            val validUrl = if (!url.startsWith("http")) "https://$url" else url
-                                            try { uriHandler.openUri(validUrl) } catch (e: Exception) {}
-                                        }
-                                    }
-                                    .padding(vertical = 4.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text("Lihat Himbauan Selengkapnya", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE65100))
-                                Text(">", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE65100))
-                            }
-                        }
                     }
                 }
             }
 
-            Card(
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = DeepForestGreen),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.padding(20.dp).fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+            if (nextPrayer != null) {
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = DeepForestGreen),
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Box(modifier = Modifier.size(50.dp).background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Default.Home, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(if (nextPrayer.type == id.wahidiyah.miladiyyah.core.domain.prayer.PrayerType.TARHIM) "Jadwal Berikutnya" else "Salat berikutnya", color = Color.White.copy(alpha = 0.8f), fontSize = 12.sp)
-                        Text(nextPrayer.type.title, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                        Row(verticalAlignment = Alignment.Bottom) {
-                            val timeString = "${nextPrayer.time.hour.toString().padStart(2, '0')}:${nextPrayer.time.minute.toString().padStart(2, '0')}"
-                            Text(timeString, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("$diffMins menit lagi", color = SubtleGold, fontSize = 13.sp, modifier = Modifier.padding(bottom = 3.dp))
+                    Row(modifier = Modifier.padding(20.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Box(modifier = Modifier.size(50.dp).background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
+                            Icon(Icons.Default.Home, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Jadwal Berikutnya", color = Color.White.copy(alpha = 0.8f), fontSize = 12.sp)
+                            Text(nextPrayer.type.title, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                            Row(verticalAlignment = Alignment.Bottom) {
+                                val timeString = "${nextPrayer.time.hour.toString().padStart(2, '0')}:${nextPrayer.time.minute.toString().padStart(2, '0')}"
+                                Text(timeString, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("$diffMins menit lagi", color = SubtleGold, fontSize = 13.sp, modifier = Modifier.padding(bottom = 3.dp))
+                            }
                         }
                     }
-                    Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = Color.White)
                 }
             }
             Spacer(modifier = Modifier.height(20.dp))
