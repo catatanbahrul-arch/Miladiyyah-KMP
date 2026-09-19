@@ -39,17 +39,18 @@ fun HomeScreen(onNavigateToSalat: () -> Unit = {}, onNavigateToPustaka: () -> Un
         while(true) { currentDateTime = Clock.System.now().toLocalDateTime(tz); delay(1000L) } 
     }
 
-    val targetDate = currentDateTime.date
+    var dayOffset by remember { mutableStateOf(0) }
+    val targetDate = Clock.System.todayIn(tz).plus(dayOffset, DateTimeUnit.DAY)
     val nextPrayer = try { PrayerTimeEngine.getNextPrayer(currentDateTime.time) } catch(e:Exception) { null }
     val monthNames = listOf("", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember")
     val dayNames = listOf("Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Ahad")
     val dateString = "${dayNames[targetDate.dayOfWeek.ordinal]}, ${targetDate.dayOfMonth} ${monthNames[targetDate.monthNumber]} ${targetDate.year}"
     val hijriBase = CalendarEngine().getToday().hijri
+    val tempDay = hijriBase.day + dayOffset
+    val hDay = when { tempDay > 30 -> tempDay % 30; tempDay <= 0 -> 30 + (tempDay % 30); else -> tempDay }
     val hMonthNames = listOf("", "Muharram", "Safar", "Rabiul Awal", "Rabiul Akhir", "Jumadil Awal", "Jumadil Akhir", "Rajab", "Syaban", "Ramadhan", "Syawal", "Dzulqaidah", "Dzulhijjah")
 
     Column(modifier = Modifier.fillMaxSize().background(Background).verticalScroll(scrollState)) {
-        
-        // HEADER: LOGO ORIGINAL & STACKING AMAN
         Box(modifier = Modifier.fillMaxWidth().background(BrandPrimaryDark, shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)).padding(top = 40.dp, bottom = 48.dp, start = 24.dp, end = 24.dp)) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                 WahidiyahLogo(modifier = Modifier.size(48.dp))
@@ -75,18 +76,20 @@ fun HomeScreen(onNavigateToSalat: () -> Unit = {}, onNavigateToPustaka: () -> Un
             }
         }
 
-        // TANGGAL MASEHI & HIJRIYAH
         Box(modifier = Modifier.fillMaxWidth().offset(y = (-32).dp).padding(horizontal = 24.dp)) {
             Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Surface), elevation = CardDefaults.cardElevation(2.dp), modifier = Modifier.fillMaxWidth()) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth().padding(20.dp)) {
-                    Text(dateString, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text("${hijriBase.day} ${hMonthNames[hijriBase.month]} ${hijriBase.year} H", fontSize = 14.sp, color = BrandPrimary, fontWeight = FontWeight.SemiBold)
+                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 24.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Box(modifier = Modifier.clip(CircleShape).clickable { dayOffset -= 1 }.padding(12.dp)) { Icon(Icons.Default.KeyboardArrowLeft, contentDescription = null, tint = BrandPrimary) }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(dateString, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text("$hDay ${hMonthNames[hijriBase.month]} ${hijriBase.year} H", fontSize = 13.sp, color = BrandPrimary, fontWeight = FontWeight.SemiBold)
+                    }
+                    Box(modifier = Modifier.clip(CircleShape).clickable { dayOffset += 1 }.padding(12.dp)) { Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = BrandPrimary) }
                 }
             }
         }
 
-        // PENGUMUMAN PENTING (DOMINAN VISUAL JIKA ADA)
         if (pengumumanState is UiState.Success && (pengumumanState as UiState.Success).data.isNotEmpty()) {
             Column(modifier = Modifier.padding(horizontal = 24.dp).offset(y = (-8).dp)) {
                 Text("Pengumuman Penting", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Error, letterSpacing = 1.sp, modifier = Modifier.padding(bottom = 12.dp, start = 4.dp))
@@ -101,7 +104,6 @@ fun HomeScreen(onNavigateToSalat: () -> Unit = {}, onNavigateToPustaka: () -> Un
             }
         }
 
-        // FITUR PENGINGAT (TASYAFU'AN & DANA BOX TETAP ADA)
         Column(modifier = Modifier.padding(horizontal = 24.dp).offset(y = (-8).dp)) {
             Text("Pengingat Khusus", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextMuted, letterSpacing = 1.sp, modifier = Modifier.padding(bottom = 12.dp, start = 4.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
