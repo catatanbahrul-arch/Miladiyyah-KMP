@@ -68,6 +68,8 @@ actual fun QiblaScreen() {
                     var bearing = it.bearingTo(kaaba)
                     if (bearing < 0) bearing += 360f
                     qiblaBearing = bearing
+                    id.wahidiyah.miladiyyah.core.domain.prayer.PrayerTimeEngine.latitude = it.latitude
+                    id.wahidiyah.miladiyyah.core.domain.prayer.PrayerTimeEngine.longitude = it.longitude
                     hasGps = true
                 }
             } catch (e: Exception) { }
