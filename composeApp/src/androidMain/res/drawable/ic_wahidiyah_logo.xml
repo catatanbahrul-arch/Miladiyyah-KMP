@@ -1,6 +1,4 @@
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp" android:height="108dp"
-    android:viewportWidth="100" android:viewportHeight="100">
-    <path android:fillColor="#1C5B2D" android:pathData="M20,30 L40,80 L50,55 L60,80 L80,30 L68,30 L60,60 L50,35 L40,60 L32,30 Z"/>
-    <path android:fillColor="#73C34F" android:pathData="M50,15 Q65,35 60,60 Q50,45 50,15 Z"/>
-</vector>
+<?xml version="1.0" encoding="utf-8"?>
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/wahidiyah_app_icon"
+    android:gravity="center" />
