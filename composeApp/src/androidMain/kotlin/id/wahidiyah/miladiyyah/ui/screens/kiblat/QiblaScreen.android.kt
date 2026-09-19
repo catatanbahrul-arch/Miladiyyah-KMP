@@ -55,7 +55,7 @@ actual fun QiblaScreen() {
             }
             override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
         }
-        sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_UI)
+        if (sensor != null) { sensorManager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_UI) }
 
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             try {
