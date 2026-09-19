@@ -1,13 +1,11 @@
 package id.wahidiyah.miladiyyah.ui.screens.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -40,7 +38,6 @@ fun HomeScreen() {
             .background(SoftCream)
             .verticalScroll(scrollState)
     ) {
-        // Header Beranda
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -56,12 +53,10 @@ fun HomeScreen() {
 
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             
-            // KARTU PENGUMUMAN PENTING (Hanya muncul jika di Google Sheet terisi / tidak kosong)
             if (pengumuman != null && (!pengumuman!!.title.isEmpty() || !pengumuman!!.content.isEmpty())) {
                 Card(
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFDE7)), // Warna kuning lembut penanda pengumuman penting
-                    border = BorderStroke(1.dp, Color(0xFFFFE082)),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFDE7)),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
@@ -83,23 +78,10 @@ fun HomeScreen() {
                             color = TextPrimary,
                             lineHeight = 18.sp
                         )
-                        
-                        if (pengumuman!!.link.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Button(
-                                onClick = { /* Bisa diarahkan buka link dokumen resmi */ },
-                                colors = ButtonDefaults.buttonColors(containerColor = DeepForestGreen),
-                                shape = RoundedCornerShape(8.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Text("Buka Dokumen Resmi", color = Color.White, fontSize = 12.sp)
-                            }
-                        }
                     }
                 }
             }
 
-            // Menu Utama / Kartu Sambutan
             Card(
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -110,7 +92,7 @@ fun HomeScreen() {
                     Text("Selamat Datang, Jamaah!", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = DeepForestGreen)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        "Gunakan aplikasi Miladiyyah untuk memantau kalender Hijriyah berstandar MABIMS / NU Online secara akurat, serta mengecek jadwal kegiatan mujahadah serempak di menu bawah.",
+                        "Gunakan aplikasi Miladiyyah untuk memantau kalender Hijriyah berstandar MABIMS / NU Online secara akurat, serta mengecek jadwal kegiatan dan pustaka materi.",
                         fontSize = 13.sp,
                         color = TextSecondary,
                         lineHeight = 18.sp

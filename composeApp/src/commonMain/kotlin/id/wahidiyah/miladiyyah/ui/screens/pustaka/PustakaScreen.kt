@@ -6,7 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -36,7 +36,6 @@ fun PustakaScreen() {
     }
 
     Column(modifier = Modifier.fillMaxSize().background(SoftCream)) {
-        // Header Halaman Pustaka
         Box(modifier = Modifier.fillMaxWidth().background(DeepForestGreen).padding(20.dp)) {
             Column {
                 Text("Pustaka & Materi", color = Color.White, fontSize = 18.sp, fontWeight = FontWeight.Bold)
@@ -67,7 +66,7 @@ fun PustakaScreen() {
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Book, contentDescription = null, tint = DeepForestGreen, modifier = Modifier.size(20.dp))
+                                Icon(Icons.Default.Info, contentDescription = null, tint = DeepForestGreen, modifier = Modifier.size(20.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
                                     text = item.title,
