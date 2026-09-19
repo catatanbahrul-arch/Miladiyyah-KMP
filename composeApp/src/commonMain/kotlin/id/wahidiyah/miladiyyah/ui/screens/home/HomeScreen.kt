@@ -8,7 +8,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -108,28 +114,44 @@ fun HomeScreen() {
             if (pengumuman != null && (!pengumuman!!.title.isEmpty() || !pengumuman!!.content.isEmpty())) {
                 Card(
                     shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF57F17)),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFDE7)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Notifications, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
+                            Icon(Icons.Default.Notifications, contentDescription = null, tint = Color(0xFFF57F17), modifier = Modifier.size(22.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Pengumuman Penting", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text(
+                                text = if (pengumuman!!.title.isNotEmpty()) pengumuman!!.title else "Pengumuman Penting",
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFF57F17)
+                            )
                         }
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(if (pengumuman!!.title.isNotEmpty()) pengumuman!!.title else pengumuman!!.content, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color.White, lineHeight = 20.sp)
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(pengumuman!!.content, fontSize = 13.sp, color = TextPrimary, lineHeight = 18.sp)
                         
                         if (!pengumuman!!.link.isNullOrEmpty()) {
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Button(
-                                onClick = {
-                                    try { uriHandler.openUri(pengumuman!!.link) } catch (e: Exception) {}
-                                },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color.White.copy(alpha = 0.2f)),
-                                shape = RoundedCornerShape(8.dp)
+                            Spacer(modifier = Modifier.height(12.dp))
+                            HorizontalDivider(color = Color(0xFFFFE082), thickness = 1.dp)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        val url = pengumuman!!.link ?: ""
+                                        if (url.isNotBlank()) {
+                                            val validUrl = if (!url.startsWith("http")) "https://$url" else url
+                                            try { uriHandler.openUri(validUrl) } catch (e: Exception) { println("Gagal buka link") }
+                                        }
+                                    }
+                                    .padding(vertical = 4.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text("Lihat Selengkapnya >", color = Color.White, fontSize = 12.sp)
+                                Text("Lihat Himbauan Selengkapnya", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE65100))
+                                Text(">", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFFE65100))
                             }
                         }
                     }

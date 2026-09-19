@@ -77,7 +77,11 @@ fun PustakaScreen() {
                                 Spacer(modifier = Modifier.height(14.dp))
                                 Button(
                                     onClick = { 
-                                        try { uriHandler.openUri(item.link) } catch (e: Exception) { println("Gagal membuka link: ${item.link}") }
+                                        val url = item.link
+                                        if (url.isNotBlank()) {
+                                            val validUrl = if (!url.startsWith("http")) "https://$url" else url
+                                            try { uriHandler.openUri(validUrl) } catch (e: Exception) { println("Gagal membuka link: $validUrl") }
+                                        }
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = DeepForestGreen),
                                     shape = RoundedCornerShape(8.dp),
