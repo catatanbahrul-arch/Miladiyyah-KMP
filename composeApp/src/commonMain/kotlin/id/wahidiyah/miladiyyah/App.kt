@@ -13,6 +13,7 @@ import id.wahidiyah.miladiyyah.core.domain.calendar.engine.HijriAdjuster
 import id.wahidiyah.miladiyyah.theme.MiladiyyahTheme
 import id.wahidiyah.miladiyyah.ui.screens.home.HomeScreen
 import id.wahidiyah.miladiyyah.ui.screens.calendar.CalendarScreen
+import id.wahidiyah.miladiyyah.ui.screens.kegiatan.KegiatanScreen
 import kotlinx.coroutines.launch
 
 enum class BottomTab { BERANDA, KALENDER, SALAT, KEGIATAN, MENU }
@@ -32,7 +33,7 @@ fun App() {
                 val adjustments = networkService.fetchCascadeAdjustments(GAS_API_URL)
                 HijriAdjuster.updateAdjustments(adjustments)
             } catch (e: Exception) {
-                println("Gagal memuat sinkronisasi berantai: ${e.message}")
+                println("Gagal memuat sinkronisasi kalender: ${e.message}")
             }
         }
     }
@@ -63,6 +64,7 @@ fun App() {
                 when (selectedTab) {
                     BottomTab.BERANDA -> HomeScreen()
                     BottomTab.KALENDER -> CalendarScreen(calendarEngine)
+                    BottomTab.KEGIATAN -> KegiatanScreen()
                     else -> Box {}
                 }
             }
