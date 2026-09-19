@@ -1,9 +1,9 @@
 package id.wahidiyah.miladiyyah
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -35,60 +35,21 @@ fun App(onUpdateLocation: () -> Unit = {}) {
     val scope = rememberCoroutineScope()
     val networkService = remember { CalendarNetworkService() }
 
-    val syncCalendarData = {
+    LaunchedEffect(Unit) {
         scope.launch(Dispatchers.IO) {
-            try {
-                val adjustments = withTimeoutOrNull(5000L) { networkService.fetchCascadeAdjustments(GAS_API_KALENDER) }
-                if (adjustments != null) HijriAdjuster.updateAdjustments(adjustments)
-            } catch (e: Exception) { }
+            try { val adj = withTimeoutOrNull(5000L) { networkService.fetchCascadeAdjustments(GAS_API_KALENDER) }; if (adj != null) HijriAdjuster.updateAdjustments(adj) } catch (e: Exception) { }
         }
     }
-
-    LaunchedEffect(Unit) { syncCalendarData() }
     
     MiladiyyahTheme {
         Scaffold(
             bottomBar = {
-                NavigationBar(
-                    containerColor = Surface,
-                    contentColor = TextSecondary,
-                    tonalElevation = 8.dp
-                ) {
-                    NavigationBarItem(
-                        icon = { Icon(if (selectedTab == BottomTab.BERANDA) Icons.Filled.Home else Icons.Outlined.Home, "Beranda") },
-                        label = { Text("Beranda") },
-                        selected = selectedTab == BottomTab.BERANDA,
-                        onClick = { selectedTab = BottomTab.BERANDA },
-                        colors = NavigationBarItemDefaults.colors(indicatorColor = BrandAccentLight, selectedIconColor = BrandPrimary, selectedTextColor = BrandPrimary)
-                    )
-                    NavigationBarItem(
-                        icon = { Icon(if (selectedTab == BottomTab.KALENDER) Icons.Filled.DateRange else Icons.Outlined.DateRange, "Kalender") },
-                        label = { Text("Kalender") },
-                        selected = selectedTab == BottomTab.KALENDER,
-                        onClick = { selectedTab = BottomTab.KALENDER },
-                        colors = NavigationBarItemDefaults.colors(indicatorColor = BrandAccentLight, selectedIconColor = BrandPrimary, selectedTextColor = BrandPrimary)
-                    )
-                    NavigationBarItem(
-                        icon = { Icon(if (selectedTab == BottomTab.PUSTAKA) Icons.Filled.Info else Icons.Outlined.Info, "Pustaka") },
-                        label = { Text("Pustaka") },
-                        selected = selectedTab == BottomTab.PUSTAKA,
-                        onClick = { selectedTab = BottomTab.PUSTAKA },
-                        colors = NavigationBarItemDefaults.colors(indicatorColor = BrandAccentLight, selectedIconColor = BrandPrimary, selectedTextColor = BrandPrimary)
-                    )
-                    NavigationBarItem(
-                        icon = { Icon(if (selectedTab == BottomTab.KEGIATAN) Icons.Filled.List else Icons.Outlined.List, "Kegiatan") },
-                        label = { Text("Kegiatan") },
-                        selected = selectedTab == BottomTab.KEGIATAN,
-                        onClick = { selectedTab = BottomTab.KEGIATAN },
-                        colors = NavigationBarItemDefaults.colors(indicatorColor = BrandAccentLight, selectedIconColor = BrandPrimary, selectedTextColor = BrandPrimary)
-                    )
-                    NavigationBarItem(
-                        icon = { Icon(if (selectedTab == BottomTab.MENU) Icons.Filled.Menu else Icons.Outlined.Menu, "Menu") },
-                        label = { Text("Menu") },
-                        selected = selectedTab == BottomTab.MENU,
-                        onClick = { selectedTab = BottomTab.MENU },
-                        colors = NavigationBarItemDefaults.colors(indicatorColor = BrandAccentLight, selectedIconColor = BrandPrimary, selectedTextColor = BrandPrimary)
-                    )
+                NavigationBar(containerColor = Surface, contentColor = TextSecondary, tonalElevation = 8.dp) {
+                    NavigationBarItem(icon = { Icon(Icons.Default.Home, "Beranda") }, label = { Text("Beranda") }, selected = selectedTab == BottomTab.BERANDA, onClick = { selectedTab = BottomTab.BERANDA }, colors = NavigationBarItemDefaults.colors(indicatorColor = BrandAccentLight, selectedIconColor = BrandPrimary, selectedTextColor = BrandPrimary))
+                    NavigationBarItem(icon = { Icon(Icons.Default.DateRange, "Kalender") }, label = { Text("Kalender") }, selected = selectedTab == BottomTab.KALENDER, onClick = { selectedTab = BottomTab.KALENDER }, colors = NavigationBarItemDefaults.colors(indicatorColor = BrandAccentLight, selectedIconColor = BrandPrimary, selectedTextColor = BrandPrimary))
+                    NavigationBarItem(icon = { Icon(Icons.Default.Info, "Pustaka") }, label = { Text("Pustaka") }, selected = selectedTab == BottomTab.PUSTAKA, onClick = { selectedTab = BottomTab.PUSTAKA }, colors = NavigationBarItemDefaults.colors(indicatorColor = BrandAccentLight, selectedIconColor = BrandPrimary, selectedTextColor = BrandPrimary))
+                    NavigationBarItem(icon = { Icon(Icons.Default.List, "Kegiatan") }, label = { Text("Kegiatan") }, selected = selectedTab == BottomTab.KEGIATAN, onClick = { selectedTab = BottomTab.KEGIATAN }, colors = NavigationBarItemDefaults.colors(indicatorColor = BrandAccentLight, selectedIconColor = BrandPrimary, selectedTextColor = BrandPrimary))
+                    NavigationBarItem(icon = { Icon(Icons.Default.Menu, "Menu") }, label = { Text("Menu") }, selected = selectedTab == BottomTab.MENU, onClick = { selectedTab = BottomTab.MENU }, colors = NavigationBarItemDefaults.colors(indicatorColor = BrandAccentLight, selectedIconColor = BrandPrimary, selectedTextColor = BrandPrimary))
                 }
             }
         ) { innerPadding ->

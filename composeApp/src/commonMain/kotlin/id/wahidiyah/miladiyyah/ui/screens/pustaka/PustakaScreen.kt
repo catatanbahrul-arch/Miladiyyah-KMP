@@ -28,11 +28,11 @@ fun PustakaScreen() {
     var lastUpdated by remember { mutableStateOf(AppCache.load("PUSTAKA_LAST_UPDATE") ?: "-") }
 
     Column(modifier = Modifier.fillMaxSize().background(Background)) {
-        Box(modifier = Modifier.fillMaxWidth().background(Surface).padding(horizontal = 20.dp, vertical = 16.dp)) {
+        Box(modifier = Modifier.fillMaxWidth().background(Surface).padding(horizontal = 24.dp, vertical = 20.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
-                    Text("Pustaka Jamaah", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                    Text("Update terakhir: $lastUpdated", color = TextSecondary, fontSize = 12.sp)
+                    Text("Pustaka Jamaah", color = TextPrimary, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                    Text("Sinkronisasi terakhir: $lastUpdated", color = TextSecondary, fontSize = 12.sp)
                 }
                 Button(
                     onClick = {
@@ -41,29 +41,23 @@ fun PustakaScreen() {
                             AppCache.save("PUSTAKA_LAST_UPDATE", currentDate); lastUpdated = currentDate; isUpdating = false
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = BrandAccentLight, contentColor = BrandPrimary),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandAccentLight, contentColor = BrandPrimary), shape = RoundedCornerShape(12.dp), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     if (isUpdating) { CircularProgressIndicator(modifier = Modifier.size(16.dp), color = BrandPrimary, strokeWidth = 2.dp) } else {
                         Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Sinkron", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
         }
         HorizontalDivider(color = Border)
 
-        Box(modifier = Modifier.fillMaxSize().padding(20.dp), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Box(modifier = Modifier.size(80.dp).clip(CircleShape).background(BrandAccentLight), contentAlignment = Alignment.Center) {
-                    Icon(Icons.Default.Info, contentDescription = null, tint = BrandPrimary, modifier = Modifier.size(40.dp))
-                }
-                Spacer(modifier = Modifier.height(20.dp))
-                Text("Pustaka Offline", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                Spacer(modifier = Modifier.height(8.dp))
-                Text("Kitab dan materi tersimpan di perangkat.\nTekan Sinkron jika ada penambahan materi dari pusat.", textAlign = TextAlign.Center, color = TextSecondary, fontSize = 14.sp, lineHeight = 22.sp)
+                Box(modifier = Modifier.size(80.dp).clip(CircleShape).background(BrandAccentLight), contentAlignment = Alignment.Center) { Icon(Icons.Default.Info, contentDescription = null, tint = BrandPrimary, modifier = Modifier.size(40.dp)) }
+                Spacer(modifier = Modifier.height(24.dp))
+                Text("Arsip Offline", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                Spacer(modifier = Modifier.height(12.dp))
+                Text("Materi Wahidiyah tersimpan di perangkat.\nTekan sinkron untuk memperbarui arsip dari pusat.", textAlign = TextAlign.Center, color = TextSecondary, fontSize = 14.sp, lineHeight = 24.sp)
             }
         }
     }

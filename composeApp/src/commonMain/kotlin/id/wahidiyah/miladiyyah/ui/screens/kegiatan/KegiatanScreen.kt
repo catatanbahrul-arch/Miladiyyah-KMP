@@ -38,52 +38,44 @@ fun KegiatanScreen() {
     }
 
     Column(modifier = Modifier.fillMaxSize().background(Background)) {
-        Box(modifier = Modifier.fillMaxWidth().background(Surface).padding(horizontal = 20.dp, vertical = 16.dp)) {
+        Box(modifier = Modifier.fillMaxWidth().background(Surface).padding(horizontal = 24.dp, vertical = 20.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
-                    Text("Kegiatan & Agenda", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                    Text("Agenda Kegiatan", color = TextPrimary, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                     Text("Informasi resmi Wahidiyah", color = TextSecondary, fontSize = 13.sp)
                 }
                 Button(
                     onClick = {
                         scope.launch {
-                            isUpdating = true
-                            try {
-                                val newData = withContext(Dispatchers.IO) { KegiatanOnlineService.fetchKegiatanFromGAS() }
-                                if (newData == kegiatanData) { toastMessage = "Data sudah versi terbaru." } else { AppCache.save("KEGIATAN_DATA", newData); kegiatanData = newData; toastMessage = "Kegiatan diperbarui." }
-                            } catch (e: Exception) { toastMessage = "Gagal terhubung." } finally { isUpdating = false }
+                            isUpdating = true; try { val newData = withContext(Dispatchers.IO) { KegiatanOnlineService.fetchKegiatanFromGAS() }; if (newData == kegiatanData) { toastMessage = "Data mutakhir." } else { AppCache.save("KEGIATAN_DATA", newData); kegiatanData = newData; toastMessage = "Diperbarui." } } catch (e: Exception) { toastMessage = "Gagal terhubung." } finally { isUpdating = false }
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = BrandAccentLight, contentColor = BrandPrimary),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                    colors = ButtonDefaults.buttonColors(containerColor = BrandAccentLight, contentColor = BrandPrimary), shape = RoundedCornerShape(12.dp), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
                 ) {
                     if (isUpdating) { CircularProgressIndicator(modifier = Modifier.size(16.dp), color = BrandPrimary, strokeWidth = 2.dp) } else {
                         Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Perbarui", fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
         }
         HorizontalDivider(color = Border)
-
         if (toastMessage != null) {
-            Card(colors = CardDefaults.cardColors(containerColor = BrandAccentLight), modifier = Modifier.fillMaxWidth().padding(16.dp)) { Text(toastMessage!!, color = BrandPrimaryDark, modifier = Modifier.padding(12.dp), fontSize = 13.sp, fontWeight = FontWeight.Medium) }
+            Card(colors = CardDefaults.cardColors(containerColor = BrandAccentLight), shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth().padding(24.dp)) { Text(toastMessage!!, color = BrandPrimaryDark, modifier = Modifier.padding(16.dp), fontSize = 13.sp, fontWeight = FontWeight.SemiBold) }
             LaunchedEffect(toastMessage) { kotlinx.coroutines.delay(3000L); toastMessage = null }
         }
 
-        Box(modifier = Modifier.fillMaxSize().padding(20.dp)) {
+        Box(modifier = Modifier.fillMaxSize().padding(24.dp)) {
             if (kegiatanData.contains("Belum ada agenda")) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.align(Alignment.Center)) {
-                    Box(modifier = Modifier.size(72.dp).clip(CircleShape).background(BrandAccentLight), contentAlignment = Alignment.Center) { Icon(Icons.Default.DateRange, contentDescription = null, tint = BrandPrimary, modifier = Modifier.size(32.dp)) }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text("Belum Ada Kegiatan", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-                    Text("Agenda resmi akan muncul di sini.", fontSize = 14.sp, color = TextSecondary)
+                    Box(modifier = Modifier.size(80.dp).clip(CircleShape).background(BrandAccentLight), contentAlignment = Alignment.Center) { Icon(Icons.Default.DateRange, contentDescription = null, tint = BrandPrimary, modifier = Modifier.size(36.dp)) }
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Text("Kosong", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("Belum ada jadwal kegiatan resmi.", fontSize = 14.sp, color = TextSecondary)
                 }
             } else {
-                Card(colors = CardDefaults.cardColors(containerColor = Surface), modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(1.dp), shape = RoundedCornerShape(12.dp)) {
-                    Column(modifier = Modifier.padding(16.dp)) { Text(kegiatanData, fontSize = 14.sp, color = TextSecondary, lineHeight = 22.sp) }
+                Card(colors = CardDefaults.cardColors(containerColor = Surface), modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(1.dp), shape = RoundedCornerShape(20.dp)) {
+                    Column(modifier = Modifier.padding(24.dp)) { Text(kegiatanData, fontSize = 14.sp, color = TextPrimary, lineHeight = 24.sp) }
                 }
             }
         }

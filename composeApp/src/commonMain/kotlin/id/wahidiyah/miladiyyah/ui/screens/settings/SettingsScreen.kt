@@ -32,45 +32,50 @@ fun SettingsScreen() {
     LaunchedEffect(Unit) { try { AlarmScheduler.scheduleAll(context) } catch (e: Exception) {} }
 
     Column(modifier = Modifier.fillMaxSize().background(Background).verticalScroll(scrollState)) {
-        Box(modifier = Modifier.fillMaxWidth().background(Surface).padding(horizontal = 20.dp, vertical = 16.dp)) {
+        Box(modifier = Modifier.fillMaxWidth().background(Surface).padding(horizontal = 24.dp, vertical = 20.dp)) {
             Column {
-                Text("Pengaturan & Menu", color = TextPrimary, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                Text("Personalisasi aplikasi Wahidiyah", color = TextSecondary, fontSize = 13.sp)
+                Text("Pengaturan", color = TextPrimary, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                Text("Personalisasi Wahidiyah", color = TextSecondary, fontSize = 13.sp)
             }
         }
         HorizontalDivider(color = Border)
 
-        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text("NOTIFIKASI", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMuted, letterSpacing = 1.sp)
-            Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Surface), elevation = CardDefaults.cardElevation(1.dp)) {
-                Column {
-                    SettingsItem(icon = Icons.Default.Notifications, title = "Adzan & Waktu Salat", subtitle = "Peringatan 10 menit & Suara Adzan", checked = adzanEnabled) { adzanEnabled = it }
-                    HorizontalDivider(color = Border.copy(alpha = 0.5f), modifier = Modifier.padding(start = 56.dp))
-                    SettingsItem(icon = Icons.Default.Notifications, title = "Pengingat Tarhim", subtitle = "Setiap hari sebelum Subuh", checked = tarhimEnabled) { tarhimEnabled = it }
+        Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(24.dp)) {
+            Column {
+                Text("ALARM SALAT", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = BrandPrimary, letterSpacing = 1.sp, modifier = Modifier.padding(bottom = 12.dp, start = 4.dp))
+                Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Surface), elevation = CardDefaults.cardElevation(1.dp)) {
+                    Column {
+                        SettingsItem(icon = Icons.Default.Notifications, title = "Adzan & Waktu Salat", subtitle = "Peringatan otomatis", checked = adzanEnabled) { adzanEnabled = it }
+                        HorizontalDivider(color = Background, modifier = Modifier.padding(start = 64.dp), thickness = 1.5.dp)
+                        SettingsItem(icon = Icons.Default.Notifications, title = "Pengingat Tarhim", subtitle = "Sebelum masuk waktu Subuh", checked = tarhimEnabled) { tarhimEnabled = it }
+                    }
                 }
             }
 
-            Text("PENGINGAT KHUSUS", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMuted, letterSpacing = 1.sp, modifier = Modifier.padding(top = 8.dp))
-            Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Surface), elevation = CardDefaults.cardElevation(1.dp)) {
-                Column {
-                    SettingsItem(icon = Icons.Default.Info, title = "Pengingat Syafa'an", subtitle = "Setiap jam 03:00 pagi", checked = tasyafuanEnabled) { tasyafuanEnabled = it }
-                    HorizontalDivider(color = Border.copy(alpha = 0.5f), modifier = Modifier.padding(start = 56.dp))
-                    SettingsItem(icon = Icons.Default.Favorite, title = "Pengingat Dana Box", subtitle = "Setiap jam 06:00 & 19:00", checked = danaBoxEnabled) { danaBoxEnabled = it }
+            Column {
+                Text("PENGINGAT KHUSUS", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = BrandPrimary, letterSpacing = 1.sp, modifier = Modifier.padding(bottom = 12.dp, start = 4.dp))
+                Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Surface), elevation = CardDefaults.cardElevation(1.dp)) {
+                    Column {
+                        SettingsItem(icon = Icons.Default.Info, title = "Pengingat Syafa'an", subtitle = "Pukul 03:00 pagi", checked = tasyafuanEnabled) { tasyafuanEnabled = it }
+                        HorizontalDivider(color = Background, modifier = Modifier.padding(start = 64.dp), thickness = 1.5.dp)
+                        SettingsItem(icon = Icons.Default.Favorite, title = "Pengingat Dana Box", subtitle = "Pukul 06:00 & 19:00", checked = danaBoxEnabled) { danaBoxEnabled = it }
+                    }
                 }
             }
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(40.dp))
         }
     }
 }
 
 @Composable
 fun SettingsItem(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, subtitle: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
-    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-        Icon(icon, contentDescription = null, tint = BrandPrimary, modifier = Modifier.size(24.dp))
+    Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 20.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(modifier = Modifier.size(40.dp).clip(CircleShape).background(BrandAccentLight), contentAlignment = Alignment.Center) { Icon(icon, contentDescription = null, tint = BrandPrimary, modifier = Modifier.size(20.dp)) }
         Spacer(modifier = Modifier.width(16.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
-            Text(subtitle, fontSize = 12.sp, color = TextSecondary)
+            Text(title, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(subtitle, fontSize = 13.sp, color = TextSecondary)
         }
         Switch(checked = checked, onCheckedChange = onCheckedChange, colors = SwitchDefaults.colors(checkedTrackColor = BrandPrimary, checkedThumbColor = Surface))
     }
