@@ -21,6 +21,7 @@ class MainActivity : ComponentActivity() {
             e.printStackTrace()
         }
 
+        try { id.wahidiyah.miladiyyah.alarm.AlarmScheduler.scheduleAll(this) } catch (e: Exception) {}
         setContent { App() }
     }
 }
