@@ -28,7 +28,6 @@ fun DateDetailScreen(day: CalendarDay, onBack: () -> Unit) {
             IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, "Kembali") }
             Text("Detail Tanggal", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = DeepForestGreen)
         }
-        
         Card(
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -51,7 +50,6 @@ fun DateDetailScreen(day: CalendarDay, onBack: () -> Unit) {
                 }
             }
         }
-        
         EmptyStateCard("Jadwal Salat belum disinkronkan.")
         EmptyStateCard("Tidak ada kegiatan pada tanggal ini.")
     }
