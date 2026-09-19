@@ -4,9 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.NightlightRound
-import androidx.compose.material.icons.filled.NotificationsActive
-import androidx.compose.material.icons.filled.VolunteerActivism
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,7 +19,6 @@ import id.wahidiyah.miladiyyah.theme.*
 
 @Composable
 fun SettingsScreen() {
-    // AUTO-ON: Semua notifikasi secara default bernilai 'true' (Aktif) saat aplikasi pertama kali diinstal
     var adzanEnabled by remember { mutableStateOf(true) }
     var imsakEnabled by remember { mutableStateOf(true) }
     var danaBoxEnabled by remember { mutableStateOf(true) }
@@ -43,22 +42,18 @@ fun SettingsScreen() {
             ) {
                 Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                        Icon(Icons.Default.NotificationsActive, contentDescription = null, tint = DeepForestGreen, modifier = Modifier.size(24.dp))
+                        Icon(Icons.Default.Notifications, contentDescription = null, tint = DeepForestGreen, modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text("Pengingat Waktu Salat", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                             Text("Notifikasi 10 menit sebelum adzan", fontSize = 11.sp, color = TextSecondary, lineHeight = 16.sp)
                         }
                     }
-                    Switch(
-                        checked = adzanEnabled, 
-                        onCheckedChange = { adzanEnabled = it },
-                        colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = DeepForestGreen)
-                    )
+                    Switch(checked = adzanEnabled, onCheckedChange = { adzanEnabled = it }, colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = DeepForestGreen))
                 }
             }
 
-            // 2. PENGINGAT IMSAK (KHUSUS RAMADHAN)
+            // 2. PENGINGAT IMSAK
             Card(
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -66,18 +61,14 @@ fun SettingsScreen() {
             ) {
                 Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                        Icon(Icons.Default.NightlightRound, contentDescription = null, tint = DeepForestGreen, modifier = Modifier.size(24.dp))
+                        Icon(Icons.Default.Warning, contentDescription = null, tint = DeepForestGreen, modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text("Pengingat Imsak & Tarhim", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                             Text("Otomatis aktif hanya di bulan Ramadhan", fontSize = 11.sp, color = TextSecondary, lineHeight = 16.sp)
                         }
                     }
-                    Switch(
-                        checked = imsakEnabled, 
-                        onCheckedChange = { imsakEnabled = it },
-                        colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = DeepForestGreen)
-                    )
+                    Switch(checked = imsakEnabled, onCheckedChange = { imsakEnabled = it }, colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = DeepForestGreen))
                 }
             }
 
@@ -89,18 +80,14 @@ fun SettingsScreen() {
             ) {
                 Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                        Icon(Icons.Default.VolunteerActivism, contentDescription = null, tint = DeepForestGreen, modifier = Modifier.size(24.dp))
+                        Icon(Icons.Default.Info, contentDescription = null, tint = DeepForestGreen, modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(12.dp))
                         Column {
                             Text("Pengingat Dana Box", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                             Text("Pagi (06:00) & Malam (19:00)", fontSize = 11.sp, color = TextSecondary, lineHeight = 16.sp)
                         }
                     }
-                    Switch(
-                        checked = danaBoxEnabled, 
-                        onCheckedChange = { danaBoxEnabled = it },
-                        colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = DeepForestGreen)
-                    )
+                    Switch(checked = danaBoxEnabled, onCheckedChange = { danaBoxEnabled = it }, colors = SwitchDefaults.colors(checkedThumbColor = Color.White, checkedTrackColor = DeepForestGreen))
                 }
             }
             
