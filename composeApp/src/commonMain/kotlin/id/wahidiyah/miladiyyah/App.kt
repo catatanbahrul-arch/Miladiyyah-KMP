@@ -14,9 +14,10 @@ import id.wahidiyah.miladiyyah.theme.MiladiyyahTheme
 import id.wahidiyah.miladiyyah.ui.screens.home.HomeScreen
 import id.wahidiyah.miladiyyah.ui.screens.calendar.CalendarScreen
 import id.wahidiyah.miladiyyah.ui.screens.kegiatan.KegiatanScreen
+import id.wahidiyah.miladiyyah.ui.screens.pustaka.PustakaScreen
 import kotlinx.coroutines.launch
 
-enum class BottomTab { BERANDA, KALENDER, SALAT, KEGIATAN, MENU }
+enum class BottomTab { BERANDA, KALENDER, PUSTAKA, KEGIATAN, MENU }
 
 const val GAS_API_URL = "https://script.google.com/macros/s/AKfycbyuM5B2TNnOvlJKIDeQCiec8-Q-jI0vDOv--n4xiLEu38hykX4wniweG4Jm5mE1H9Ew/exec"
 
@@ -54,7 +55,7 @@ fun App() {
                 NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
                     NavigationBarItem(icon = { Icon(Icons.Default.Home, "") }, label = { Text("Beranda") }, selected = selectedTab == BottomTab.BERANDA, onClick = { selectedTab = BottomTab.BERANDA })
                     NavigationBarItem(icon = { Icon(Icons.Default.DateRange, "") }, label = { Text("Kalender") }, selected = selectedTab == BottomTab.KALENDER, onClick = { selectedTab = BottomTab.KALENDER })
-                    NavigationBarItem(icon = { Icon(Icons.Default.Notifications, "") }, label = { Text("Salat") }, selected = selectedTab == BottomTab.SALAT, onClick = { selectedTab = BottomTab.SALAT })
+                    NavigationBarItem(icon = { Icon(Icons.Default.Book, "") }, label = { Text("Pustaka") }, selected = selectedTab == BottomTab.PUSTAKA, onClick = { selectedTab = BottomTab.PUSTAKA })
                     NavigationBarItem(icon = { Icon(Icons.Default.List, "") }, label = { Text("Kegiatan") }, selected = selectedTab == BottomTab.KEGIATAN, onClick = { selectedTab = BottomTab.KEGIATAN })
                     NavigationBarItem(icon = { Icon(Icons.Default.Menu, "") }, label = { Text("Menu") }, selected = selectedTab == BottomTab.MENU, onClick = { selectedTab = BottomTab.MENU })
                 }
@@ -64,6 +65,7 @@ fun App() {
                 when (selectedTab) {
                     BottomTab.BERANDA -> HomeScreen()
                     BottomTab.KALENDER -> CalendarScreen(calendarEngine)
+                    BottomTab.PUSTAKA -> PustakaScreen()
                     BottomTab.KEGIATAN -> KegiatanScreen()
                     else -> Box {}
                 }
