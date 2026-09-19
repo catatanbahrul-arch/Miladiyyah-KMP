@@ -1,19 +1,11 @@
 package id.wahidiyah.miladiyyah
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import id.wahidiyah.miladiyyah.core.data.source.remote.CalendarNetworkService
-import id.wahidiyah.miladiyyah.core.domain.calendar.engine.CalendarEngine
-import id.wahidiyah.miladiyyah.core.domain.calendar.engine.HijriAdjuster
 import id.wahidiyah.miladiyyah.theme.MiladiyyahTheme
 import id.wahidiyah.miladiyyah.ui.screens.home.HomeScreen
 import id.wahidiyah.miladiyyah.ui.screens.calendar.CalendarScreen
@@ -21,31 +13,13 @@ import id.wahidiyah.miladiyyah.ui.screens.kegiatan.KegiatanScreen
 import id.wahidiyah.miladiyyah.ui.screens.pustaka.PustakaScreen
 import id.wahidiyah.miladiyyah.ui.screens.settings.SettingsScreen
 import id.wahidiyah.miladiyyah.ui.screens.kiblat.QiblaScreen
-import kotlinx.coroutines.launch
 
 enum class BottomTab { BERANDA, KALENDER, PUSTAKA, KEGIATAN, MENU, KIBLAT }
 
-const val GAS_API_URL = "https://script.google.com/macros/s/AKfycbyuM5B2TNnOvlJKIDeQCiec8-Q-jI0vDOv--n4xiLEu38hykX4wniweG4Jm5mE1H9Ew/exec"
-
 @Composable
-fun App() {
+fun App(onUpdateLocation: () -> Unit = {}) {
     var selectedTab by remember { mutableStateOf(BottomTab.BERANDA) }
-    val calendarEngine = remember { CalendarEngine() }
-    val scope = rememberCoroutineScope()
-    val networkService = remember { CalendarNetworkService() }
-
-    val syncCalendarData = {
-        scope.launch {
-            try {
-                val adjustments = networkService.fetchCascadeAdjustments(GAS_API_URL)
-                HijriAdjuster.updateAdjustments(adjustments)
-            } catch (e: Exception) { }
-        }
-    }
-
-    LaunchedEffect(Unit) { syncCalendarData() }
-    LaunchedEffect(selectedTab) { if (selectedTab == BottomTab.KALENDER) syncCalendarData() }
-
+    
     MiladiyyahTheme {
         Scaffold(
             bottomBar = {
@@ -60,8 +34,11 @@ fun App() {
         ) { innerPadding ->
             Surface(modifier = Modifier.padding(innerPadding)) {
                 when (selectedTab) {
-                    BottomTab.BERANDA -> HomeScreen(onNavigateToKiblat = { selectedTab = BottomTab.KIBLAT })
-                    BottomTab.KALENDER -> CalendarScreen(calendarEngine)
+                    BottomTab.BERANDA -> HomeScreen(
+                        onNavigateToKiblat = { selectedTab = BottomTab.KIBLAT },
+                        onUpdateLocation = onUpdateLocation
+                    )
+                    BottomTab.KALENDER -> CalendarScreen(id.wahidiyah.miladiyyah.core.domain.calendar.engine.CalendarEngine())
                     BottomTab.PUSTAKA -> PustakaScreen()
                     BottomTab.KEGIATAN -> KegiatanScreen()
                     BottomTab.MENU -> SettingsScreen()
