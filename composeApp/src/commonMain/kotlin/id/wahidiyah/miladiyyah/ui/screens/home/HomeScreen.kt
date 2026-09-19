@@ -9,7 +9,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Schedule
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -56,7 +56,6 @@ fun HomeScreen() {
 
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
             
-            // KARTU PENGUMUMAN PENTING (Mendominasi di bagian atas jika ada)
             if (pengumuman != null && (!pengumuman!!.title.isEmpty() || !pengumuman!!.content.isEmpty())) {
                 Card(
                     shape = RoundedCornerShape(12.dp),
@@ -112,7 +111,6 @@ fun HomeScreen() {
                 }
             }
 
-            // PREVIEW WAKTU & INFORMASI UTAMA (Tampil elegan di bawah pengumuman atau mendominasi jika pengumuman kosong)
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Card(
                     shape = RoundedCornerShape(12.dp),
@@ -136,7 +134,7 @@ fun HomeScreen() {
                     modifier = Modifier.weight(1f)
                 ) {
                     Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(Icons.Default.Schedule, contentDescription = null, tint = DeepForestGreen, modifier = Modifier.size(24.dp))
+                        Icon(Icons.Default.List, contentDescription = null, tint = DeepForestGreen, modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.height(8.dp))
                         Text("Jadwal Kegiatan", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = DeepForestGreen)
                         Spacer(modifier = Modifier.height(4.dp))
