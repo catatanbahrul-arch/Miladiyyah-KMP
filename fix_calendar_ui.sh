@@ -1,3 +1,8 @@
+#!/bin/bash
+
+echo "🎨 Menyelaraskan UI Kalender agar 100% presisi dengan desain referensi..."
+
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/calendar/CalendarScreen.kt
 package id.wahidiyah.miladiyyah.ui.screens.calendar
 
 import androidx.compose.foundation.BorderStroke
@@ -220,3 +225,7 @@ fun LegendItem(color: Color, label: String) {
         Text(label, fontSize = 10.sp, color = TextSecondary)
     }
 }
+EOF
+
+echo "✅ UI Kalender telah disinkronisasi persis dengan master desain!"
+EOF
