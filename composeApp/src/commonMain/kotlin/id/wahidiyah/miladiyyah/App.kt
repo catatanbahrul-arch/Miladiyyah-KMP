@@ -19,6 +19,7 @@ import id.wahidiyah.miladiyyah.ui.screens.home.HomeScreen
 import id.wahidiyah.miladiyyah.ui.screens.calendar.CalendarScreen
 import id.wahidiyah.miladiyyah.ui.screens.kegiatan.KegiatanScreen
 import id.wahidiyah.miladiyyah.ui.screens.pustaka.PustakaScreen
+import id.wahidiyah.miladiyyah.ui.screens.settings.SettingsScreen
 import kotlinx.coroutines.launch
 
 enum class BottomTab { BERANDA, KALENDER, PUSTAKA, KEGIATAN, MENU }
@@ -61,7 +62,7 @@ fun App() {
                     NavigationBarItem(icon = { Icon(Icons.Default.DateRange, "") }, label = { Text("Kalender") }, selected = selectedTab == BottomTab.KALENDER, onClick = { selectedTab = BottomTab.KALENDER })
                     NavigationBarItem(icon = { Icon(Icons.Default.Info, "") }, label = { Text("Pustaka") }, selected = selectedTab == BottomTab.PUSTAKA, onClick = { selectedTab = BottomTab.PUSTAKA })
                     NavigationBarItem(icon = { Icon(Icons.Default.List, "") }, label = { Text("Kegiatan") }, selected = selectedTab == BottomTab.KEGIATAN, onClick = { selectedTab = BottomTab.KEGIATAN })
-                    NavigationBarItem(icon = { Icon(Icons.Default.Menu, "") }, label = { Text("Menu") }, selected = selectedTab == BottomTab.MENU, onClick = { selectedTab = BottomTab.MENU })
+                    NavigationBarItem(icon = { Icon(Icons.Default.Menu, "") }, label = { Text("Pengaturan") }, selected = selectedTab == BottomTab.MENU, onClick = { selectedTab = BottomTab.MENU })
                 }
             }
         ) { innerPadding ->
@@ -71,7 +72,7 @@ fun App() {
                     BottomTab.KALENDER -> CalendarScreen(calendarEngine)
                     BottomTab.PUSTAKA -> PustakaScreen()
                     BottomTab.KEGIATAN -> KegiatanScreen()
-                    else -> Box {}
+                    BottomTab.MENU -> SettingsScreen()
                 }
             }
         }
