@@ -36,7 +36,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(onNavigateToKiblat: () -> Unit = {}) {
     val scrollState = rememberScrollState()
     var pengumuman by remember { mutableStateOf<PengumumanData?>(null) }
     val scope = rememberCoroutineScope()

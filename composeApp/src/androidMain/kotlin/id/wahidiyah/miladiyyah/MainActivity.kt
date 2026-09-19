@@ -16,28 +16,29 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // 1. Minta Izin Notifikasi Pop-up (Khusus Android 13+)
+        // Minta Izin GPS & Notifikasi saat aplikasi pertama dibuka
+        val permissions = mutableListOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 101)
-            }
+            permissions.add(Manifest.permission.POST_NOTIFICATIONS)
         }
         
-        // 2. Minta Izin Alarm Tepat Waktu (Khusus Android 12+)
+        val missingPermissions = permissions.filter { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED }
+        if (missingPermissions.isNotEmpty()) {
+            requestPermissions(missingPermissions.toTypedArray(), 101)
+        }
+        
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
             if (!alarmManager.canScheduleExactAlarms()) {
-                // Akan langsung melempar Anda ke halaman Pengaturan HP untuk mengaktifkan izin "Alarm & Pengingat"
-                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                startActivity(intent)
+                startActivity(Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM))
             }
         }
 
-        // Colokkan kabel Alarm agar mendaftar setiap aplikasi dibuka
         AlarmScheduler.scheduleAll(this)
 
-        setContent {
-            App()
-        }
+        setContent { App() }
     }
 }

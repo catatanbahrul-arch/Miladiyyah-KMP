@@ -20,9 +20,10 @@ import id.wahidiyah.miladiyyah.ui.screens.calendar.CalendarScreen
 import id.wahidiyah.miladiyyah.ui.screens.kegiatan.KegiatanScreen
 import id.wahidiyah.miladiyyah.ui.screens.pustaka.PustakaScreen
 import id.wahidiyah.miladiyyah.ui.screens.settings.SettingsScreen
+import id.wahidiyah.miladiyyah.ui.screens.kiblat.QiblaScreen
 import kotlinx.coroutines.launch
 
-enum class BottomTab { BERANDA, KALENDER, PUSTAKA, KEGIATAN, MENU }
+enum class BottomTab { BERANDA, KALENDER, PUSTAKA, KEGIATAN, MENU, KIBLAT }
 
 const val GAS_API_URL = "https://script.google.com/macros/s/AKfycbyuM5B2TNnOvlJKIDeQCiec8-Q-jI0vDOv--n4xiLEu38hykX4wniweG4Jm5mE1H9Ew/exec"
 
@@ -38,21 +39,12 @@ fun App() {
             try {
                 val adjustments = networkService.fetchCascadeAdjustments(GAS_API_URL)
                 HijriAdjuster.updateAdjustments(adjustments)
-            } catch (e: Exception) {
-                println("Gagal memuat sinkronisasi kalender: ${e.message}")
-            }
+            } catch (e: Exception) { }
         }
     }
 
-    LaunchedEffect(Unit) {
-        syncCalendarData()
-    }
-
-    LaunchedEffect(selectedTab) {
-        if (selectedTab == BottomTab.KALENDER) {
-            syncCalendarData()
-        }
-    }
+    LaunchedEffect(Unit) { syncCalendarData() }
+    LaunchedEffect(selectedTab) { if (selectedTab == BottomTab.KALENDER) syncCalendarData() }
 
     MiladiyyahTheme {
         Scaffold(
@@ -68,11 +60,12 @@ fun App() {
         ) { innerPadding ->
             Surface(modifier = Modifier.padding(innerPadding)) {
                 when (selectedTab) {
-                    BottomTab.BERANDA -> HomeScreen()
+                    BottomTab.BERANDA -> HomeScreen(onNavigateToKiblat = { selectedTab = BottomTab.KIBLAT })
                     BottomTab.KALENDER -> CalendarScreen(calendarEngine)
                     BottomTab.PUSTAKA -> PustakaScreen()
                     BottomTab.KEGIATAN -> KegiatanScreen()
                     BottomTab.MENU -> SettingsScreen()
+                    BottomTab.KIBLAT -> QiblaScreen()
                 }
             }
         }
