@@ -1,3 +1,38 @@
+#!/bin/bash
+
+echo "🚀 Mengubah Sinkronisasi menjadi Reaktif (StateFlow)..."
+
+# 1. UPDATE HIJRI ADJUSTER MENJADI STATE FLOW
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/core/domain/calendar/engine/HijriAdjuster.kt
+package id.wahidiyah.miladiyyah.core.domain.calendar.engine
+
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.datetime.LocalDate
+
+object HijriAdjuster {
+    
+    // Gunakan StateFlow agar UI Compose tahu saat data baru dari internet selesai diunduh
+    private val _adjustmentsFlow = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val adjustmentsFlow: StateFlow<Map<String, Int>> = _adjustmentsFlow.asStateFlow()
+
+    fun updateAdjustments(newAdjustments: Map<String, Int>) {
+        if (newAdjustments.isNotEmpty()) {
+            _adjustmentsFlow.value = newAdjustments
+        }
+    }
+
+    fun getOffset(date: LocalDate): Int {
+        val monthString = date.monthNumber.toString().padStart(2, '0')
+        val key = "${date.year}-${monthString}"
+        return _adjustmentsFlow.value[key] ?: 0
+    }
+}
+EOF
+
+# 2. UPDATE CALENDAR SCREEN AGAR MENG-OBSERVE STATE FLOW
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/calendar/CalendarScreen.kt
 package id.wahidiyah.miladiyyah.ui.screens.calendar
 
 import androidx.compose.foundation.BorderStroke
@@ -216,3 +251,7 @@ fun CalendarScreen(engine: CalendarEngine) {
         }
     }
 }
+EOF
+
+echo "✅ File selesai ditimpa secara presisi dengan State Reaktif!"
+EOF
