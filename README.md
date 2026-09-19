@@ -27,3 +27,4 @@ Setiap penambahan *library* harus mematuhi aturan:
 
 ---
 *Proyek ini dibangun secara modular sejak awal untuk memastikan skalabilitas dan performa tinggi di ekosistem Android dan Apple.*
+
