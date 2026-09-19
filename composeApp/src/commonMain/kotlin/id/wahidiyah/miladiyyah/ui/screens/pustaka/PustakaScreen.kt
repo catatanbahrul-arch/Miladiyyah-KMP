@@ -21,6 +21,8 @@ import id.wahidiyah.miladiyyah.core.data.source.remote.PustakaRepository
 import id.wahidiyah.miladiyyah.theme.*
 import kotlinx.coroutines.launch
 
+expect fun openUrl(url: String)
+
 @Composable
 fun PustakaScreen() {
     var pustakaList by remember { mutableStateOf<List<PustakaItem>>(emptyList()) }
@@ -89,7 +91,9 @@ fun PustakaScreen() {
                             if (item.link.isNotEmpty()) {
                                 Spacer(modifier = Modifier.height(14.dp))
                                 Button(
-                                    onClick = { /* Aksi buka link file */ },
+                                    onClick = { 
+                                        openUrl(item.link)
+                                    },
                                     colors = ButtonDefaults.buttonColors(containerColor = DeepForestGreen),
                                     shape = RoundedCornerShape(8.dp),
                                     modifier = Modifier.fillMaxWidth()
