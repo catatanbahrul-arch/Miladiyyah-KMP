@@ -1,17 +1,21 @@
 package id.wahidiyah.miladiyyah.theme
+
 import androidx.compose.ui.graphics.Color
 
-val BrandPrimary = Color(0xFF1B5E20)       // Hijau Tua Wahidiyah
-val BrandPrimaryDark = Color(0xFF003300)   // Hijau Gelap
-val BrandAccent = Color(0xFF4CAF50)        // Hijau Terang Aksentuasi
-val BrandAccentLight = Color(0xFFE8F5E9)   // Hijau Sangat Terang (Highlight/Latar Card)
-val Background = Color(0xFFF8F9FA)         // Abu-abu terang bersih
+// Palette diekstrak dari Logo Wahidiyah Resmi
+val BrandPrimaryDark = Color(0xFF0A2314)   // Hijau Sangat Tua (Dasar W)
+val BrandPrimary = Color(0xFF1C5B2D)       // Hijau Daun (Warna Utama Logo)
+val BrandAccent = Color(0xFF73C34F)        // Hijau Lime (Aksen Daun Terang)
+val BrandAccentLight = Color(0xFFEBF5E6)   // Hijau Sangat Pudar (Background Card/Icon)
+
+// Neutral Tokens (Elegan & Bersih)
+val Background = Color(0xFFF9FBF9)         // Off-white dengan hint hijau sangat tipis
 val Surface = Color(0xFFFFFFFF)            // Putih Murni
-val Border = Color(0xFFE0E0E0)             // Garis Batas Halus
-val TextPrimary = Color(0xFF1E201E)        // Hitam lembut
-val TextSecondary = Color(0xFF535753)      // Abu-abu gelap
-val TextMuted = Color(0xFF9E9E9E)          // Abu-abu terang (Placeholder)
-val Error = Color(0xFFD32F2F)              // Merah elegan
-val ErrorSurface = Color(0xFFFFEBEE)
-val Success = Color(0xFF388E3C)
-val Warning = Color(0xFFF57F17)
+val Border = Color(0xFFE6EBE6)             // Abu-abu hijau halus
+val TextPrimary = Color(0xFF111A13)        // Hitam pekat elegan
+val TextSecondary = Color(0xFF5A665D)      // Abu-abu gelap (untuk subtitle)
+val TextMuted = Color(0xFF9EAA9F)          // Abu-abu terang
+
+// Status Tokens
+val Error = Color(0xFFC62828)
+val Success = Color(0xFF2E7D32)

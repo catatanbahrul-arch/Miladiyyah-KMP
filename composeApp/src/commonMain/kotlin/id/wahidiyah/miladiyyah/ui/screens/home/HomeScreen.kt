@@ -27,100 +27,87 @@ import kotlinx.datetime.*
 @Composable
 fun HomeScreen(onNavigateToKiblat: () -> Unit = {}, onUpdateLocation: () -> Unit = {}) {
     val scrollState = rememberScrollState()
-    val calendarEngine = remember { CalendarEngine() }
     val tz = TimeZone.currentSystemDefault()
     var currentDateTime by remember { mutableStateOf(Clock.System.now().toLocalDateTime(tz)) }
-
-    LaunchedEffect(Unit) {
-        while(true) { currentDateTime = Clock.System.now().toLocalDateTime(tz); delay(1000L) }
-    }
+    LaunchedEffect(Unit) { while(true) { currentDateTime = Clock.System.now().toLocalDateTime(tz); delay(1000L) } }
 
     var dayOffset by remember { mutableStateOf(0) }
     val targetDate = Clock.System.todayIn(tz).plus(dayOffset, DateTimeUnit.DAY)
+    val prayers = try { PrayerTimeEngine.getPrayers(targetDate) } catch(e:Exception) { emptyList() }
+    val nextPrayer = try { PrayerTimeEngine.getNextPrayer(currentDateTime.time) } catch(e:Exception) { null }
     val monthNames = listOf("", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember")
     val dayNames = listOf("Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Ahad")
     
-    val dateString = "${dayNames[targetDate.dayOfWeek.ordinal]}, ${targetDate.dayOfMonth} ${monthNames[targetDate.monthNumber]} ${targetDate.year}"
-    val todayHijriBase = remember { calendarEngine.getToday().hijri }
-    val tempHijriDay = todayHijriBase.day + dayOffset
-    val hijriDay = when { tempHijriDay > 30 -> tempHijriDay % 30; tempHijriDay <= 0 -> 30 + (tempHijriDay % 30); else -> tempHijriDay }
-    val hijriMonthNames = listOf("", "Muharram", "Safar", "Rabiul Awal", "Rabiul Akhir", "Jumadil Awal", "Jumadil Akhir", "Rajab", "Syaban", "Ramadhan", "Syawal", "Dzulqaidah", "Dzulhijjah")
-    val hijriString = "$hijriDay ${hijriMonthNames[todayHijriBase.month]} ${todayHijriBase.year} H"
-
-    val prayers = try { PrayerTimeEngine.getPrayers(targetDate) } catch(e:Exception) { emptyList() }
-    val nextPrayer = try { PrayerTimeEngine.getNextPrayer(currentDateTime.time) } catch(e:Exception) { null }
-    val diffSeconds = if (nextPrayer != null) { val nextSec = nextPrayer.time.hour * 3600 + nextPrayer.time.minute * 60; val curSec = currentDateTime.time.hour * 3600 + currentDateTime.time.minute * 60 + currentDateTime.time.second; if (nextSec >= curSec) nextSec - curSec else (nextSec + 86400) - curSec } else 0
-    val h = diffSeconds / 3600; val m = (diffSeconds % 3600) / 60; val s = diffSeconds % 60
-    val countdownStr = "- ${h.toString().padStart(2,'0')} : ${m.toString().padStart(2,'0')} : ${s.toString().padStart(2,'0')}"
+    val hijriBase = CalendarEngine().getToday().hijri
+    val tempDay = hijriBase.day + dayOffset
+    val hDay = when { tempDay > 30 -> tempDay % 30; tempDay <= 0 -> 30 + (tempDay % 30); else -> tempDay }
+    val hMonthNames = listOf("", "Muharram", "Safar", "Rabiul Awal", "Rabiul Akhir", "Jumadil Awal", "Jumadil Akhir", "Rajab", "Syaban", "Ramadhan", "Syawal", "Dzulqaidah", "Dzulhijjah")
 
     Column(modifier = Modifier.fillMaxSize().background(Background).verticalScroll(scrollState)) {
-        // App Identity Header
-        Box(modifier = Modifier.fillMaxWidth().background(BrandPrimary, shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)).padding(top = 24.dp, bottom = 48.dp, start = 24.dp, end = 24.dp)) {
+        // Hero Header Wahidiyah
+        Box(modifier = Modifier.fillMaxWidth().background(BrandPrimaryDark, shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)).padding(top = 28.dp, bottom = 48.dp, start = 24.dp, end = 24.dp)) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Text("WAHIDIYAH", color = Surface, fontSize = 18.sp, letterSpacing = 3.sp, fontWeight = FontWeight.Bold)
-                    Row(modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable { onUpdateLocation() }.padding(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(Icons.Default.LocationOn, contentDescription = null, tint = BrandAccentLight, modifier = Modifier.size(14.dp))
-                        Spacer(modifier = Modifier.width(4.dp))
+                    Text("WAHIDIYAH", color = Surface, fontSize = 16.sp, letterSpacing = 4.sp, fontWeight = FontWeight.Bold)
+                    Row(modifier = Modifier.clip(RoundedCornerShape(12.dp)).clickable { onUpdateLocation() }.background(BrandPrimary).padding(horizontal = 12.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.LocationOn, contentDescription = null, tint = BrandAccent, modifier = Modifier.size(14.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(PrayerTimeEngine.locationName, color = Surface, fontSize = 12.sp, fontWeight = FontWeight.Medium)
                     }
                 }
-                Spacer(modifier = Modifier.height(40.dp))
+                Spacer(modifier = Modifier.height(48.dp))
                 if (nextPrayer != null) {
-                    val timeStr = "${nextPrayer.time.hour.toString().padStart(2,'0')}:${nextPrayer.time.minute.toString().padStart(2,'0')}"
-                    Text(nextPrayer.type.title.uppercase(), color = BrandAccentLight, fontSize = 13.sp, letterSpacing = 4.sp, fontWeight = FontWeight.SemiBold)
+                    val diff = (nextPrayer.time.hour * 3600 + nextPrayer.time.minute * 60) - (currentDateTime.time.hour * 3600 + currentDateTime.time.minute * 60 + currentDateTime.time.second)
+                    val dSecs = if(diff >= 0) diff else diff + 86400
+                    Text(nextPrayer.type.title.uppercase(), color = BrandAccent, fontSize = 14.sp, letterSpacing = 6.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(timeStr, color = Surface, fontSize = 56.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                    Text("${nextPrayer.time.hour.toString().padStart(2,'0')}:${nextPrayer.time.minute.toString().padStart(2,'0')}", color = Surface, fontSize = 64.sp, fontWeight = FontWeight.Light, letterSpacing = 2.sp)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(countdownStr, color = Surface.copy(alpha = 0.8f), fontSize = 15.sp, fontWeight = FontWeight.Medium, letterSpacing = 1.sp)
+                    Text("- ${dSecs/3600}:${((dSecs%3600)/60).toString().padStart(2,'0')}:${(dSecs%60).toString().padStart(2,'0')}", color = Surface.copy(alpha=0.7f), fontSize = 16.sp, fontWeight = FontWeight.Medium, letterSpacing = 2.sp)
                 }
             }
         }
 
-        // Elegant Date Navigator
-        Box(modifier = Modifier.fillMaxWidth().offset(y = (-32).dp).padding(horizontal = 20.dp)) {
-            Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Surface), elevation = CardDefaults.cardElevation(4.dp), modifier = Modifier.fillMaxWidth()) {
-                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 20.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        // Floating Date Navigator
+        Box(modifier = Modifier.fillMaxWidth().offset(y = (-32).dp).padding(horizontal = 24.dp)) {
+            Card(shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = Surface), elevation = CardDefaults.cardElevation(2.dp), modifier = Modifier.fillMaxWidth()) {
+                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 24.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Box(modifier = Modifier.clip(CircleShape).clickable { dayOffset -= 1 }.padding(12.dp)) { Icon(Icons.Default.KeyboardArrowLeft, contentDescription = null, tint = BrandPrimary) }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(dateString, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                        Text("${dayNames[targetDate.dayOfWeek.ordinal]}, ${targetDate.dayOfMonth} ${monthNames[targetDate.monthNumber]}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(hijriString, fontSize = 13.sp, color = BrandPrimary, fontWeight = FontWeight.SemiBold)
+                        Text("$hDay ${hMonthNames[hijriBase.month]} ${hijriBase.year} H", fontSize = 13.sp, color = BrandPrimary, fontWeight = FontWeight.SemiBold)
                     }
                     Box(modifier = Modifier.clip(CircleShape).clickable { dayOffset += 1 }.padding(12.dp)) { Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = BrandPrimary) }
                 }
             }
         }
 
-        // Qibla Shortcut
-        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).offset(y = (-8).dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Surface), elevation = CardDefaults.cardElevation(1.dp), modifier = Modifier.weight(1f).clickable { onNavigateToKiblat() }) {
+        // Action Buttons
+        Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp).offset(y = (-8).dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Surface), elevation = CardDefaults.cardElevation(0.dp), modifier = Modifier.weight(1f).clickable { onNavigateToKiblat() }) {
                 Row(modifier = Modifier.padding(16.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
                     Icon(Icons.Default.LocationOn, contentDescription = null, tint = BrandPrimary, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Kompas Kiblat", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = TextPrimary)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text("Arah Kiblat", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                 }
             }
         }
 
         // Clean Prayer List
-        Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
-            Text("Jadwal Salat", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary, modifier = Modifier.padding(bottom = 12.dp))
-            Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Surface), elevation = CardDefaults.cardElevation(1.dp), modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)) {
+        Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 20.dp)) {
+            Text("Jadwal Salat", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary, modifier = Modifier.padding(bottom = 16.dp, start = 8.dp))
+            Card(shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = Surface), elevation = CardDefaults.cardElevation(0.dp), modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
                     prayers.forEachIndexed { index, prayer ->
                         Row(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Text(prayer.type.title, fontSize = 15.sp, color = TextSecondary, modifier = Modifier.weight(1f), fontWeight = FontWeight.Medium)
-                            val tStr = "${prayer.time.hour.toString().padStart(2,'0')}:${prayer.time.minute.toString().padStart(2,'0')}"
-                            Text(tStr, fontSize = 16.sp, color = TextPrimary, fontWeight = FontWeight.Bold)
-                            Spacer(modifier = Modifier.width(20.dp))
-                            if (prayer.type == PrayerType.IMSAK || prayer.type == PrayerType.TERBIT || prayer.type == PrayerType.DHUHA) {
-                                Icon(Icons.Default.Clear, contentDescription = null, tint = Border, modifier = Modifier.size(16.dp))
-                            } else {
-                                Icon(Icons.Default.Notifications, contentDescription = null, tint = BrandPrimaryLight, modifier = Modifier.size(16.dp))
-                            }
+                            val isSilent = prayer.type == PrayerType.IMSAK || prayer.type == PrayerType.TERBIT || prayer.type == PrayerType.DHUHA
+                            Box(modifier = Modifier.size(8.dp).background(if(isSilent) Border else BrandAccent, CircleShape))
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(prayer.type.title, fontSize = 16.sp, color = if(isSilent) TextSecondary else TextPrimary, modifier = Modifier.weight(1f), fontWeight = FontWeight.Medium)
+                            Text("${prayer.time.hour.toString().padStart(2,'0')}:${prayer.time.minute.toString().padStart(2,'0')}", fontSize = 18.sp, color = TextPrimary, fontWeight = FontWeight.Bold)
                         }
-                        if (index < prayers.size - 1) { HorizontalDivider(color = Background, thickness = 1.5.dp) }
+                        if (index < prayers.size - 1) { HorizontalDivider(color = Background, thickness = 2.dp) }
                     }
                 }
             }
