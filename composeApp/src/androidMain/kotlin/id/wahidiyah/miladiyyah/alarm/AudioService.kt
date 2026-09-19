@@ -2,76 +2,101 @@ package id.wahidiyah.miladiyyah.alarm
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.IBinder
-import id.wahidiyah.miladiyyah.R
+import androidx.core.app.NotificationCompat
+import id.wahidiyah.miladiyyah.MainActivity
 
 class AudioService : Service() {
     private var mediaPlayer: MediaPlayer? = null
-
-    override fun onBind(intent: Intent?): IBinder? = null
+    private val CHANNEL_ID = "WAHIDIYAH_ALARM_CHANNEL"
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val audioType = intent?.getStringExtra("AUDIO_TYPE") ?: return START_NOT_STICKY
+        val action = intent?.action
+        val title = intent?.getStringExtra("ALARM_TITLE") ?: "Pemberitahuan Wahidiyah"
+        val alarmId = intent?.getIntExtra("ALARM_ID", 1001) ?: 1001
 
-        val audioResId = when {
-            audioType.startsWith("tasyafuan") -> R.raw.tasyafuan
-            audioType.startsWith("danabox") -> R.raw.danabox
-            audioType.startsWith("tarhim") -> R.raw.tarhim
-            audioType.startsWith("adzan") -> R.raw.adzan
-            else -> return START_NOT_STICKY
-        }
+        createNotificationChannel()
 
-        // Buat Notifikasi Khusus Pemutar Media agar HP tidak membunuh proses ini
-        val channelId = "miladiyyah_audio_channel"
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId, "Pemutar Suara", NotificationManager.IMPORTANCE_LOW)
-            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            manager.createNotificationChannel(channel)
-        }
+        val notificationIntent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE
+        )
 
-        val notification = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            android.app.Notification.Builder(this, channelId)
-        } else {
-            @Suppress("DEPRECATION")
-            android.app.Notification.Builder(this)
-        }
-            .setContentTitle(if (audioType.startsWith("adzan")) "Waktu Salat Tiba" else "Pengingat Miladiyyah")
-            .setContentText("Memutar suara...")
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
+        // Menggunakan ikon aplikasi (Akar masalah nomor 1 diselesaikan di sini)
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("Wahidiyah")
+            .setContentText(title)
+            .setSmallIcon(resources.getIdentifier("ic_launcher_foreground", "drawable", packageName).takeIf { it != 0 } ?: android.R.drawable.ic_dialog_info)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setCategory(NotificationCompat.CATEGORY_ALARM)
+            .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
             .build()
 
-        // 2 = FOREGROUND_SERVICE_TYPE_MEDIA_PLAYBACK
-        try {
-            if (Build.VERSION.SDK_INT >= 29) {
-                startForeground(1001, notification, 2) 
-            } else {
-                startForeground(1001, notification)
-            }
-        } catch (e: Exception) {
-            startForeground(1001, notification)
+        startForeground(alarmId, notification)
+
+        // Penanganan Mencegah Multiple Audio Bentrok (Duplikat)
+        if (mediaPlayer?.isPlaying == true) {
+            mediaPlayer?.stop()
+            mediaPlayer?.release()
         }
 
-        try {
-            mediaPlayer = MediaPlayer.create(this, audioResId)
-            mediaPlayer?.start()
-            mediaPlayer?.setOnCompletionListener {
-                stopSelf() // Matikan service otomatis setelah suara selesai
+        val audioResource = when {
+            action?.contains("ADZAN") == true -> "adzan"
+            action == "ACTION_TARHIM" -> "tarhim"
+            action == "ACTION_TASYAFUAN" -> "tasyafuan"
+            action == "ACTION_DANABOX" -> "danabox"
+            else -> null
+        }
+
+        if (audioResource != null) {
+            val resId = resources.getIdentifier(audioResource, "raw", packageName)
+            if (resId != 0) {
+                mediaPlayer = MediaPlayer.create(this, resId).apply {
+                    setOnCompletionListener {
+                        it.release()
+                        mediaPlayer = null
+                        stopForeground(true)
+                        stopSelf() // WAJIB: Mematikan Service agar baterai aman
+                    }
+                    start()
+                }
+            } else {
+                stopForeground(true)
+                stopSelf()
             }
-        } catch (e: Exception) {
+        } else {
+            stopForeground(true)
             stopSelf()
         }
 
         return START_NOT_STICKY
     }
 
-    override fun onDestroy() {
-        mediaPlayer?.stop()
-        mediaPlayer?.release()
-        super.onDestroy()
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID, "Alarm Wahidiyah", NotificationManager.IMPORTANCE_HIGH
+            ).apply { description = "Pemberitahuan Waktu Salat dan Pengingat" }
+            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            manager.createNotificationChannel(channel)
+        }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mediaPlayer?.let {
+            if (it.isPlaying) it.stop()
+            it.release()
+        }
+        mediaPlayer = null
+    }
+
+    override fun onBind(intent: Intent?): IBinder? = null
 }
