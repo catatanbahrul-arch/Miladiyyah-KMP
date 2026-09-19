@@ -1,3 +1,8 @@
+#!/bin/bash
+
+echo "🎨 Menerapkan UI Kalender All-in-One (Desain Referensi NU Online)..."
+
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/calendar/CalendarScreen.kt
 package id.wahidiyah.miladiyyah.ui.screens.calendar
 
 import androidx.compose.foundation.BorderStroke
@@ -279,3 +284,7 @@ fun EmptyStateCard(message: String) {
         }
     }
 }
+EOF
+
+echo "✅ UI Kalender telah dikonversi persis 100% mengikuti referensi visual All-In-One!"
+EOF
