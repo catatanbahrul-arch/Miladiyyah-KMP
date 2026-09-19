@@ -21,7 +21,6 @@
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
         
-        <!-- Pintu Masuk Utama Aplikasi -->
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|uiMode"
@@ -33,7 +32,6 @@
             </intent-filter>
         </activity>
 
-        <!-- Pendaftaran Sistem Alarm Background -->
         <receiver android:name=".alarm.BootReceiver" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
