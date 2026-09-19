@@ -6,13 +6,10 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.media.MediaPlayer
 import android.os.Build
-import id.wahidiyah.miladiyyah.R
 
 class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        // Jika HP baru dinyalakan ulang (Restart), pasang kembali semua alarm
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
             AlarmScheduler.scheduleAll(context)
             return
@@ -20,32 +17,21 @@ class AlarmReceiver : BroadcastReceiver() {
 
         val audioType = intent.getStringExtra("AUDIO_TYPE") ?: return
 
-        // JALUR 1: POP-UP NOTIFIKASI 10 MENIT SEBELUM ADZAN (TANPA SUARA ADZAN)
+        // JALUR 1: POP-UP NOTIFIKASI SAJA (10 Menit Sebelum)
         if (audioType.startsWith("popup_")) {
             val prayerName = audioType.removePrefix("popup_")
             showNotification(context, "Persiapan Salat $prayerName", "Waktu $prayerName kurang 10 menit lagi. Mari bersiap!")
-            return
-        }
-
-        // JALUR 2: PEMUTARAN SUARA MP3
-        val audioResId = when {
-            audioType.startsWith("tasyafuan") -> R.raw.tasyafuan
-            audioType.startsWith("danabox") -> R.raw.danabox
-            audioType.startsWith("tarhim") -> R.raw.tarhim
-            audioType.startsWith("adzan") -> R.raw.adzan
-            else -> return
-        }
-
-        try {
-            val mediaPlayer = MediaPlayer.create(context, audioResId)
-            mediaPlayer.start()
-            mediaPlayer.setOnCompletionListener { it.release() }
-            
-            // Munculkan notifikasi pop-up saat adzan/suara berbunyi
-            val title = if(audioType.startsWith("adzan")) "Waktu Salat Telah Tiba" else "Pengingat Miladiyyah"
-            showNotification(context, title, "Mari beribadah & raih keberkahan.")
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } 
+        // JALUR 2: PUTAR SUARA (Adzan, Tarhim, Dana Box)
+        else {
+            val serviceIntent = Intent(context, AudioService::class.java).apply {
+                putExtra("AUDIO_TYPE", audioType)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(serviceIntent)
+            } else {
+                context.startService(serviceIntent)
+            }
         }
 
         // Jadwalkan ulang rantai alarm untuk hari esok
@@ -54,10 +40,10 @@ class AlarmReceiver : BroadcastReceiver() {
 
     private fun showNotification(context: Context, title: String, message: String) {
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val channelId = "miladiyyah_channel"
+        val channelId = "miladiyyah_popup_channel"
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId, "Pengingat Jamaah", NotificationManager.IMPORTANCE_HIGH)
+            val channel = NotificationChannel(channelId, "Notifikasi Pengingat", NotificationManager.IMPORTANCE_HIGH)
             notificationManager.createNotificationChannel(channel)
         }
 
