@@ -1,3 +1,8 @@
+#!/bin/bash
+
+echo "⚙️ Menyinkronkan Jadwal Kegiatan ke Halaman Kalender..."
+
+cat << 'EOF' > composeApp/src/commonMain/kotlin/id/wahidiyah/miladiyyah/ui/screens/calendar/CalendarScreen.kt
 package id.wahidiyah.miladiyyah.ui.screens.calendar
 
 import androidx.compose.foundation.BorderStroke
@@ -247,3 +252,7 @@ fun CalendarScreen(engine: CalendarEngine) {
         }
     }
 }
+EOF
+
+echo "✅ Halaman Kalender berhasil disinkronkan dengan Jadwal Kegiatan!"
+EOF
