@@ -3,24 +3,27 @@ package id.wahidiyah.miladiyyah.theme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
 
-private val MiladiyyahLightColorScheme = lightColorScheme(
-    primary = DeepForestGreen,
-    secondary = SubtleGold,
-    background = SoftCream,
-    surface = WarmWhite,
-    onPrimary = Color.White,
+private val WahidiyahColorScheme = lightColorScheme(
+    primary = BrandPrimary,
+    onPrimary = Surface,
+    primaryContainer = BrandAccentLight,
+    onPrimaryContainer = BrandPrimaryDark,
+    secondary = BrandAccent,
+    onSecondary = Surface,
+    background = Background,
     onBackground = TextPrimary,
-    onSurface = TextPrimary
+    surface = Surface,
+    onSurface = TextPrimary,
+    error = Error,
+    onError = Surface
 )
 
 @Composable
-fun MiladiyyahTheme(
-    content: @Composable () -> Unit
-) {
+fun MiladiyyahTheme(content: @Composable () -> Unit) {
+    // Mempertahankan nama fungsi teknis MiladiyyahTheme, tapi menyuntikkan Visual Wahidiyah
     MaterialTheme(
-        colorScheme = MiladiyyahLightColorScheme,
+        colorScheme = WahidiyahColorScheme,
         content = content
     )
 }

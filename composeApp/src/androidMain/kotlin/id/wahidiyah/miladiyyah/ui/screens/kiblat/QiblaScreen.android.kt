@@ -78,8 +78,8 @@ actual fun QiblaScreen() {
         onDispose { sensorManager.unregisterListener(listener) }
     }
 
-    Column(modifier = Modifier.fillMaxSize().background(SoftCream)) {
-        Box(modifier = Modifier.fillMaxWidth().background(DeepForestGreen).padding(20.dp)) {
+    Column(modifier = Modifier.fillMaxSize().background(Background)) {
+        Box(modifier = Modifier.fillMaxWidth().background(BrandPrimary).padding(20.dp)) {
             Column {
                 Text("Arah Kiblat", color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.height(4.dp))
@@ -90,7 +90,7 @@ actual fun QiblaScreen() {
         Column(modifier = Modifier.fillMaxSize().padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.size(300.dp)) {
                 Canvas(modifier = Modifier.fillMaxSize()) {
-                    drawCircle(color = DeepForestGreen, style = Stroke(width = 8f))
+                    drawCircle(color = BrandPrimary, style = Stroke(width = 8f))
                     drawCircle(color = Color.LightGray, style = Stroke(width = 2f), radius = size.width / 2 - 20f)
                 }
 
@@ -104,13 +104,13 @@ actual fun QiblaScreen() {
 
                 Box(modifier = Modifier.fillMaxSize().rotate(qiblaBearing - azimuth), contentAlignment = Alignment.TopCenter) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(top = 10.dp)) {
-                        Icon(Icons.Default.Star, contentDescription = "Kaaba", tint = SubtleGold, modifier = Modifier.size(28.dp))
+                        Icon(Icons.Default.Star, contentDescription = "Kaaba", tint = BrandAccent, modifier = Modifier.size(28.dp))
                         Spacer(modifier = Modifier.height(2.dp))
-                        Box(modifier = Modifier.width(8.dp).height(130.dp).background(SubtleGold, RoundedCornerShape(4.dp)))
+                        Box(modifier = Modifier.width(8.dp).height(130.dp).background(BrandAccent, RoundedCornerShape(4.dp)))
                     }
                 }
 
-                Box(modifier = Modifier.size(24.dp).background(DeepForestGreen, CircleShape))
+                Box(modifier = Modifier.size(24.dp).background(BrandPrimary, CircleShape))
                 Box(modifier = Modifier.size(8.dp).background(Color.White, CircleShape))
             }
 
@@ -122,9 +122,9 @@ actual fun QiblaScreen() {
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text("Putar HP Anda hingga jarum emas sejajar lurus menghadap atas.", fontSize = 13.sp, color = DeepForestGreen, fontWeight = FontWeight.Medium, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                    Text("Putar HP Anda hingga jarum emas sejajar lurus menghadap atas.", fontSize = 13.sp, color = BrandPrimary, fontWeight = FontWeight.Medium, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("Sudut Kiblat: ${qiblaBearing.roundToInt()}°", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = DeepForestGreen)
+                    Text("Sudut Kiblat: ${qiblaBearing.roundToInt()}°", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = BrandPrimary)
                 }
             }
         }
