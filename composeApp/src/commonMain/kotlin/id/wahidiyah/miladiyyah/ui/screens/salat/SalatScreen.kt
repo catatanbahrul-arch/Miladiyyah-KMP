@@ -1,0 +1,69 @@
+package id.wahidiyah.miladiyyah.ui.screens.salat
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import id.wahidiyah.miladiyyah.core.domain.prayer.PrayerTimeEngine
+import id.wahidiyah.miladiyyah.core.domain.prayer.PrayerType
+import id.wahidiyah.miladiyyah.theme.*
+import kotlinx.datetime.*
+
+@Composable
+fun SalatScreen(onNavigateToKiblat: () -> Unit = {}) {
+    val scrollState = rememberScrollState()
+    val tz = TimeZone.currentSystemDefault()
+    val currentDateTime = Clock.System.now().toLocalDateTime(tz)
+    val prayers = try { PrayerTimeEngine.getPrayers(currentDateTime.date) } catch(e:Exception) { emptyList() }
+
+    Column(modifier = Modifier.fillMaxSize().background(Background).verticalScroll(scrollState)) {
+        Box(modifier = Modifier.fillMaxWidth().background(Surface).padding(horizontal = 24.dp, vertical = 24.dp)) {
+            Column {
+                Text("Waktu Salat", color = TextPrimary, fontSize = 24.sp, fontWeight = FontWeight.Black)
+                Spacer(modifier=Modifier.height(4.dp))
+                Text(PrayerTimeEngine.locationName, color = BrandPrimary, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+        HorizontalDivider(color = Border)
+        
+        Column(modifier = Modifier.padding(24.dp)) {
+            Card(shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = Surface), elevation = CardDefaults.cardElevation(0.dp), modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
+                    prayers.forEachIndexed { index, prayer ->
+                        Row(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                            val isSilent = prayer.type == PrayerType.IMSAK || prayer.type == PrayerType.TERBIT || prayer.type == PrayerType.DHUHA
+                            Box(modifier = Modifier.size(8.dp).background(if(isSilent) Border else BrandAccent, CircleShape))
+                            Spacer(modifier = Modifier.width(16.dp))
+                            Text(prayer.type.title, fontSize = 16.sp, color = if(isSilent) TextSecondary else TextPrimary, modifier = Modifier.weight(1f), fontWeight = FontWeight.Medium)
+                            Text("${prayer.time.hour.toString().padStart(2,'0')}:${prayer.time.minute.toString().padStart(2,'0')}", fontSize = 18.sp, color = TextPrimary, fontWeight = FontWeight.Bold)
+                        }
+                        if (index < prayers.size - 1) { HorizontalDivider(color = Background, thickness = 2.dp) }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+            Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = BrandPrimary), elevation = CardDefaults.cardElevation(2.dp), modifier = Modifier.fillMaxWidth().clickable { onNavigateToKiblat() }) {
+                Row(modifier = Modifier.padding(20.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = Surface, modifier = Modifier.size(24.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text("Buka Kompas Kiblat", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Surface)
+                }
+            }
+            Spacer(modifier = Modifier.height(40.dp))
+        }
+    }
+}
