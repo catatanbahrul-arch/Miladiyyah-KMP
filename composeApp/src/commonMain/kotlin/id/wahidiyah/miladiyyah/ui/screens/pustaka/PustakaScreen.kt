@@ -13,6 +13,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -21,13 +22,12 @@ import id.wahidiyah.miladiyyah.core.data.source.remote.PustakaRepository
 import id.wahidiyah.miladiyyah.theme.*
 import kotlinx.coroutines.launch
 
-expect fun openUrl(url: String)
-
 @Composable
 fun PustakaScreen() {
     var pustakaList by remember { mutableStateOf<List<PustakaItem>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     val scope = rememberCoroutineScope()
+    val uriHandler = LocalUriHandler.current
 
     LaunchedEffect(Unit) {
         scope.launch {
@@ -55,10 +55,7 @@ fun PustakaScreen() {
                 Text("Belum ada dokumen atau materi di Pustaka.", color = TextSecondary)
             }
         } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            LazyColumn(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(pustakaList) { item ->
                     Card(
                         shape = RoundedCornerShape(12.dp),
@@ -70,29 +67,17 @@ fun PustakaScreen() {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(Icons.Default.Info, contentDescription = null, tint = DeepForestGreen, modifier = Modifier.size(20.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = item.title,
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = TextPrimary
-                                )
+                                Text(item.title, fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                             }
-                            
                             if (item.content.isNotEmpty()) {
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = item.content,
-                                    fontSize = 13.sp,
-                                    color = TextSecondary,
-                                    lineHeight = 18.sp
-                                )
+                                Text(item.content, fontSize = 13.sp, color = TextSecondary, lineHeight = 18.sp)
                             }
-
                             if (item.link.isNotEmpty()) {
                                 Spacer(modifier = Modifier.height(14.dp))
                                 Button(
                                     onClick = { 
-                                        openUrl(item.link)
+                                        try { uriHandler.openUri(item.link) } catch (e: Exception) { println("Gagal membuka link: ${item.link}") }
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = DeepForestGreen),
                                     shape = RoundedCornerShape(8.dp),
