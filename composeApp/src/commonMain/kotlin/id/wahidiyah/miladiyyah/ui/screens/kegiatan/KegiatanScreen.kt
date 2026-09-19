@@ -13,8 +13,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import id.wahidiyah.miladiyyah.core.data.source.remote.KegiatanRepository
-import id.wahidiyah.miladiyyah.core.utils.AppCache
+import id.wahidiyah.miladiyyah.AppCache
+import id.wahidiyah.miladiyyah.KegiatanOnlineService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
@@ -26,26 +26,22 @@ fun KegiatanScreen() {
     var isUpdating by remember { mutableStateOf(false) }
     var toastMessage by remember { mutableStateOf<String?>(null) }
     
-    // 1. MEMORI 0 DETIK: Langsung muat data lama dari Cache HP saat layar disentuh
+    // Tampil 0 detik dari Cache lokal
     var kegiatanData by remember { mutableStateOf(AppCache.load("KEGIATAN_DATA") ?: "Belum ada data. Silakan perbarui.") }
 
-    // 2. SILENT BACKGROUND PEEK: Mengintip diam-diam ke server GAS saat layar dibuka
+    // Ngintip diam-diam ke server saat layar dibuka
     LaunchedEffect(Unit) {
         try {
-            val newData = withContext(Dispatchers.IO) { KegiatanRepository.fetchKegiatanFromGAS() }
-            // Jika ada perubahan data di Google Sheet, langsung ganti tanpa loading
+            val newData = withContext(Dispatchers.IO) { KegiatanOnlineService.fetchKegiatanFromGAS() }
             if (newData != kegiatanData) {
                 AppCache.save("KEGIATAN_DATA", newData)
                 kegiatanData = newData
             }
-        } catch (e: Exception) {
-            // Sinyal jelek? Diam saja, tetap pakai data lama di layar.
-        }
+        } catch (e: Exception) {}
     }
 
     Column(modifier = Modifier.fillMaxSize().background(Color(0xFFF5F5F5))) {
         
-        // HEADER KEGIATAN
         Box(modifier = Modifier.fillMaxWidth().background(Color(0xFF009688)).padding(20.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Column {
@@ -54,15 +50,13 @@ fun KegiatanScreen() {
                     Text("Otomatis tersimpan offline", color = Color.White.copy(alpha = 0.8f), fontSize = 12.sp)
                 }
                 
-                // 3. SMART MANUAL UPDATE: Tombol pintar untuk cek perubahan manual
                 Button(
                     onClick = {
                         scope.launch {
                             isUpdating = true
                             try {
-                                val newData = withContext(Dispatchers.IO) { KegiatanRepository.fetchKegiatanFromGAS() }
+                                val newData = withContext(Dispatchers.IO) { KegiatanOnlineService.fetchKegiatanFromGAS() }
                                 
-                                // KOMPARASI PINTAR: Bandingkan data baru vs data lama
                                 if (newData == kegiatanData) {
                                     toastMessage = "Data sudah versi terbaru! (Tidak ada kuota terbuang)"
                                 } else {
@@ -91,7 +85,6 @@ fun KegiatanScreen() {
             }
         }
 
-        // TAMPILAN NOTIFIKASI PINTAR (Pengganti Toast sementara untuk KMP)
         if (toastMessage != null) {
             Card(
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9)),
@@ -99,21 +92,18 @@ fun KegiatanScreen() {
             ) {
                 Text(toastMessage!!, color = Color(0xFF2E7D32), modifier = Modifier.padding(12.dp), fontSize = 13.sp)
             }
-            // Hilangkan notifikasi setelah 3 detik
             LaunchedEffect(toastMessage) {
                 kotlinx.coroutines.delay(3000L)
                 toastMessage = null
             }
         }
 
-        // KONTEN
         Card(
             colors = CardDefaults.cardColors(containerColor = Color.White),
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             elevation = CardDefaults.cardElevation(2.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                // Nantinya ini di-parsing dari JSON. Sementara kita tampilkan teks mentahnya untuk bukti.
                 Text(kegiatanData, fontSize = 14.sp, color = Color.DarkGray)
             }
         }
