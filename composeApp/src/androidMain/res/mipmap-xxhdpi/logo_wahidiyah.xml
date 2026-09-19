@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
-    <path android:fillColor="#73C34F" android:pathData="M54,20 L84,80 L24,80 Z"/>
+    <!-- Placeholder: Letter W as fallback if PNG is not uploaded yet -->
+    <path android:fillColor="#1C5B2D" android:pathData="M30,30 L45,80 L54,50 L63,80 L78,30 L68,30 L63,60 L54,30 L45,60 L40,30 Z"/>
 </vector>

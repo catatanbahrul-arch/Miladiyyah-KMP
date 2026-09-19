@@ -26,8 +26,13 @@ import kotlinx.datetime.*
 fun SalatScreen(onNavigateToKiblat: () -> Unit = {}) {
     val scrollState = rememberScrollState()
     val tz = TimeZone.currentSystemDefault()
-    val currentDateTime = Clock.System.now().toLocalDateTime(tz)
-    val prayers = try { PrayerTimeEngine.getPrayers(currentDateTime.date) } catch(e:Exception) { emptyList() }
+    val prayers = try { PrayerTimeEngine.getPrayers(Clock.System.now().toLocalDateTime(tz).date) } catch(e:Exception) { emptyList() }
+
+    // Sentralisasi Pengaturan Alarm
+    var adzanEnabled by remember { mutableStateOf(true) }
+    var tarhimEnabled by remember { mutableStateOf(true) }
+    var tasyafuanEnabled by remember { mutableStateOf(true) }
+    var danaBoxEnabled by remember { mutableStateOf(true) }
 
     Column(modifier = Modifier.fillMaxSize().background(Background).verticalScroll(scrollState)) {
         Box(modifier = Modifier.fillMaxWidth().background(Surface).padding(horizontal = 24.dp, vertical = 24.dp)) {
@@ -40,6 +45,8 @@ fun SalatScreen(onNavigateToKiblat: () -> Unit = {}) {
         HorizontalDivider(color = Border)
         
         Column(modifier = Modifier.padding(24.dp)) {
+            // JADWAL SALAT
+            Text("JADWAL HARI INI", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMuted, letterSpacing = 2.sp, modifier = Modifier.padding(bottom = 12.dp, start = 4.dp))
             Card(shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = Surface), elevation = CardDefaults.cardElevation(0.dp), modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
                     prayers.forEachIndexed { index, prayer ->
@@ -58,9 +65,36 @@ fun SalatScreen(onNavigateToKiblat: () -> Unit = {}) {
             Spacer(modifier = Modifier.height(24.dp))
             Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = BrandPrimary), elevation = CardDefaults.cardElevation(2.dp), modifier = Modifier.fillMaxWidth().clickable { onNavigateToKiblat() }) {
                 Row(modifier = Modifier.padding(20.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = Surface, modifier = Modifier.size(24.dp))
+                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = Surface, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(12.dp))
-                    Text("Buka Kompas Kiblat", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Surface)
+                    Text("Buka Kompas Kiblat", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Surface)
+                }
+            }
+
+            // PUSAT PENGATURAN ALARM
+            Spacer(modifier = Modifier.height(40.dp))
+            Text("PENGATURAN PENGINGAT", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextMuted, letterSpacing = 2.sp, modifier = Modifier.padding(bottom = 12.dp, start = 4.dp))
+            Card(shape = RoundedCornerShape(24.dp), colors = CardDefaults.cardColors(containerColor = Surface), elevation = CardDefaults.cardElevation(0.dp)) {
+                Column {
+                    Row(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(modifier = Modifier.weight(1f)) { Text("Adzan & Salat", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary); Text("Suara adzan saat masuk waktu", fontSize = 14.sp, color = TextSecondary) }
+                        Switch(checked = adzanEnabled, onCheckedChange = { adzanEnabled = it }, colors = SwitchDefaults.colors(checkedTrackColor = BrandPrimary))
+                    }
+                    HorizontalDivider(color = Background, thickness = 2.dp)
+                    Row(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(modifier = Modifier.weight(1f)) { Text("Pengingat Tarhim", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary); Text("Sebelum Subuh", fontSize = 14.sp, color = TextSecondary) }
+                        Switch(checked = tarhimEnabled, onCheckedChange = { tarhimEnabled = it }, colors = SwitchDefaults.colors(checkedTrackColor = BrandPrimary))
+                    }
+                    HorizontalDivider(color = Background, thickness = 2.dp)
+                    Row(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(modifier = Modifier.weight(1f)) { Text("Tasyafu'an", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary); Text("Setiap 03:00 WIB", fontSize = 14.sp, color = TextSecondary) }
+                        Switch(checked = tasyafuanEnabled, onCheckedChange = { tasyafuanEnabled = it }, colors = SwitchDefaults.colors(checkedTrackColor = BrandPrimary))
+                    }
+                    HorizontalDivider(color = Background, thickness = 2.dp)
+                    Row(modifier = Modifier.fillMaxWidth().padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(modifier = Modifier.weight(1f)) { Text("Dana Box", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary); Text("Pukul 06:00 & 19:00", fontSize = 14.sp, color = TextSecondary) }
+                        Switch(checked = danaBoxEnabled, onCheckedChange = { danaBoxEnabled = it }, colors = SwitchDefaults.colors(checkedTrackColor = BrandPrimary))
+                    }
                 }
             }
             Spacer(modifier = Modifier.height(40.dp))
