@@ -23,16 +23,15 @@ import id.wahidiyah.miladiyyah.core.domain.prayer.PrayerType
 import id.wahidiyah.miladiyyah.theme.*
 import id.wahidiyah.miladiyyah.AppRepository
 import id.wahidiyah.miladiyyah.core.utils.UiState
+import id.wahidiyah.miladiyyah.ui.components.WahidiyahLogo
 import kotlinx.coroutines.delay
 import kotlinx.datetime.*
 
 @Composable
-fun HomeScreen(onNavigateToSalat: () -> Unit = {}, onUpdateLocation: () -> Unit = {}) {
+fun HomeScreen(onNavigateToSalat: () -> Unit = {}, onNavigateToPustaka: () -> Unit = {}, onUpdateLocation: () -> Unit = {}) {
     val scrollState = rememberScrollState()
     val tz = TimeZone.currentSystemDefault()
     var currentDateTime by remember { mutableStateOf(Clock.System.now().toLocalDateTime(tz)) }
-    
-    // State Pengumuman dari GAS
     var pengumumanState by remember { mutableStateOf<UiState<String>>(UiState.Loading) }
     
     LaunchedEffect(Unit) { 
@@ -50,17 +49,13 @@ fun HomeScreen(onNavigateToSalat: () -> Unit = {}, onUpdateLocation: () -> Unit 
 
     Column(modifier = Modifier.fillMaxSize().background(Background).verticalScroll(scrollState)) {
         
-        // 1. HEADER (LOKASI AMAN DI BAWAH BRANDING)
+        // HEADER: LOGO ORIGINAL & STACKING AMAN
         Box(modifier = Modifier.fillMaxWidth().background(BrandPrimaryDark, shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)).padding(top = 40.dp, bottom = 48.dp, start = 24.dp, end = 24.dp)) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                // Baris 1: Logo & WAHIDIYAH
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(modifier = Modifier.size(24.dp).clip(CircleShape).background(BrandAccentLight), contentAlignment = Alignment.Center) { Icon(Icons.Default.Info, null, tint = BrandPrimary, modifier = Modifier.size(16.dp)) }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text("WAHIDIYAH", color = Surface, fontSize = 20.sp, letterSpacing = 6.sp, fontWeight = FontWeight.Black)
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-                // Baris 2: Lokasi (Tidak bertabrakan)
+                WahidiyahLogo(modifier = Modifier.size(48.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+                Text("WAHIDIYAH", color = Surface, fontSize = 20.sp, letterSpacing = 6.sp, fontWeight = FontWeight.Black)
+                Spacer(modifier = Modifier.height(12.dp))
                 Row(modifier = Modifier.clip(RoundedCornerShape(16.dp)).clickable { onUpdateLocation() }.background(BrandPrimary).padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.LocationOn, contentDescription = null, tint = BrandAccentLight, modifier = Modifier.size(14.dp))
                     Spacer(modifier = Modifier.width(6.dp))
@@ -68,7 +63,6 @@ fun HomeScreen(onNavigateToSalat: () -> Unit = {}, onUpdateLocation: () -> Unit 
                 }
                 
                 Spacer(modifier = Modifier.height(40.dp))
-                // Salat Hero
                 if (nextPrayer != null) {
                     val diff = (nextPrayer.time.hour * 3600 + nextPrayer.time.minute * 60) - (currentDateTime.time.hour * 3600 + currentDateTime.time.minute * 60 + currentDateTime.time.second)
                     val dSecs = if(diff >= 0) diff else diff + 86400
@@ -81,7 +75,7 @@ fun HomeScreen(onNavigateToSalat: () -> Unit = {}, onUpdateLocation: () -> Unit 
             }
         }
 
-        // 2. TANGGAL
+        // TANGGAL MASEHI & HIJRIYAH
         Box(modifier = Modifier.fillMaxWidth().offset(y = (-32).dp).padding(horizontal = 24.dp)) {
             Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Surface), elevation = CardDefaults.cardElevation(2.dp), modifier = Modifier.fillMaxWidth()) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth().padding(20.dp)) {
@@ -92,10 +86,10 @@ fun HomeScreen(onNavigateToSalat: () -> Unit = {}, onUpdateLocation: () -> Unit 
             }
         }
 
-        // 3. PENGUMUMAN PENTING (Hanya tampil bila state = Success dan tidak kosong)
+        // PENGUMUMAN PENTING (DOMINAN VISUAL JIKA ADA)
         if (pengumumanState is UiState.Success && (pengumumanState as UiState.Success).data.isNotEmpty()) {
             Column(modifier = Modifier.padding(horizontal = 24.dp).offset(y = (-8).dp)) {
-                Text("Pengumuman Penting", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = BrandPrimary, letterSpacing = 1.sp, modifier = Modifier.padding(bottom = 12.dp, start = 4.dp))
+                Text("Pengumuman Penting", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Error, letterSpacing = 1.sp, modifier = Modifier.padding(bottom = 12.dp, start = 4.dp))
                 Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = BrandAccentLight), modifier = Modifier.fillMaxWidth()) {
                     Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Notifications, null, tint = BrandPrimary)
@@ -107,7 +101,7 @@ fun HomeScreen(onNavigateToSalat: () -> Unit = {}, onUpdateLocation: () -> Unit 
             }
         }
 
-        // 4. PEMULIHAN FITUR EXISTING: TASYAFU'AN & DANA BOX
+        // FITUR PENGINGAT (TASYAFU'AN & DANA BOX TETAP ADA)
         Column(modifier = Modifier.padding(horizontal = 24.dp).offset(y = (-8).dp)) {
             Text("Pengingat Khusus", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextMuted, letterSpacing = 1.sp, modifier = Modifier.padding(bottom = 12.dp, start = 4.dp))
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -129,7 +123,6 @@ fun HomeScreen(onNavigateToSalat: () -> Unit = {}, onUpdateLocation: () -> Unit 
                 }
             }
         }
-
         Spacer(modifier = Modifier.height(40.dp))
     }
 }
