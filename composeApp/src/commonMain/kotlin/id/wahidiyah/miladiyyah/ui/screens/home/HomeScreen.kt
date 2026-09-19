@@ -8,7 +8,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.LocationOn
@@ -20,7 +19,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -40,7 +38,6 @@ fun HomeScreen(onNavigateToKiblat: () -> Unit = {}) {
     val scrollState = rememberScrollState()
     var pengumuman by remember { mutableStateOf<PengumumanData?>(null) }
     val scope = rememberCoroutineScope()
-    val uriHandler = LocalUriHandler.current
 
     val calendarEngine = remember { CalendarEngine() }
     val today = remember { calendarEngine.getToday() }
@@ -62,6 +59,7 @@ fun HomeScreen(onNavigateToKiblat: () -> Unit = {}) {
         }
     }
 
+    val prayers = try { PrayerTimeEngine.getTodayPrayers() } catch(e:Exception) { emptyList() }
     val nextPrayer = try { PrayerTimeEngine.getNextPrayer(currentTime) } catch(e:Exception) { null }
     val currentMins = currentTime.hour * 60 + currentTime.minute
     val diffMins = if (nextPrayer != null) {
@@ -89,7 +87,6 @@ fun HomeScreen(onNavigateToKiblat: () -> Unit = {}) {
                 }
             }
 
-            // Tombol Arah Kiblat
             Card(
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -101,19 +98,14 @@ fun HomeScreen(onNavigateToKiblat: () -> Unit = {}) {
                     Spacer(modifier = Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Kompas Arah Kiblat", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-                        Text("Deteksi GPS Akurat", fontSize = 12.sp, color = TextSecondary)
+                        Text("Deteksi & Sinkronisasi GPS", fontSize = 12.sp, color = TextSecondary)
                     }
                     Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = DeepForestGreen)
                 }
             }
 
             if (isWarningTime && nextPrayer != null) {
-                Card(
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)),
-                    border = BorderStroke(1.dp, Color(0xFFEF9A9A)),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFFFFEBEE)), border = BorderStroke(1.dp, Color(0xFFEF9A9A)), modifier = Modifier.fillMaxWidth()) {
                     Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Warning, contentDescription = null, tint = Color(0xFFD32F2F), modifier = Modifier.size(24.dp))
                         Spacer(modifier = Modifier.width(12.dp))
@@ -125,31 +117,8 @@ fun HomeScreen(onNavigateToKiblat: () -> Unit = {}) {
                 }
             }
 
-            if (pengumuman != null && (!pengumuman!!.title.isEmpty() || !pengumuman!!.content.isEmpty())) {
-                Card(
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFDE7)),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Default.Notifications, contentDescription = null, tint = Color(0xFFF57F17), modifier = Modifier.size(22.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(if (pengumuman!!.title.isNotEmpty()) pengumuman!!.title else "Pengumuman", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = Color(0xFFF57F17))
-                        }
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(pengumuman!!.content, fontSize = 13.sp, color = TextPrimary, lineHeight = 18.sp)
-                    }
-                }
-            }
-
             if (nextPrayer != null) {
-                Card(
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(containerColor = DeepForestGreen),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = DeepForestGreen), modifier = Modifier.fillMaxWidth()) {
                     Row(modifier = Modifier.padding(20.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Box(modifier = Modifier.size(50.dp).background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(12.dp)), contentAlignment = Alignment.Center) {
                             Icon(Icons.Default.Home, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
@@ -163,6 +132,34 @@ fun HomeScreen(onNavigateToKiblat: () -> Unit = {}) {
                                 Text(timeString, color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text("$diffMins menit lagi", color = SubtleGold, fontSize = 13.sp, modifier = Modifier.padding(bottom = 3.dp))
+                            }
+                        }
+                    }
+                }
+            }
+
+            // LISTING SEMUA JADWAL SALAT HARI INI
+            if (prayers.isNotEmpty()) {
+                Text("Jadwal Salat Hari Ini", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = DeepForestGreen, modifier = Modifier.padding(top = 8.dp))
+                Card(
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                        prayers.forEachIndexed { index, prayer ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(prayer.type.title, fontSize = 14.sp, color = TextPrimary, fontWeight = FontWeight.Medium)
+                                val timeString = "${prayer.time.hour.toString().padStart(2, '0')}:${prayer.time.minute.toString().padStart(2, '0')}"
+                                Text(timeString, fontSize = 14.sp, color = DeepForestGreen, fontWeight = FontWeight.Bold)
+                            }
+                            if (index < prayers.size - 1) {
+                                HorizontalDivider(color = Color(0xFFEEEEEE), thickness = 1.dp)
                             }
                         }
                     }

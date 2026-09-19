@@ -16,14 +16,12 @@ object FalakEngine {
     private fun fixHour(a: Double) = (a % 24.0).let { if (it < 0) it + 24.0 else it }
 
     fun calculate(date: LocalDate, lat: Double, lng: Double, timeZone: Double): PrayerTimeResult {
-        // Standar MABIMS / Kemenag: Subuh 20°, Isya 18°
         val fajrAngle = 20.0
         val ishaAngle = 18.0
-        val ihtiyat = 2.0 / 60.0 // Kehati-hatian +2 menit standar Indonesia
+        val ihtiyat = 2.0 / 60.0 // +2 Menit Kehati-hatian
 
         val jDate = julianDate(date.year, date.monthNumber, date.dayOfMonth) - lng / (15.0 * 24.0)
 
-        // Perhitungan Pergeseran Matahari
         val d = jDate - 2451545.0
         val g = fixAngle(357.529 + 0.98560028 * d)
         val q = fixAngle(280.459 + 0.98564736 * d)
@@ -39,16 +37,14 @@ object FalakEngine {
             if (t.isNaN()) 0.0 else t
         }
 
-        // Asar menggunakan standar bayangan benda (Syafi'i)
+        // KUNCI PERBAIKAN: Sudut Ashar diubah menjadi negatif (-) karena matahari ada di atas horizon
         val asrAngle = darctan2(1.0, 1.0 + dtan(abs(lat - declination)))
-
+        
         val fajrTime = midDay - getAngleTime(fajrAngle) + ihtiyat
-        val asrTime = midDay + getAngleTime(asrAngle) + ihtiyat
-        val maghribTime = midDay + getAngleTime(0.833) + ihtiyat // Sunset
+        val asrTime = midDay + getAngleTime(-asrAngle) + ihtiyat // Perbaikan disini!
+        val maghribTime = midDay + getAngleTime(0.833) + ihtiyat
         val ishaTime = midDay + getAngleTime(ishaAngle) + ihtiyat
         val dzuhurTime = midDay + ihtiyat
-        
-        // Tarhim / Imsak (Mundur 10 menit sebelum subuh)
         val imsakTime = fajrTime - (10.0 / 60.0)
 
         return PrayerTimeResult(
@@ -73,7 +69,7 @@ object FalakEngine {
     private fun toLocalTime(hours: Double): LocalTime {
         var h = hours
         if (h.isNaN()) h = 0.0
-        h = fixHour(h + 0.5/60.0) // Pembulatan ke menit terdekat
+        h = fixHour(h + 0.5/60.0)
         val hr = floor(h).toInt()
         val min = floor((h - hr) * 60).toInt()
         return LocalTime(hr, min)
