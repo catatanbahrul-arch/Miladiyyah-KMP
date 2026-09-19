@@ -1,3 +1,8 @@
+#!/bin/bash
+
+echo "🔧 Memperbaiki dependensi Ktor dan Serialization (Injeksi Langsung)..."
+
+cat << 'EOF' > composeApp/build.gradle.kts
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
@@ -84,3 +89,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 }
+EOF
+
+echo "✅ File build.gradle.kts berhasil diperbarui dengan injeksi langsung!"
+EOF
