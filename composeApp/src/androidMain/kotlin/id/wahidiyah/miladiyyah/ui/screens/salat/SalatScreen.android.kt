@@ -1,9 +1,10 @@
 package id.wahidiyah.miladiyyah.ui.screens.salat
+
+import android.content.Context
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import id.wahidiyah.miladiyyah.alarm.AlarmScheduler
-import id.wahidiyah.miladiyyah.MainActivity
 
 actual fun updateAlarmSchedules() {
-    MainActivity.instance?.let { context ->
-        AlarmScheduler.rescheduleAllEnabled(context)
-    }
+    // Diurus langsung oleh pemanggilan dari komponen UI Android
 }
