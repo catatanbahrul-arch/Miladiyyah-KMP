@@ -1,5 +1,8 @@
 package id.wahidiyah.miladiyyah.core.domain.prayer
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import kotlinx.datetime.*
 
 enum class PrayerType(val title: String) {
@@ -12,13 +15,13 @@ data class PrayerTime(val type: PrayerType, val time: LocalTime)
 object PrayerTimeEngine {
     var latitude = -7.8480
     var longitude = 112.0178
+    var locationName by mutableStateOf("Mengambil lokasi...") // State dinamis untuk nama kota
 
-    fun getTodayPrayers(): List<PrayerTime> {
-        val nowInstant = Clock.System.now()
+    fun getPrayers(date: LocalDate): List<PrayerTime> {
         val timeZone = TimeZone.currentSystemDefault()
-        val now = nowInstant.toLocalDateTime(timeZone)
-        val offset = timeZone.offsetAt(nowInstant).totalSeconds / 3600.0
-        val result = FalakEngine.calculate(now.date, latitude, longitude, offset)
+        // Menggunakan offset dari waktu sekarang agar GMT tetap akurat
+        val offset = timeZone.offsetAt(Clock.System.now()).totalSeconds / 3600.0
+        val result = FalakEngine.calculate(date, latitude, longitude, offset)
 
         return listOf(
             PrayerTime(PrayerType.IMSAK, result.imsak),
@@ -32,8 +35,9 @@ object PrayerTimeEngine {
         )
     }
 
-    fun getNextPrayer(now: LocalTime): PrayerTime {
-        val prayers = getTodayPrayers().filter { it.type != PrayerType.TERBIT && it.type != PrayerType.DHUHA }
-        return prayers.firstOrNull { (it.time.hour * 60 + it.time.minute) > (now.hour * 60 + now.minute) } ?: prayers.first()
+    fun getNextPrayer(now: LocalTime): PrayerTime? {
+        val today = Clock.System.todayIn(TimeZone.currentSystemDefault())
+        val prayers = getPrayers(today).filter { it.type != PrayerType.TERBIT && it.type != PrayerType.DHUHA }
+        return prayers.firstOrNull { (it.time.hour * 60 + it.time.minute) > (now.hour * 60 + now.minute) } ?: prayers.firstOrNull()
     }
 }

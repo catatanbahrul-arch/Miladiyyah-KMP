@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -12,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -21,8 +23,11 @@ import id.wahidiyah.miladiyyah.core.domain.prayer.PrayerTimeEngine
 import id.wahidiyah.miladiyyah.core.domain.prayer.PrayerType
 import kotlinx.coroutines.delay
 import kotlinx.datetime.Clock
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.datetime.todayIn
 
 val TealHeader = Color(0xFF009688)
 val SoftBackground = Color(0xFFF5F5F5)
@@ -31,26 +36,44 @@ val SoftBackground = Color(0xFFF5F5F5)
 fun HomeScreen(onNavigateToKiblat: () -> Unit = {}, onUpdateLocation: () -> Unit = {}) {
     val scrollState = rememberScrollState()
     val calendarEngine = remember { CalendarEngine() }
-    val today = remember { calendarEngine.getToday() }
+    val todayHijriBase = remember { calendarEngine.getToday().hijri }
+    
+    // Logika Navigasi Panah Kanan/Kiri
+    var dayOffset by remember { mutableStateOf(0) }
+    
+    val tz = TimeZone.currentSystemDefault()
+    val currentLocalDate = Clock.System.todayIn(tz)
+    val targetDate = currentLocalDate.plus(dayOffset, DateTimeUnit.DAY)
     
     val monthNames = listOf("", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember")
+    val dayNames = listOf("Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Ahad")
+    val targetDayIndex = if (targetDate.dayOfWeek.isoDayNumber == 7) 6 else targetDate.dayOfWeek.isoDayNumber - 1
+    val dateString = "${dayNames[targetDayIndex]}, ${targetDate.dayOfMonth} ${monthNames[targetDate.monthNumber]} ${targetDate.year}"
+    
+    // Perhitungan kasaran maju/mundur bulan Hijriyah (Anggap 30 hari)
+    val tempHijriDay = todayHijriBase.day + dayOffset
+    val hijriDay = when {
+        tempHijriDay > 30 -> tempHijriDay % 30
+        tempHijriDay <= 0 -> 30 + (tempHijriDay % 30)
+        else -> tempHijriDay
+    }
     val hijriMonthNames = listOf("", "Muharram", "Safar", "Rabiul Awal", "Rabiul Akhir", "Jumadil Awal", "Jumadil Akhir", "Rajab", "Syaban", "Ramadhan", "Syawal", "Dzulqaidah", "Dzulhijjah")
-    val dateString = "${today.gregorian.day} ${monthNames[today.gregorian.month]} ${today.gregorian.year}"
-    val hijriString = "${today.hijri.day} ${hijriMonthNames[today.hijri.month]} ${today.hijri.year} H"
+    val hijriString = "$hijriDay ${hijriMonthNames[todayHijriBase.month]} ${todayHijriBase.year} H"
 
-    var currentDateTime by remember { mutableStateOf(Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())) }
+    var currentDateTime by remember { mutableStateOf(Clock.System.now().toLocalDateTime(tz)) }
 
     LaunchedEffect(Unit) {
         while(true) {
-            currentDateTime = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+            currentDateTime = Clock.System.now().toLocalDateTime(tz)
             delay(1000L)
         }
     }
 
-    val prayers = try { PrayerTimeEngine.getTodayPrayers() } catch(e:Exception) { emptyList() }
-    val nextPrayer = try { PrayerTimeEngine.getNextPrayer(currentDateTime.time) } catch(e:Exception) { null }
+    // Ambil jadwal sesuai tanggal yang sedang dipilih
+    val prayers = try { PrayerTimeEngine.getPrayers(targetDate) } catch(e:Exception) { emptyList() }
     
-    // Perhitungan Hitung Mundur Detik
+    // Next prayer tetap berdasarkan waktu asli hari ini, bukan hari yang dipilih
+    val nextPrayer = try { PrayerTimeEngine.getNextPrayer(currentDateTime.time) } catch(e:Exception) { null }
     val diffSeconds = if (nextPrayer != null) {
         val nextSec = nextPrayer.time.hour * 3600 + nextPrayer.time.minute * 60
         val curSec = currentDateTime.time.hour * 3600 + currentDateTime.time.minute * 60 + currentDateTime.time.second
@@ -63,13 +86,13 @@ fun HomeScreen(onNavigateToKiblat: () -> Unit = {}, onUpdateLocation: () -> Unit
 
     Column(modifier = Modifier.fillMaxSize().background(SoftBackground).verticalScroll(scrollState)) {
         
-        // 1. BAGIAN HEADER (HIJAU TEAL)
         Box(modifier = Modifier.fillMaxWidth().background(TealHeader).padding(top = 24.dp, bottom = 40.dp, start = 16.dp, end = 16.dp)) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.LocationOn, contentDescription = null, tint = Color(0xFFEF5350), modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text("Titik Lokasi GPS", color = Color.White, fontSize = 14.sp)
+                    // Nama Lokasi Dinamis Hasil Reverse Geocoding
+                    Text(PrayerTimeEngine.locationName, color = Color.White, fontSize = 14.sp)
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 
@@ -82,12 +105,12 @@ fun HomeScreen(onNavigateToKiblat: () -> Unit = {}, onUpdateLocation: () -> Unit
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Row(modifier = Modifier.clickable { onUpdateLocation() }, verticalAlignment = Alignment.CenterVertically) {
+                    Row(modifier = Modifier.clickable { onUpdateLocation() }.padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.Refresh, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
                         Text("Update", color = Color.White, fontSize = 14.sp)
                     }
-                    Row(modifier = Modifier.clickable { onNavigateToKiblat() }, verticalAlignment = Alignment.CenterVertically) {
+                    Row(modifier = Modifier.clickable { onNavigateToKiblat() }.padding(4.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.LocationOn, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
                         Text("Arah Kiblat", color = Color.White, fontSize = 14.sp)
@@ -96,26 +119,24 @@ fun HomeScreen(onNavigateToKiblat: () -> Unit = {}, onUpdateLocation: () -> Unit
             }
         }
 
-        // 2. KARTU TANGGAL MENUMPANG DI ATAS HEADER
         Box(modifier = Modifier.fillMaxWidth().offset(y = (-24).dp).padding(horizontal = 16.dp)) {
-            Card(
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(modifier = Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.KeyboardArrowLeft, contentDescription = null, tint = TealHeader)
+            Card(shape = RoundedCornerShape(12.dp), colors = CardDefaults.cardColors(containerColor = Color.White), elevation = CardDefaults.cardElevation(defaultElevation = 4.dp), modifier = Modifier.fillMaxWidth()) {
+                // Tombol Navigasi Kanan Kiri
+                Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Box(modifier = Modifier.clip(CircleShape).clickable { dayOffset -= 1 }.padding(12.dp)) {
+                        Icon(Icons.Default.KeyboardArrowLeft, contentDescription = "Sebelumnya", tint = TealHeader)
+                    }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(dateString, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.Black)
                         Text(hijriString, fontSize = 13.sp, color = Color.Gray)
                     }
-                    Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = TealHeader)
+                    Box(modifier = Modifier.clip(CircleShape).clickable { dayOffset += 1 }.padding(12.dp)) {
+                        Icon(Icons.Default.KeyboardArrowRight, contentDescription = "Selanjutnya", tint = TealHeader)
+                    }
                 }
             }
         }
 
-        // 3. DAFTAR JADWAL SALAT
         Column(modifier = Modifier.padding(horizontal = 16.dp).offset(y = (-10).dp)) {
             prayers.forEachIndexed { index, prayer ->
                 val iconEmoji = when(prayer.type) {
@@ -129,10 +150,7 @@ fun HomeScreen(onNavigateToKiblat: () -> Unit = {}, onUpdateLocation: () -> Unit
                     PrayerType.ISYA -> "🌌"
                 }
                 
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp, horizontal = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(modifier = Modifier.fillMaxWidth().padding(vertical = 14.dp, horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(iconEmoji, fontSize = 18.sp)
                     Spacer(modifier = Modifier.width(12.dp))
                     Text(prayer.type.title, fontSize = 15.sp, color = Color.DarkGray, modifier = Modifier.weight(1f))
