@@ -10,10 +10,10 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 @Serializable
-data class GasAdjustment(val month: String, val adjustment: Int, val desc: String)
+data class CascadeAdjustment(val startDate: String, val adjustment: Int, val desc: String)
 
 @Serializable
-data class GasResponse(val status: String, val data: List<GasAdjustment>)
+data class GasCascadeResponse(val status: String, val data: List<CascadeAdjustment>)
 
 class CalendarNetworkService {
     private val client = HttpClient {
@@ -22,22 +22,20 @@ class CalendarNetworkService {
         }
     }
 
-    suspend fun fetchAdjustments(url: String): Map<String, Int> {
+    suspend fun fetchCascadeAdjustments(url: String): List<CascadeAdjustment> {
         return try {
-            // ANTI-CACHE: Menambahkan waktu saat ini ke URL agar Google/Ktor mengira ini link baru 
-            // dan dipaksa membaca ulang langsung dari Google Sheets.
             val timeStamp = Clock.System.now().toEpochMilliseconds()
             val noCacheUrl = if (url.contains("?")) "$url&t=$timeStamp" else "$url?t=$timeStamp"
             
-            val response: GasResponse = client.get(noCacheUrl).body()
+            val response: GasCascadeResponse = client.get(noCacheUrl).body()
             if (response.status == "success") {
-                response.data.associate { it.month to it.adjustment }
+                response.data
             } else {
-                emptyMap()
+                emptyList()
             }
         } catch (e: Exception) {
-            println("Gagal sinkronisasi kalender: ${e.message}")
-            emptyMap()
+            println("Gagal sinkronisasi kalender berantai: ${e.message}")
+            emptyList()
         }
     }
 }

@@ -26,24 +26,21 @@ fun App() {
     val scope = rememberCoroutineScope()
     val networkService = remember { CalendarNetworkService() }
 
-    // FUNGSI SINKRONISASI
     val syncCalendarData = {
         scope.launch {
             try {
-                val adjustments = networkService.fetchAdjustments(GAS_API_URL)
+                val adjustments = networkService.fetchCascadeAdjustments(GAS_API_URL)
                 HijriAdjuster.updateAdjustments(adjustments)
             } catch (e: Exception) {
-                println("Gagal memuat penyesuaian kalender: ${e.message}")
+                println("Gagal memuat sinkronisasi berantai: ${e.message}")
             }
         }
     }
 
-    // 1. Sinkronisasi saat aplikasi pertama kali dibuka
     LaunchedEffect(Unit) {
         syncCalendarData()
     }
 
-    // 2. Sinkronisasi ULANG secara diam-diam setiap kali tab Kalender ditekan
     LaunchedEffect(selectedTab) {
         if (selectedTab == BottomTab.KALENDER) {
             syncCalendarData()
