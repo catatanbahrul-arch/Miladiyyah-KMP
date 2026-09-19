@@ -47,7 +47,7 @@ fun HomeScreen(onNavigateToKiblat: () -> Unit = {}, onUpdateLocation: () -> Unit
     
     val monthNames = listOf("", "Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember")
     val dayNames = listOf("Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Ahad")
-    val targetDayIndex = if (targetDate.dayOfWeek.isoDayNumber == 7) 6 else targetDate.dayOfWeek.isoDayNumber - 1
+    val targetDayIndex = targetDate.dayOfWeek.ordinal
     val dateString = "${dayNames[targetDayIndex]}, ${targetDate.dayOfMonth} ${monthNames[targetDate.monthNumber]} ${targetDate.year}"
     
     // Perhitungan kasaran maju/mundur bulan Hijriyah (Anggap 30 hari)
