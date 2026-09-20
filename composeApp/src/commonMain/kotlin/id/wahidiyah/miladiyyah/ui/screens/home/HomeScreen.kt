@@ -51,7 +51,7 @@ fun HomeScreen(onNavigateToSalat: () -> Unit = {}, onNavigateToPustaka: () -> Un
     val hMonthNames = listOf("", "Muharram", "Safar", "Rabiul Awal", "Rabiul Akhir", "Jumadil Awal", "Jumadil Akhir", "Rajab", "Syaban", "Ramadhan", "Syawal", "Dzulqaidah", "Dzulhijjah")
 
     Column(modifier = Modifier.fillMaxSize().background(Background).verticalScroll(scrollState)) {
-        Box(modifier = Modifier.fillMaxWidth().background(BrandPrimaryDark, shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)).padding(top = 40.dp, bottom = 48.dp, start = 24.dp, end = 24.dp)) {
+        Box(modifier = Modifier.fillMaxWidth().background(BrandAccentLight, shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)).padding(top = 40.dp, bottom = 48.dp, start = 24.dp, end = 24.dp)) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
                 WahidiyahLogo(modifier = Modifier.width(180.dp))
                 Spacer(modifier = Modifier.height(20.dp))
@@ -65,11 +65,11 @@ fun HomeScreen(onNavigateToSalat: () -> Unit = {}, onNavigateToPustaka: () -> Un
                 if (nextPrayer != null) {
                     val diff = (nextPrayer.time.hour * 3600 + nextPrayer.time.minute * 60) - (currentDateTime.time.hour * 3600 + currentDateTime.time.minute * 60 + currentDateTime.time.second)
                     val dSecs = if(diff >= 0) diff else diff + 86400
-                    Text(nextPrayer.type.title.uppercase(), color = BrandAccent, fontSize = 13.sp, letterSpacing = 6.sp, fontWeight = FontWeight.Bold)
+                    Text(nextPrayer.type.title.uppercase(), color = BrandPrimary, fontSize = 13.sp, letterSpacing = 6.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("${nextPrayer.time.hour.toString().padStart(2,'0')}:${nextPrayer.time.minute.toString().padStart(2,'0')}", color = Surface, fontSize = 64.sp, fontWeight = FontWeight.Light, letterSpacing = 2.sp)
+                    Text("${nextPrayer.time.hour.toString().padStart(2,'0')}:${nextPrayer.time.minute.toString().padStart(2,'0')}", color = BrandPrimaryDark, fontSize = 64.sp, fontWeight = FontWeight.Light, letterSpacing = 2.sp)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text("- ${dSecs/3600}:${((dSecs%3600)/60).toString().padStart(2,'0')}:${(dSecs%60).toString().padStart(2,'0')}", color = Surface.copy(alpha=0.8f), fontSize = 15.sp, fontWeight = FontWeight.Medium, letterSpacing = 2.sp)
+                    Text("- ${dSecs/3600}:${((dSecs%3600)/60).toString().padStart(2,'0')}:${(dSecs%60).toString().padStart(2,'0')}", color = BrandPrimaryDark.copy(alpha=0.72f), fontSize = 15.sp, fontWeight = FontWeight.Medium, letterSpacing = 2.sp)
                 }
             }
         }
