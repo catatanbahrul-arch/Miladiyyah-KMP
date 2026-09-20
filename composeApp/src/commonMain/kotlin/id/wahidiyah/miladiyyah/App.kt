@@ -40,16 +40,46 @@ fun App(onUpdateLocation: () -> Unit = {}) {
 
     suspend fun syncHijriCorrections() {
         try {
-            val adjustments = networkService.fetchCascadeAdjustments(GAS_API_URL)
-            if (adjustments.isNotEmpty()) {
-                HijriAdjuster.updateAdjustments(adjustments)
-                RemoteSyncCoordinator.syncHijri(adjustments)
-                println("[HIJRI-SYNC] Sync sukses: ${adjustments.size} records")
+            val result =
+                networkService.fetchCascadeAdjustments(GAS_API_URL)
+
+            if (result.success) {
+                HijriAdjuster.updateAdjustments(result.data)
+                RemoteSyncCoordinator.syncHijri(result.data)
+
+                println(
+                    "[HIJRI-SYNC] Sync sukses: " +
+                        "${result.data.size} records"
+                )
             } else {
-                println("[HIJRI-SYNC] Tidak ada data baru; correction aktif dipertahankan")
+                val cached =
+                    RemoteSyncCoordinator.loadCachedHijri()
+
+                if (cached.isNotEmpty()) {
+                    HijriAdjuster.updateAdjustments(cached)
+
+                    println(
+                        "[HIJRI-SYNC] Remote gagal -> " +
+                            "memakai cache: ${cached.size} records"
+                    )
+                } else {
+                    println(
+                        "[HIJRI-SYNC] Remote gagal dan cache kosong -> " +
+                            "baseline engine dipertahankan."
+                    )
+                }
             }
         } catch (e: Exception) {
-            println("[HIJRI-SYNC] Sync exception: ${e.message}")
+            val cached =
+                RemoteSyncCoordinator.loadCachedHijri()
+
+            if (cached.isNotEmpty()) {
+                HijriAdjuster.updateAdjustments(cached)
+            }
+
+            println(
+                "[HIJRI-SYNC] Exception: ${e.message}"
+            )
         }
     }
 

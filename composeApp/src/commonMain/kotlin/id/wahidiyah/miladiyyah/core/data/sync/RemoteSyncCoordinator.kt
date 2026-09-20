@@ -31,13 +31,14 @@ object RemoteSyncCoordinator {
         return hash.toULong().toString(16)
     }
 
-    private fun meta(raw: String) =
-        LocalSyncMeta(fingerprint = fingerprint(raw))
+    private fun meta(raw: String) = LocalSyncMeta(
+        fingerprint = fingerprint(raw)
+    )
 
     fun loadCachedKegiatan(): List<KegiatanItem> {
         val raw = RemoteCacheStore.loadData(KEY_KEGIATAN) ?: return emptyList()
         return try {
-            json.decodeFromString(raw)
+            json.decodeFromString<List<KegiatanItem>>(raw)
         } catch (_: Exception) {
             emptyList()
         }
@@ -46,7 +47,7 @@ object RemoteSyncCoordinator {
     fun loadCachedPustaka(): List<PustakaItem> {
         val raw = RemoteCacheStore.loadData(KEY_PUSTAKA) ?: return emptyList()
         return try {
-            json.decodeFromString(raw)
+            json.decodeFromString<List<PustakaItem>>(raw)
         } catch (_: Exception) {
             emptyList()
         }
@@ -55,7 +56,7 @@ object RemoteSyncCoordinator {
     fun loadCachedPengumuman(): PengumumanData? {
         val raw = RemoteCacheStore.loadData(KEY_PENGUMUMAN) ?: return null
         return try {
-            json.decodeFromString(raw)
+            json.decodeFromString<PengumumanData?>(raw)
         } catch (_: Exception) {
             null
         }
@@ -64,7 +65,7 @@ object RemoteSyncCoordinator {
     fun loadCachedHijri(): List<CascadeAdjustment> {
         val raw = RemoteCacheStore.loadData(KEY_HIJRI) ?: return emptyList()
         return try {
-            json.decodeFromString(raw)
+            json.decodeFromString<List<CascadeAdjustment>>(raw)
         } catch (_: Exception) {
             emptyList()
         }
@@ -72,89 +73,160 @@ object RemoteSyncCoordinator {
 
     suspend fun syncKegiatan(): List<KegiatanItem> {
         val cached = loadCachedKegiatan()
-        return try {
-            val remote = KegiatanRepository.fetchKegiatan()
-            if (remote.isNotEmpty()) {
-                val raw = json.encodeToString(remote)
-                val newFingerprint = fingerprint(raw)
-                val old = RemoteCacheStore.loadMeta(KEY_KEGIATAN)
+        val result = KegiatanRepository.fetchKegiatan()
 
-                if (old.fingerprint != newFingerprint) {
-                    RemoteCacheStore.saveData(
-                        KEY_KEGIATAN,
-                        raw,
-                        meta(raw)
-                    )
-                }
-                remote
-            } else cached
-        } catch (_: Exception) {
-            cached
+        if (!result.success) {
+            println(
+                "[CACHE-KEGIATAN] Remote gagal -> memakai cache"
+            )
+            return cached
         }
+
+        val raw =
+            json.encodeToString<List<KegiatanItem>>(result.data)
+
+        val newFingerprint = fingerprint(raw)
+        val old = RemoteCacheStore.loadMeta(KEY_KEGIATAN)
+
+        if (old.fingerprint != newFingerprint) {
+            RemoteCacheStore.saveData(
+                name = KEY_KEGIATAN,
+                data = raw,
+                meta = meta(raw)
+            )
+
+            println(
+                "[CACHE-KEGIATAN] Cache diperbarui. " +
+                    "items=${result.data.size}"
+            )
+        } else {
+            println(
+                "[CACHE-KEGIATAN] Data sama. " +
+                    "Cache tidak ditulis ulang."
+            )
+        }
+
+        return result.data
     }
 
     suspend fun syncPustaka(): List<PustakaItem> {
         val cached = loadCachedPustaka()
-        return try {
-            val remote = PustakaRepository.fetchPustaka()
-            if (remote.isNotEmpty()) {
-                val raw = json.encodeToString(remote)
-                val newFingerprint = fingerprint(raw)
-                val old = RemoteCacheStore.loadMeta(KEY_PUSTAKA)
+        val result = PustakaRepository.fetchPustaka()
 
-                if (old.fingerprint != newFingerprint) {
-                    RemoteCacheStore.saveData(
-                        KEY_PUSTAKA,
-                        raw,
-                        meta(raw)
-                    )
-                }
-                remote
-            } else cached
-        } catch (_: Exception) {
-            cached
+        if (!result.success) {
+            println(
+                "[CACHE-PUSTAKA] Remote gagal -> memakai cache"
+            )
+            return cached
         }
+
+        val raw =
+            json.encodeToString<List<PustakaItem>>(result.data)
+
+        val newFingerprint = fingerprint(raw)
+        val old = RemoteCacheStore.loadMeta(KEY_PUSTAKA)
+
+        if (old.fingerprint != newFingerprint) {
+            RemoteCacheStore.saveData(
+                name = KEY_PUSTAKA,
+                data = raw,
+                meta = meta(raw)
+            )
+
+            println(
+                "[CACHE-PUSTAKA] Cache diperbarui. " +
+                    "items=${result.data.size}"
+            )
+        } else {
+            println(
+                "[CACHE-PUSTAKA] Data sama. " +
+                    "Cache tidak ditulis ulang."
+            )
+        }
+
+        return result.data
     }
 
     suspend fun syncPengumuman(): PengumumanData? {
         val cached = loadCachedPengumuman()
-        return try {
-            val remote = PengumumanRepository.fetchPengumuman()
-            if (remote != null) {
-                val raw = json.encodeToString(remote)
-                val newFingerprint = fingerprint(raw)
-                val old = RemoteCacheStore.loadMeta(KEY_PENGUMUMAN)
+        val result = PengumumanRepository.fetchPengumuman()
 
-                if (old.fingerprint != newFingerprint) {
-                    RemoteCacheStore.saveData(
-                        KEY_PENGUMUMAN,
-                        raw,
-                        meta(raw)
-                    )
-                }
-                remote
-            } else cached
-        } catch (_: Exception) {
-            cached
+        if (!result.success) {
+            println(
+                "[CACHE-PENGUMUMAN] Remote gagal -> memakai cache"
+            )
+            return cached
         }
+
+        val raw =
+            json.encodeToString<PengumumanData?>(result.data)
+
+        val newFingerprint = fingerprint(raw)
+        val old = RemoteCacheStore.loadMeta(KEY_PENGUMUMAN)
+
+        if (old.fingerprint != newFingerprint) {
+            RemoteCacheStore.saveData(
+                name = KEY_PENGUMUMAN,
+                data = raw,
+                meta = meta(raw)
+            )
+
+            println(
+                "[CACHE-PENGUMUMAN] Cache diperbarui. " +
+                    "active=${result.data != null}"
+            )
+        } else {
+            println(
+                "[CACHE-PENGUMUMAN] Data sama. " +
+                    "Cache tidak ditulis ulang."
+            )
+        }
+
+        return result.data
     }
 
-    suspend fun syncHijri(remoteList: List<CascadeAdjustment>): List<CascadeAdjustment> {
-        if (remoteList.isNotEmpty()) {
-            val raw = json.encodeToString(remoteList)
-            val newFingerprint = fingerprint(raw)
-            val old = RemoteCacheStore.loadMeta(KEY_HIJRI)
+    fun cacheHijri(remoteList: List<CascadeAdjustment>): List<CascadeAdjustment> {
+        val raw = json.encodeToString<List<CascadeAdjustment>>(remoteList)
+        val newFingerprint = fingerprint(raw)
+        val old = RemoteCacheStore.loadMeta(KEY_HIJRI)
 
-            if (old.fingerprint != newFingerprint) {
-                RemoteCacheStore.saveData(
-                    KEY_HIJRI,
-                    raw,
-                    meta(raw)
-                )
-            }
-            return remoteList
+        if (old.fingerprint != newFingerprint) {
+            RemoteCacheStore.saveData(KEY_HIJRI, raw, meta(raw))
+            println("[CACHE-HIJRI] Cache diperbarui records=${remoteList.size}")
+        } else {
+            println("[CACHE-HIJRI] Data sama; cache tidak ditulis ulang")
         }
 
-        return loadCachedHijri()
+        return remoteList
+    }
+    suspend fun syncHijri(
+        remoteList: List<CascadeAdjustment>
+    ): List<CascadeAdjustment> {
+
+        val raw =
+            json.encodeToString<List<CascadeAdjustment>>(remoteList)
+
+        val newFingerprint = fingerprint(raw)
+        val old = RemoteCacheStore.loadMeta(KEY_HIJRI)
+
+        if (old.fingerprint != newFingerprint) {
+            RemoteCacheStore.saveData(
+                name = KEY_HIJRI,
+                data = raw,
+                meta = meta(raw)
+            )
+
+            println(
+                "[CACHE-HIJRI] Cache diperbarui. " +
+                    "records=${remoteList.size}"
+            )
+        } else {
+            println(
+                "[CACHE-HIJRI] Data sama. " +
+                    "Cache tidak ditulis ulang."
+            )
+        }
+
+        return remoteList
     }
 }

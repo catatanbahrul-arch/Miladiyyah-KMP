@@ -22,7 +22,6 @@ data class PengumumanData(
 )
 
 object PengumumanRepository {
-
     private val client = HttpClient()
 
     private val json = Json {
@@ -34,7 +33,7 @@ object PengumumanRepository {
     private const val BASE_URL =
         "https://script.google.com/macros/s/AKfycbyuM5B2TNnOvlJKIDeQCiec8-Q-jI0vDOv--n4xiLEu38hykX4wniweG4Jm5mE1H9Ew/exec?action=pengumuman"
 
-    suspend fun fetchPengumuman(): PengumumanData? {
+    suspend fun fetchPengumuman(): RemoteFetchResult<PengumumanData?> {
         return try {
             val timestamp = Clock.System.now().toEpochMilliseconds()
             val response = client.get("$BASE_URL&t=$timestamp") {
@@ -45,34 +44,46 @@ object PengumumanRepository {
                 }
             }
 
+            val httpCode = response.status.value
             if (!response.status.isSuccess()) {
-                println("[PENGUMUMAN] HTTP ${response.status}")
-                return null
+                return RemoteFetchResult(false, null, httpCode, "HTTP $httpCode")
             }
 
             val raw = response.bodyAsText()
-            println("[PENGUMUMAN] ${raw.take(700)}")
+            if (raw.isBlank()) {
+                return RemoteFetchResult(true, null, httpCode)
+            }
 
-            val root = json.parseToJsonElement(raw)
-            val obj = extractObject(root) ?: return null
+            val root = try {
+                json.parseToJsonElement(raw)
+            } catch (e: Exception) {
+                return RemoteFetchResult(false, null, httpCode, "JSON error: ${e.message}")
+            }
+
+            val obj = extractObject(root)
+                ?: return RemoteFetchResult(true, null, httpCode)
 
             val title = first(obj, "title", "judul", "nama").orEmpty()
             val content = first(
-                obj, "content", "isi", "description", "keterangan", "pesan", "message"
+                obj,
+                "content",
+                "isi",
+                "description",
+                "keterangan",
+                "pesan",
+                "message"
             ).orEmpty()
             val link = first(obj, "link", "url", "file", "dokumen").orEmpty()
 
-            if (title.isBlank() && content.isBlank()) return null
+            val data = if (title.isBlank() && content.isBlank() && link.isBlank()) {
+                null
+            } else {
+                PengumumanData(title, content, link)
+            }
 
-            PengumumanData(
-                title = title,
-                content = content,
-                link = link
-            )
-
+            RemoteFetchResult(true, data, httpCode)
         } catch (e: Exception) {
-            println("[PENGUMUMAN] gagal: ${e.message}")
-            null
+            RemoteFetchResult(false, null, error = e.message)
         }
     }
 
@@ -84,7 +95,7 @@ object PengumumanRepository {
             val result = root["result"]
             if (result is JsonObject) return result.jsonObject
 
-            return root.jsonObject
+            return null
         }
 
         if (root is JsonArray) {
@@ -95,11 +106,8 @@ object PengumumanRepository {
         return null
     }
 
-    private fun first(
-        obj: JsonObject,
-        vararg keys: String
-    ): String? {
-        keys.forEach { key ->
+    private fun first(obj: JsonObject, vararg keys: String): String? {
+        for (key in keys) {
             val value = obj[key]?.jsonPrimitive?.contentOrNull
             if (!value.isNullOrBlank()) return value
         }

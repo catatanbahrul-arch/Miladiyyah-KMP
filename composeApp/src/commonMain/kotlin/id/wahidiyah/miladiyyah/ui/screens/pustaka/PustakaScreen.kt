@@ -2,6 +2,8 @@ package id.wahidiyah.miladiyyah.ui.screens.pustaka
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
@@ -10,6 +12,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.draw.clip
 import id.wahidiyah.miladiyyah.core.data.source.remote.PustakaItem
@@ -22,6 +25,7 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun PustakaScreen() {
+    val uriHandler = LocalUriHandler.current
     var pustakaList by remember {
         mutableStateOf(RemoteSyncCoordinator.loadCachedPustaka())
     }
@@ -47,10 +51,13 @@ fun PustakaScreen() {
         )
 
         Column(
-            modifier = Modifier.padding(
-                horizontal = AppSizes.screenHorizontal,
-                vertical = AppSpacing.xxl
-            )
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(
+                    horizontal = AppSizes.screenHorizontal,
+                    vertical = AppSpacing.xxl
+                )
         ) {
             AppSectionLabel(
                 "DOKUMEN JAMAAH",
@@ -146,16 +153,16 @@ fun PustakaScreen() {
 
                                     if (item.link.isNotBlank()) {
                                         Spacer(modifier = Modifier.height(14.dp))
-                                        Text(
-                                            "Dokumen tersedia",
-                                            style = MaterialTheme.typography.labelMedium,
-                                            color = BrandPrimary
-                                        )
-                                        Text(
-                                            item.link,
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = TextSecondary
-                                        )
+
+                                        Button(
+                                            onClick = {
+                                                uriHandler.openUri(item.link.trim())
+                                            },
+                                            enabled = item.link.trim().startsWith("http://") ||
+                                                item.link.trim().startsWith("https://")
+                                        ) {
+                                            Text("Buka Dokumen")
+                                        }
                                     }
                                 }
                             }

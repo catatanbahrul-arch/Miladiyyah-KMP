@@ -2,6 +2,8 @@ package id.wahidiyah.miladiyyah.ui.screens.kegiatan
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -49,10 +51,13 @@ fun KegiatanScreen() {
         )
 
         Column(
-            modifier = Modifier.padding(
-                horizontal = AppSizes.screenHorizontal,
-                vertical = AppSpacing.xxl
-            )
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(
+                    horizontal = AppSizes.screenHorizontal,
+                    vertical = AppSpacing.xxl
+                )
         ) {
             AppSectionLabel(
                 "AGENDA RESMI",

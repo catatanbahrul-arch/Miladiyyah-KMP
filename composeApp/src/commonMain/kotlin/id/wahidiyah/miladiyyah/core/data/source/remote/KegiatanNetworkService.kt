@@ -22,7 +22,6 @@ data class KegiatanItem(
 )
 
 object KegiatanRepository {
-
     private val client = HttpClient()
 
     private val json = Json {
@@ -34,7 +33,7 @@ object KegiatanRepository {
     private const val BASE_URL =
         "https://script.google.com/macros/s/AKfycbyuM5B2TNnOvlJKIDeQCiec8-Q-jI0vDOv--n4xiLEu38hykX4wniweG4Jm5mE1H9Ew/exec?action=kegiatan"
 
-    suspend fun fetchKegiatan(): List<KegiatanItem> {
+    suspend fun fetchKegiatan(): RemoteFetchResult<List<KegiatanItem>> {
         return try {
             val timestamp = Clock.System.now().toEpochMilliseconds()
             val response = client.get("$BASE_URL&t=$timestamp") {
@@ -45,66 +44,59 @@ object KegiatanRepository {
                 }
             }
 
+            val httpCode = response.status.value
             if (!response.status.isSuccess()) {
-                println("[KEGIATAN] HTTP ${response.status}")
-                return emptyList()
+                return RemoteFetchResult(false, emptyList(), httpCode, "HTTP $httpCode")
             }
 
             val raw = response.bodyAsText()
-            println("[KEGIATAN] ${raw.take(700)}")
+            if (raw.isBlank()) {
+                return RemoteFetchResult(true, emptyList(), httpCode)
+            }
 
-            val root = json.parseToJsonElement(raw)
+            val root = try {
+                json.parseToJsonElement(raw)
+            } catch (e: Exception) {
+                return RemoteFetchResult(false, emptyList(), httpCode, "JSON error: ${e.message}")
+            }
+
             val array = extractArray(root)
 
             val result = array.mapNotNull { element ->
                 val obj = element as? JsonObject ?: return@mapNotNull null
 
-                val date = first(
-                    obj, "date", "tanggal", "tgl", "startDate", "start"
-                ) ?: return@mapNotNull null
+                val date = first(obj, "date", "tanggal", "tgl", "startDate", "start")
+                    ?: return@mapNotNull null
 
-                val title = first(
-                    obj, "title", "acara", "kegiatan", "nama", "name", "event"
-                ) ?: return@mapNotNull null
-
-                val location = first(
-                    obj, "location", "lokasi", "tempat"
-                ).orEmpty()
+                val title = first(obj, "title", "acara", "kegiatan", "nama", "name", "event")
+                    ?: return@mapNotNull null
 
                 KegiatanItem(
                     date = date.trim(),
                     title = title.trim(),
-                    location = location.trim()
+                    location = first(obj, "location", "lokasi", "tempat").orEmpty().trim()
                 )
             }
 
-            println("[KEGIATAN] parsed=${result.size}")
-            result
-
+            RemoteFetchResult(true, result, httpCode)
         } catch (e: Exception) {
-            println("[KEGIATAN] gagal: ${e.message}")
-            emptyList()
+            RemoteFetchResult(false, emptyList(), error = e.message)
         }
     }
 
-    private fun extractArray(root: JsonElement): JsonArray =
-        when (root) {
-            is JsonArray -> root
-            is JsonObject -> listOf(
-                "data", "items", "kegiatan", "result"
-            ).asSequence()
-                .mapNotNull { root[it] }
-                .firstOrNull { it is JsonArray }
-                ?.jsonArray
-                ?: JsonArray(emptyList())
-            else -> JsonArray(emptyList())
-        }
+    private fun extractArray(root: JsonElement): JsonArray = when (root) {
+        is JsonArray -> root
+        is JsonObject -> listOf("data", "items", "kegiatan", "result")
+            .asSequence()
+            .mapNotNull { root[it] }
+            .firstOrNull { it is JsonArray }
+            ?.jsonArray
+            ?: JsonArray(emptyList())
+        else -> JsonArray(emptyList())
+    }
 
-    private fun first(
-        obj: JsonObject,
-        vararg keys: String
-    ): String? {
-        keys.forEach { key ->
+    private fun first(obj: JsonObject, vararg keys: String): String? {
+        for (key in keys) {
             val value = obj[key]?.jsonPrimitive?.contentOrNull
             if (!value.isNullOrBlank()) return value
         }
