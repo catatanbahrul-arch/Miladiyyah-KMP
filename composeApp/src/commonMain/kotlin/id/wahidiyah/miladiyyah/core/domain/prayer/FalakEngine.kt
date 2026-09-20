@@ -16,21 +16,25 @@ data class PrayerTimeResult(
 )
 
 /**
- * Engine hisab waktu sholat untuk Miladiyyah.
+ * Engine hisab waktu sholat Miladiyyah.
  *
- * Baseline Indonesia:
- * - Subuh : -20°
- * - Isya  : -18°
- * - Dzuhur: istiwa + 1 menit
- * - Ihtiyath otomatis: 0 menit
- * - GPS menjadi markaz perhitungan
- * - Elevasi dipakai terutama untuk Maghrib dan Terbit
- * - Tampilan akhir dibulatkan ke menit berikutnya
+ * Baseline LFNU yang terdokumentasi:
+ * - Subuh  : -20°
+ * - Isya   : -18°
+ * - Dhuha  : +4.5°
+ * - Dzuhur : istiwa + 1 menit
+ * - Ashar  : faktor panjang bayangan 1
+ * - Imsak  : 10 menit sebelum Subuh
+ * - Ihtiyath default: 0 menit
+ * - Markaz : koordinat GPS pengguna
+ * - Elevasi: dipakai untuk Terbit/Maghrib
+ * - Tampilan: round-up ke menit berikutnya
  *
  * Catatan:
- * Source internal NU Online tidak dipublikasikan secara penuh.
- * Implementasi ini mengikuti parameter LFNU yang terdokumentasi
- * secara publik, bukan klaim bahwa bytecode/source-nya identik.
+ * Source internal NU Online tidak dipublikasikan penuh.
+ * Implementasi ini mengikuti parameter LFNU yang dapat
+ * diverifikasi dari dokumentasi publik, bukan klaim bahwa
+ * source internal NU Online identik 100%.
  */
 object FalakEngine {
 
@@ -40,55 +44,44 @@ object FalakEngine {
 
     private const val FAJR_ALTITUDE = -20.0
     private const val ISHA_ALTITUDE = -18.0
-
-    /**
-     * Matahari terbit/terbenam:
-     *
-     * semi-diameter matahari
-     * + refraksi horizon
-     * + dip/kerendahan ufuk.
-     *
-     * Nilai dasar:
-     * semi diameter ≈ 16 menit busur
-     * refraksi horizon ≈ 34 menit busur
-     *
-     * total ≈ 0.8333°
-     */
-    private const val SOLAR_SEMI_DIAMETER = 0.2666667
-    private const val HORIZON_REFRACTION = 0.5666667
-
+    private const val DHUHA_ALTITUDE = 4.5
     private const val DHUHUR_PLUS_MINUTES = 1.0
 
     /**
-     * Dip/kerendahan ufuk:
-     *
-     * dip = 1.76 * sqrt(height) arc-minute
-     *
-     * kemudian dikonversi ke derajat.
-     */
-    private const val DIP_COEFFICIENT_ARCMIN = 1.76
-
-    /**
-     * Fungsi lama project dipertahankan:
      * Imsak = 10 menit sebelum Subuh.
-     *
-     * Tidak mengubah aturan pengguna yang sudah ada.
      */
     private const val IMSAK_BEFORE_SUBUH_MINUTES = 10.0
 
     /**
-     * Tinggi Matahari awal Dhuha.
+     * Refraksi horizon:
+     * 34.5 arc-minute = 0.575°.
      *
-     * Dhuha dihitung berdasarkan tinggi Matahari,
-     * bukan sebagai jumlah menit tetap setelah terbit.
-     *
-     * Baseline falak:
-     * +4°30' = +4.5° di atas ufuk.
+     * Dipakai bersama semidiameter Matahari dan dip/elevasi
+     * untuk menentukan tinggi Matahari saat Terbit/Maghrib.
      */
-    private const val DHUHA_ALTITUDE = 4.5
+    private const val HORIZON_REFRACTION = 34.5 / 60.0
+
+    /**
+     * LFNU-style solar semidiameter:
+     *
+     * SD = 0.267 / (1 - 0.017 * cos(M))
+     *
+     * M = mean anomaly Matahari.
+     *
+     * Jadi semidiameter tidak lagi dipatok satu angka tetap
+     * sepanjang tahun.
+     */
+    private const val BASE_SOLAR_SEMI_DIAMETER = 0.267
+    private const val EARTH_ORBIT_ECCENTRICITY_TERM = 0.017
+
+    /**
+     * Dip / kerendahan ufuk:
+     * dip = 1.76 * sqrt(elevasi) arc-minute.
+     */
+    private const val DIP_COEFFICIENT_ARCMIN = 1.76
 
     // ============================================================
-    // UTILITAS ANGLE
+    // UTILITAS SUDUT
     // ============================================================
 
     private fun degToRad(value: Double): Double =
@@ -171,12 +164,6 @@ object FalakEngine {
             1524.5
     }
 
-    /**
-     * Julian day pada jam lokal tertentu.
-     *
-     * timeZone:
-     * contoh WIB = +7.
-     */
     private fun julianDateAtLocalHour(
         date: LocalDate,
         localHour: Double,
@@ -203,12 +190,11 @@ object FalakEngine {
     // ============================================================
 
     /**
-     * Perhitungan apparent solar longitude,
-     * declination dan equation of time.
+     * Perhitungan apparent solar longitude, declination,
+     * right ascension, dan equation of time.
      *
-     * Digunakan terpisah untuk setiap waktu utama,
-     * sehingga tidak memakai satu nilai Matahari yang
-     * dipaksakan untuk semua waktu sholat.
+     * Struktur perhitungan memakai formulasi astronomi
+     * apparent Sun yang umum dipakai dalam hisab ephemeris.
      */
     private fun solarPosition(
         julianDay: Double
@@ -221,7 +207,6 @@ object FalakEngine {
         val t2 = t * t
         val t3 = t2 * t
 
-        // Mean solar longitude.
         val meanLongitude =
             normalizeDegrees(
                 280.46646 +
@@ -229,7 +214,6 @@ object FalakEngine {
                     0.0003032 * t2
             )
 
-        // Mean anomaly.
         val meanAnomaly =
             normalizeDegrees(
                 357.52911 +
@@ -240,8 +224,7 @@ object FalakEngine {
         val meanAnomalyRad =
             degToRad(meanAnomaly)
 
-        // Equation of center.
-        val center =
+        val equationOfCenter =
             sin(meanAnomalyRad) *
                 (
                     1.914602 -
@@ -256,12 +239,10 @@ object FalakEngine {
                 sin(3.0 * meanAnomalyRad) *
                 0.000289
 
-        // True longitude.
         val trueLongitude =
             meanLongitude +
-                center
+                equationOfCenter
 
-        // Apparent longitude correction.
         val omega =
             125.04 -
                 1934.136 * t
@@ -272,20 +253,17 @@ object FalakEngine {
                 0.00478 *
                 sinD(omega)
 
-        // Mean obliquity of the ecliptic.
         val meanObliquity =
             23.439291111 -
                 0.0130041667 * t -
                 0.000000164 * t2 +
                 0.000000504 * t3
 
-        // Apparent obliquity correction.
         val apparentObliquity =
             meanObliquity +
                 0.00256 *
                 cosD(omega)
 
-        // Apparent solar declination.
         val declination =
             radToDeg(
                 asin(
@@ -296,7 +274,6 @@ object FalakEngine {
                 )
             )
 
-        // Apparent solar right ascension.
         var rightAscension =
             radToDeg(
                 atan2(
@@ -311,7 +288,6 @@ object FalakEngine {
                 rightAscension
             )
 
-        // Equation of time.
         var equationOfTime =
             meanLongitude / 15.0 -
                 rightAscension / 15.0
@@ -325,9 +301,56 @@ object FalakEngine {
         }
 
         return SolarPosition(
-            declinationDegrees = declination,
-            equationOfTimeHours = equationOfTime
+            declinationDegrees =
+                declination,
+            equationOfTimeHours =
+                equationOfTime
         )
+    }
+
+    // ============================================================
+    // SOLAR SEMI-DIAMETER DINAMIS
+    // ============================================================
+
+    /**
+     * Menghitung semidiameter Matahari untuk tanggal/waktu event.
+     *
+     * SD = 0.267 / (1 - 0.017 * cos(M))
+     */
+    private fun solarSemiDiameterDegrees(
+        julianDay: Double
+    ): Double {
+
+        val t =
+            (julianDay - 2451545.0) /
+                36525.0
+
+        val meanAnomaly =
+            357.52911 +
+                35999.05029 * t -
+                0.0001537 * t * t
+
+        val denominator =
+            1.0 -
+                EARTH_ORBIT_ECCENTRICITY_TERM *
+                cosD(meanAnomaly)
+
+        if (
+            !denominator.isFinite() ||
+            abs(denominator) < 1e-12
+        ) {
+            return BASE_SOLAR_SEMI_DIAMETER
+        }
+
+        val result =
+            BASE_SOLAR_SEMI_DIAMETER /
+                denominator
+
+        return if (result.isFinite()) {
+            result
+        } else {
+            BASE_SOLAR_SEMI_DIAMETER
+        }
     }
 
     // ============================================================
@@ -360,11 +383,12 @@ object FalakEngine {
     }
 
     // ============================================================
-    // SUNSET / SUNRISE ALTITUDE
+    // HORIZON ALTITUDE
     // ============================================================
 
     private fun horizonAltitude(
-        elevationMeters: Double
+        elevationMeters: Double,
+        julianDay: Double
     ): Double {
 
         val dip =
@@ -372,8 +396,13 @@ object FalakEngine {
                 elevationMeters
             )
 
+        val solarSemiDiameter =
+            solarSemiDiameterDegrees(
+                julianDay
+            )
+
         val apparentHorizon =
-            SOLAR_SEMI_DIAMETER +
+            solarSemiDiameter +
                 HORIZON_REFRACTION +
                 dip
 
@@ -440,9 +469,16 @@ object FalakEngine {
     }
 
     // ============================================================
-    // EVENT TIME
+    // EVENT TIME + ITERASI
     // ============================================================
 
+    /**
+     * Penyelesaian event Matahari dilakukan iteratif.
+     *
+     * Tujuannya bukan mengubah parameter LFNU,
+     * tetapi mengurangi error kecil karena posisi Matahari
+     * sebelumnya dihitung pada jam perkiraan tetap.
+     */
     private fun calculateEventTime(
         date: LocalDate,
         localHourForEphemeris: Double,
@@ -453,50 +489,59 @@ object FalakEngine {
         morning: Boolean
     ): Double {
 
-        val eventJulianDay =
-            julianDateAtLocalHour(
-                date = date,
-                localHour = localHourForEphemeris,
-                timeZone = timeZone
-            )
+        var estimateHours =
+            localHourForEphemeris
 
-        val solar =
-            solarPosition(
-                eventJulianDay
-            )
+        repeat(3) {
 
-        val solarNoon =
-            solarNoonHours(
-                longitude = longitude,
-                timeZone = timeZone,
-                equationOfTimeHours =
-                    solar.equationOfTimeHours
-            )
+            val eventJulianDay =
+                julianDateAtLocalHour(
+                    date = date,
+                    localHour = estimateHours,
+                    timeZone = timeZone
+                )
 
-        val hourAngle =
-            hourAngleHours(
-                latitude = latitude,
-                declination =
-                    solar.declinationDegrees,
-                solarAltitude =
-                    altitudeDegrees
-            )
+            val solar =
+                solarPosition(
+                    eventJulianDay
+                )
 
-        if (!hourAngle.isFinite()) {
-            return Double.NaN
+            val solarNoon =
+                solarNoonHours(
+                    longitude = longitude,
+                    timeZone = timeZone,
+                    equationOfTimeHours =
+                        solar.equationOfTimeHours
+                )
+
+            val hourAngle =
+                hourAngleHours(
+                    latitude = latitude,
+                    declination =
+                        solar.declinationDegrees,
+                    solarAltitude =
+                        altitudeDegrees
+                )
+
+            if (!hourAngle.isFinite()) {
+                return Double.NaN
+            }
+
+            estimateHours =
+                if (morning) {
+                    solarNoon -
+                        hourAngle
+                } else {
+                    solarNoon +
+                        hourAngle
+                }
         }
 
-        return if (morning) {
-            solarNoon -
-                hourAngle
-        } else {
-            solarNoon +
-                hourAngle
-        }
+        return estimateHours
     }
 
     // ============================================================
-    // ASHAR ALTITUDE
+    // ASHAR
     // ============================================================
 
     private fun asharAltitude(
@@ -529,14 +574,6 @@ object FalakEngine {
     // ROUND UP
     // ============================================================
 
-    /**
-     * NU Online menjelaskan bahwa hasil detik dibulatkan
-     * ke menit berikutnya.
-     *
-     * Contoh:
-     * 17:59:03 -> 18:00
-     * 04:41:57 -> 04:42
-     */
     private fun toLocalTimeRoundedUp(
         hours: Double
     ): LocalTime {
@@ -553,8 +590,7 @@ object FalakEngine {
 
         val totalMinutes =
             ceil(
-                normalized *
-                    60.0 -
+                normalized * 60.0 -
                     1e-9
             ).toInt()
 
@@ -643,9 +679,16 @@ object FalakEngine {
         // TERBIT
         // --------------------------------------------------------
 
-        val horizonAltitude =
+        val sunriseHorizonAltitude =
             horizonAltitude(
-                safeElevation
+                elevationMeters =
+                    safeElevation,
+                julianDay =
+                    julianDateAtLocalHour(
+                        date = date,
+                        localHour = 6.0,
+                        timeZone = timeZone
+                    )
             )
 
         val terbitRaw =
@@ -655,7 +698,8 @@ object FalakEngine {
                 latitude = safeLatitude,
                 longitude = safeLongitude,
                 timeZone = timeZone,
-                altitudeDegrees = horizonAltitude,
+                altitudeDegrees =
+                    sunriseHorizonAltitude,
                 morning = true
             )
 
@@ -663,15 +707,6 @@ object FalakEngine {
         // DHUHA
         // --------------------------------------------------------
 
-        /**
-         * Dhuha ditentukan dari tinggi Matahari +4°30'.
-         *
-         * Jangan lagi memakai:
-         *     terbit + 20 menit
-         *
-         * karena interval tersebut tidak konstan terhadap
-         * tanggal, lintang, dan deklinasi Matahari.
-         */
         val dhuhaRaw =
             calculateEventTime(
                 date = date,
@@ -742,13 +777,26 @@ object FalakEngine {
                 latitude = safeLatitude,
                 longitude = safeLongitude,
                 timeZone = timeZone,
-                altitudeDegrees = asharAltitude,
+                altitudeDegrees =
+                    asharAltitude,
                 morning = false
             )
 
         // --------------------------------------------------------
         // MAGHRIB
         // --------------------------------------------------------
+
+        val sunsetHorizonAltitude =
+            horizonAltitude(
+                elevationMeters =
+                    safeElevation,
+                julianDay =
+                    julianDateAtLocalHour(
+                        date = date,
+                        localHour = 18.0,
+                        timeZone = timeZone
+                    )
+            )
 
         val maghribRaw =
             calculateEventTime(
@@ -757,7 +805,8 @@ object FalakEngine {
                 latitude = safeLatitude,
                 longitude = safeLongitude,
                 timeZone = timeZone,
-                altitudeDegrees = horizonAltitude,
+                altitudeDegrees =
+                    sunsetHorizonAltitude,
                 morning = false
             )
 
@@ -781,37 +830,30 @@ object FalakEngine {
                 toLocalTimeRoundedUp(
                     imsakRaw
                 ),
-
             subuh =
                 toLocalTimeRoundedUp(
                     subuhRaw
                 ),
-
             terbit =
                 toLocalTimeRoundedUp(
                     terbitRaw
                 ),
-
             dhuha =
                 toLocalTimeRoundedUp(
                     dhuhaRaw
                 ),
-
             dzuhur =
                 toLocalTimeRoundedUp(
                     dzuhurRaw
                 ),
-
             ashar =
                 toLocalTimeRoundedUp(
                     asharRaw
                 ),
-
             maghrib =
                 toLocalTimeRoundedUp(
                     maghribRaw
                 ),
-
             isya =
                 toLocalTimeRoundedUp(
                     isyaRaw
