@@ -138,18 +138,18 @@ fun CalendarScreen(engine: CalendarEngine) {
         }
     } else ""
 
-    Column(modifier = Modifier.fillMaxSize().background(Color.White).verticalScroll(scrollState)) {
-        Box(modifier = Modifier.fillMaxWidth().background(BrandPrimary).padding(16.dp)) {
+    Column(modifier = Modifier.fillMaxSize().background(Background).verticalScroll(scrollState)) {
+        Box(modifier = Modifier.fillMaxWidth().background(BrandAccentLight).padding(16.dp)) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top) {
                 Column {
                     val todayDayIndex = if (today.dayOfWeek == 7) 0 else today.dayOfWeek
-                    Text("${dayNames[todayDayIndex]} ${today.pasaran.name}, ${today.gregorian.day} ${monthNames[today.gregorian.month]} ${today.gregorian.year}", color = Color.White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                    Text("${dayNames[todayDayIndex]} ${today.pasaran.name}, ${today.gregorian.day} ${monthNames[today.gregorian.month]} ${today.gregorian.year}", color = BrandPrimaryDark, fontSize = 14.sp, fontWeight = FontWeight.Bold)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("${today.hijri.day} ${hijriMonthNames[today.hijri.month]} ${today.hijri.year}", color = Color.White, fontSize = 12.sp)
+                    Text("${today.hijri.day} ${hijriMonthNames[today.hijri.month]} ${today.hijri.year}", color = BrandPrimary, fontSize = 12.sp)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    Icon(Icons.Outlined.Info, contentDescription = "Info", tint = Color.White)
-                    Icon(Icons.Outlined.Settings, contentDescription = "Pengaturan", tint = Color.White)
+                    Icon(Icons.Outlined.Info, contentDescription = "Info", tint = BrandPrimary)
+                    Icon(Icons.Outlined.Settings, contentDescription = "Pengaturan", tint = BrandPrimary)
                 }
             }
         }
@@ -177,7 +177,7 @@ fun CalendarScreen(engine: CalendarEngine) {
             }
         }
 
-        HorizontalDivider(color = Color(0xFFEEEEEE), thickness = 1.dp)
+        HorizontalDivider(color = Border, thickness = 1.dp)
 
         Box(
             modifier = Modifier
@@ -251,11 +251,11 @@ fun CalendarScreen(engine: CalendarEngine) {
         }
         
         Spacer(modifier = Modifier.height(8.dp))
-        HorizontalDivider(color = Color(0xFFEEEEEE), thickness = 1.dp)
+        HorizontalDivider(color = Border, thickness = 1.dp)
         Spacer(modifier = Modifier.height(8.dp))
 
         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Text("| Agenda Kegiatan Bulan Ini", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+            Text("Agenda Kegiatan Bulan Ini", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
             Spacer(modifier = Modifier.height(8.dp))
             
             if (filteredKegiatan.isEmpty()) {
@@ -268,7 +268,7 @@ fun CalendarScreen(engine: CalendarEngine) {
                     filteredKegiatan.forEach { item ->
                         Card(
                             shape = RoundedCornerShape(8.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF9FBE7)),
+                            colors = CardDefaults.cardColors(containerColor = BrandAccentLight),
                             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
@@ -278,8 +278,8 @@ fun CalendarScreen(engine: CalendarEngine) {
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .border(1.dp, Color(0xFFC8E6C9), RoundedCornerShape(6.dp))
-                                        .background(Color(0xFFE8F5E9), RoundedCornerShape(6.dp))
+                                        .border(1.dp, Border, RoundedCornerShape(6.dp))
+                                        .background(BrandAccentLight, RoundedCornerShape(6.dp))
                                         .padding(horizontal = 6.dp, vertical = 4.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
