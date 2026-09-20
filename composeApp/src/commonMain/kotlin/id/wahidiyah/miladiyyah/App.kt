@@ -2,9 +2,9 @@ package id.wahidiyah.miladiyyah
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
@@ -64,7 +64,7 @@ fun App(onUpdateLocation: () -> Unit = {}) {
                             )
                         )
                         NavigationBarItem(
-                            icon = { Icon(Icons.Default.AccessTime, "Salat") },
+                            icon = { Icon(Icons.Default.Notifications, "Salat") },
                             label = { Text("Salat") },
                             selected = currentScreen == AppScreen.SALAT,
                             onClick = { currentScreen = AppScreen.SALAT },
@@ -75,7 +75,7 @@ fun App(onUpdateLocation: () -> Unit = {}) {
                             )
                         )
                         NavigationBarItem(
-                            icon = { Icon(Icons.Default.Event, "Kegiatan") },
+                            icon = { Icon(Icons.Default.List, "Kegiatan") },
                             label = { Text("Kegiatan") },
                             selected = currentScreen == AppScreen.KEGIATAN,
                             onClick = { currentScreen = AppScreen.KEGIATAN },

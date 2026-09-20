@@ -4,9 +4,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -100,7 +101,7 @@ fun SalatScreen(onNavigateToKiblat: () -> Unit = {}) {
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         Icon(
-                            Icons.Default.AccessTime,
+                            Icons.Default.Notifications,
                             contentDescription = null,
                             tint = BrandPrimary,
                             modifier = Modifier.size(20.dp)
