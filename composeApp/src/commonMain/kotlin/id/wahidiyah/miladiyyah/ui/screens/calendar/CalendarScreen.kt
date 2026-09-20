@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import id.wahidiyah.miladiyyah.core.data.source.remote.KegiatanItem
 import id.wahidiyah.miladiyyah.core.data.source.remote.KegiatanRepository
+import id.wahidiyah.miladiyyah.core.data.sync.RemoteSyncCoordinator
 import id.wahidiyah.miladiyyah.core.domain.calendar.engine.CalendarEngine
 import id.wahidiyah.miladiyyah.core.domain.calendar.engine.HijriAdjuster
 import id.wahidiyah.miladiyyah.core.domain.calendar.model.CalendarDay
@@ -50,13 +51,15 @@ fun CalendarScreen(engine: CalendarEngine) {
     var currentDisplayMonth by remember { mutableStateOf(today.gregorian.localDate) }
     var selectedDay by remember { mutableStateOf<CalendarDay?>(null) }
     
-    var allKegiatan by remember { mutableStateOf<List<KegiatanItem>>(emptyList()) }
+    var allKegiatan by remember {
+        mutableStateOf(RemoteSyncCoordinator.loadCachedKegiatan())
+    }
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
     LaunchedEffect(Unit) {
         scope.launch {
-            allKegiatan = KegiatanRepository.fetchKegiatan()
+            allKegiatan = RemoteSyncCoordinator.syncKegiatan()
         }
     }
     

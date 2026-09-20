@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import id.wahidiyah.miladiyyah.core.data.source.remote.CalendarNetworkService
 import id.wahidiyah.miladiyyah.core.domain.calendar.engine.HijriAdjuster
+import id.wahidiyah.miladiyyah.core.data.sync.RemoteSyncCoordinator
 import id.wahidiyah.miladiyyah.theme.*
 import id.wahidiyah.miladiyyah.ui.screens.calendar.CalendarScreen
 import id.wahidiyah.miladiyyah.ui.screens.home.HomeScreen
@@ -42,6 +43,7 @@ fun App(onUpdateLocation: () -> Unit = {}) {
             val adjustments = networkService.fetchCascadeAdjustments(GAS_API_URL)
             if (adjustments.isNotEmpty()) {
                 HijriAdjuster.updateAdjustments(adjustments)
+                RemoteSyncCoordinator.syncHijri(adjustments)
                 println("[HIJRI-SYNC] Sync sukses: ${adjustments.size} records")
             } else {
                 println("[HIJRI-SYNC] Tidak ada data baru; correction aktif dipertahankan")

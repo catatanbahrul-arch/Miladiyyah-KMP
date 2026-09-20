@@ -17,10 +17,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import id.wahidiyah.miladiyyah.AppRepository
+import id.wahidiyah.miladiyyah.core.data.sync.RemoteSyncCoordinator
 import id.wahidiyah.miladiyyah.core.domain.calendar.engine.CalendarEngine
 import id.wahidiyah.miladiyyah.core.domain.prayer.PrayerTimeEngine
-import id.wahidiyah.miladiyyah.core.utils.UiState
 import id.wahidiyah.miladiyyah.theme.*
 import id.wahidiyah.miladiyyah.ui.components.WahidiyahLogo
 import kotlinx.coroutines.delay
@@ -35,10 +34,10 @@ fun HomeScreen(
     val scrollState = rememberScrollState()
     val tz = TimeZone.currentSystemDefault()
     var currentDateTime by remember { mutableStateOf(Clock.System.now().toLocalDateTime(tz)) }
-    var pengumumanState by remember { mutableStateOf<UiState<String>>(UiState.Loading) }
+    var pengumuman by remember { mutableStateOf(RemoteSyncCoordinator.loadCachedPengumuman()) }
 
     LaunchedEffect(Unit) {
-        pengumumanState = AppRepository.getPengumuman()
+        pengumuman = RemoteSyncCoordinator.syncPengumuman()
         while (true) {
             currentDateTime = Clock.System.now().toLocalDateTime(tz)
             delay(1000L)
@@ -242,10 +241,7 @@ fun HomeScreen(
         // ----------------------------------------------------
         // IMPORTANT ANNOUNCEMENT
         // ----------------------------------------------------
-        if (
-            pengumumanState is UiState.Success &&
-            (pengumumanState as UiState.Success).data.isNotEmpty()
-        ) {
+        if (pengumuman != null && (pengumuman!!.title.isNotBlank() || pengumuman!!.content.isNotBlank())) {
             Column(
                 modifier = Modifier
                     .padding(horizontal = 24.dp)
@@ -262,27 +258,26 @@ fun HomeScreen(
 
                 Card(
                     shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = BrandAccentLight
-                    ),
+                    colors = CardDefaults.cardColors(containerColor = BrandAccentLight),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Row(
-                        modifier = Modifier.padding(20.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.Notifications,
-                            contentDescription = null,
-                            tint = BrandPrimary
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
+                    Column(modifier = Modifier.padding(20.dp)) {
                         Text(
-                            (pengumumanState as UiState.Success).data,
-                            fontSize = 14.sp,
-                            color = BrandPrimaryDark,
-                            lineHeight = 22.sp
+                            if (pengumuman!!.title.isNotBlank()) pengumuman!!.title else "Pengumuman",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = BrandPrimary
                         )
+
+                        if (pengumuman!!.content.isNotBlank()) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                pengumuman!!.content,
+                                fontSize = 14.sp,
+                                color = BrandPrimaryDark,
+                                lineHeight = 22.sp
+                            )
+                        }
                     }
                 }
 

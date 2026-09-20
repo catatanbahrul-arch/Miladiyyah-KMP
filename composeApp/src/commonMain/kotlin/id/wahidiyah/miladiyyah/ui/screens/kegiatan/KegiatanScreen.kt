@@ -13,7 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
-import id.wahidiyah.miladiyyah.AppRepository
+import id.wahidiyah.miladiyyah.core.data.source.remote.KegiatanItem
+import id.wahidiyah.miladiyyah.core.data.sync.RemoteSyncCoordinator
 import id.wahidiyah.miladiyyah.core.utils.UiState
 import id.wahidiyah.miladiyyah.theme.*
 import id.wahidiyah.miladiyyah.ui.components.AppHeader
@@ -22,11 +23,18 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun KegiatanScreen() {
-    var uiState by remember { mutableStateOf<UiState<String>>(UiState.Loading) }
-    val scope = rememberCoroutineScope()
+    var kegiatanList by remember {
+        mutableStateOf(RemoteSyncCoordinator.loadCachedKegiatan())
+    }
+
+    var isLoading by remember {
+        mutableStateOf(kegiatanList.isEmpty())
+    }
 
     LaunchedEffect(Unit) {
-        uiState = AppRepository.getKegiatan()
+        isLoading = kegiatanList.isEmpty()
+        kegiatanList = RemoteSyncCoordinator.syncKegiatan()
+        isLoading = false
     }
 
     Column(
@@ -50,8 +58,8 @@ fun KegiatanScreen() {
                 modifier = Modifier.padding(start = 4.dp, bottom = AppSpacing.md)
             )
 
-            when (uiState) {
-                is UiState.Loading -> {
+            when {
+                isLoading -> {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -62,7 +70,7 @@ fun KegiatanScreen() {
                     }
                 }
 
-                is UiState.Empty -> {
+                kegiatanList.isEmpty() -> {
                     Card(
                         shape = MaterialTheme.shapes.extraLarge,
                         colors = CardDefaults.cardColors(containerColor = Surface),
@@ -104,72 +112,63 @@ fun KegiatanScreen() {
                     }
                 }
 
-                is UiState.Error -> {
-                    val err = uiState as UiState.Error
-
-                    Card(
-                        shape = MaterialTheme.shapes.extraLarge,
-                        colors = CardDefaults.cardColors(containerColor = Surface),
-                        modifier = Modifier.fillMaxWidth()
+                else -> {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Column(modifier = Modifier.padding(24.dp)) {
-                            Icon(
-                                Icons.Default.Warning,
-                                contentDescription = null,
-                                tint = Error,
-                                modifier = Modifier.size(40.dp)
-                            )
-                            Spacer(modifier = Modifier.height(14.dp))
-                            Text(
-                                "Terjadi kesalahan",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = TextPrimary
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                err.message,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = TextSecondary
-                            )
-                            Spacer(modifier = Modifier.height(20.dp))
-                            Button(
-                                onClick = {
-                                    scope.launch {
-                                        uiState = UiState.Loading
-                                        uiState = AppRepository.getKegiatan()
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = BrandPrimary
-                                )
+                        kegiatanList.forEach { item: KegiatanItem ->
+                            Card(
+                                shape = MaterialTheme.shapes.large,
+                                colors = CardDefaults.cardColors(containerColor = Surface),
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text("Coba Lagi")
-                            }
-                        }
-                    }
-                }
+                                Row(
+                                    modifier = Modifier.padding(20.dp),
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(12.dp))
+                                            .background(BrandAccentLight)
+                                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Icon(
+                                            Icons.Default.DateRange,
+                                            contentDescription = null,
+                                            tint = BrandPrimary,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
 
-                is UiState.Success -> {
-                    Card(
-                        shape = MaterialTheme.shapes.extraLarge,
-                        colors = CardDefaults.cardColors(containerColor = Surface),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(24.dp)
-                        ) {
-                            Text(
-                                "Informasi Kegiatan",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = BrandPrimary
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                (uiState as UiState.Success).data,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = TextPrimary,
-                                lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.35
-                            )
+                                    Spacer(modifier = Modifier.width(14.dp))
+
+                                    Column(
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text(
+                                            item.title,
+                                            style = MaterialTheme.typography.titleMedium,
+                                            color = TextPrimary
+                                        )
+                                        Spacer(modifier = Modifier.height(6.dp))
+                                        Text(
+                                            item.date,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = BrandPrimary,
+                                            fontWeight = FontWeight.SemiBold
+                                        )
+                                        if (item.location.isNotBlank()) {
+                                            Spacer(modifier = Modifier.height(4.dp))
+                                            Text(
+                                                item.location,
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = TextSecondary
+                                            )
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }

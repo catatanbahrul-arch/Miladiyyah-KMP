@@ -12,7 +12,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.draw.clip
-import id.wahidiyah.miladiyyah.AppRepository
+import id.wahidiyah.miladiyyah.core.data.source.remote.PustakaItem
+import id.wahidiyah.miladiyyah.core.data.sync.RemoteSyncCoordinator
 import id.wahidiyah.miladiyyah.core.utils.UiState
 import id.wahidiyah.miladiyyah.theme.*
 import id.wahidiyah.miladiyyah.ui.components.AppHeader
@@ -21,11 +22,18 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun PustakaScreen() {
-    var uiState by remember { mutableStateOf<UiState<String>>(UiState.Loading) }
-    val scope = rememberCoroutineScope()
+    var pustakaList by remember {
+        mutableStateOf(RemoteSyncCoordinator.loadCachedPustaka())
+    }
+
+    var isLoading by remember {
+        mutableStateOf(pustakaList.isEmpty())
+    }
 
     LaunchedEffect(Unit) {
-        uiState = AppRepository.getPustaka()
+        isLoading = pustakaList.isEmpty()
+        pustakaList = RemoteSyncCoordinator.syncPustaka()
+        isLoading = false
     }
 
     Column(
@@ -45,12 +53,12 @@ fun PustakaScreen() {
             )
         ) {
             AppSectionLabel(
-                "DOKUMEN JAMAah".uppercase(),
+                "DOKUMEN JAMAAH",
                 modifier = Modifier.padding(start = 4.dp, bottom = AppSpacing.md)
             )
 
-            when (uiState) {
-                is UiState.Loading -> {
+            when {
+                isLoading -> {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -61,7 +69,7 @@ fun PustakaScreen() {
                     }
                 }
 
-                is UiState.Empty -> {
+                pustakaList.isEmpty() -> {
                     Card(
                         shape = MaterialTheme.shapes.extraLarge,
                         colors = CardDefaults.cardColors(containerColor = Surface),
@@ -87,13 +95,17 @@ fun PustakaScreen() {
                                     modifier = Modifier.size(36.dp)
                                 )
                             }
+
                             Spacer(modifier = Modifier.height(20.dp))
+
                             Text(
                                 "Pustaka kosong",
                                 style = MaterialTheme.typography.titleLarge,
                                 color = TextPrimary
                             )
+
                             Spacer(modifier = Modifier.height(8.dp))
+
                             Text(
                                 "Belum ada dokumen yang tersedia.",
                                 style = MaterialTheme.typography.bodyMedium,
@@ -103,70 +115,50 @@ fun PustakaScreen() {
                     }
                 }
 
-                is UiState.Error -> {
-                    val err = uiState as UiState.Error
-
-                    Card(
-                        shape = MaterialTheme.shapes.extraLarge,
-                        colors = CardDefaults.cardColors(containerColor = Surface),
-                        modifier = Modifier.fillMaxWidth()
+                else -> {
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Column(modifier = Modifier.padding(24.dp)) {
-                            Icon(
-                                Icons.Default.Warning,
-                                contentDescription = null,
-                                tint = Error,
-                                modifier = Modifier.size(40.dp)
-                            )
-                            Spacer(modifier = Modifier.height(14.dp))
-                            Text(
-                                "Terjadi kesalahan",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = TextPrimary
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                err.message,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = TextSecondary
-                            )
-                            Spacer(modifier = Modifier.height(20.dp))
-                            Button(
-                                onClick = {
-                                    scope.launch {
-                                        uiState = UiState.Loading
-                                        uiState = AppRepository.getPustaka()
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = BrandPrimary
-                                )
+                        pustakaList.forEach { item: PustakaItem ->
+                            Card(
+                                shape = MaterialTheme.shapes.large,
+                                colors = CardDefaults.cardColors(containerColor = Surface),
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text("Coba Lagi")
-                            }
-                        }
-                    }
-                }
+                                Column(
+                                    modifier = Modifier.padding(20.dp)
+                                ) {
+                                    Text(
+                                        item.title,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        color = TextPrimary
+                                    )
 
-                is UiState.Success -> {
-                    Card(
-                        shape = MaterialTheme.shapes.extraLarge,
-                        colors = CardDefaults.cardColors(containerColor = Surface),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Column(modifier = Modifier.padding(24.dp)) {
-                            Text(
-                                "Konten Pustaka",
-                                style = MaterialTheme.typography.titleMedium,
-                                color = BrandPrimary
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                (uiState as UiState.Success).data,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = TextPrimary,
-                                lineHeight = MaterialTheme.typography.bodyLarge.lineHeight * 1.35
-                            )
+                                    if (item.content.isNotBlank()) {
+                                        Spacer(modifier = Modifier.height(8.dp))
+                                        Text(
+                                            item.content,
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = TextSecondary,
+                                            lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.35
+                                        )
+                                    }
+
+                                    if (item.link.isNotBlank()) {
+                                        Spacer(modifier = Modifier.height(14.dp))
+                                        Text(
+                                            "Dokumen tersedia",
+                                            style = MaterialTheme.typography.labelMedium,
+                                            color = BrandPrimary
+                                        )
+                                        Text(
+                                            item.link,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = TextSecondary
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }
