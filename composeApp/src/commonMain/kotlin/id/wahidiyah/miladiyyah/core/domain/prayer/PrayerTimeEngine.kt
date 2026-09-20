@@ -58,7 +58,10 @@ object PrayerTimeEngine {
     fun getPrayers(date: LocalDate): List<PrayerTime> {
         val timeZone = TimeZone.currentSystemDefault()
         // Menggunakan offset dari waktu sekarang agar GMT tetap akurat
-        val offset = date.atStartOfDayIn(timeZone).offset.totalSeconds / 3600.0
+        val offset =
+            timeZone.offsetAt(
+                date.atStartOfDayIn(timeZone)
+            ).totalSeconds / 3600.0
         val result =
             FalakEngine.calculate(
                 date = date,
