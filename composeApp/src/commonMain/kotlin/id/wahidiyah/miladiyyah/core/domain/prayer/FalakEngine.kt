@@ -77,14 +77,15 @@ object FalakEngine {
     private const val IMSAK_BEFORE_SUBUH_MINUTES = 10.0
 
     /**
-     * Untuk Dhuha kita mempertahankan perilaku aplikasi
-     * yang sudah ada sampai tersedia dokumentasi publik
-     * NU Online yang cukup eksplisit mengenai parameter Dhuha.
+     * Tinggi Matahari awal Dhuha.
      *
-     * Existing behavior:
-     * Dhuha = sunrise + 20 menit.
+     * Dhuha dihitung berdasarkan tinggi Matahari,
+     * bukan sebagai jumlah menit tetap setelah terbit.
+     *
+     * Baseline falak:
+     * +4°30' = +4.5° di atas ufuk.
      */
-    private const val DHUHA_AFTER_SUNRISE_MINUTES = 20.0
+    private const val DHUHA_ALTITUDE = 4.5
 
     // ============================================================
     // UTILITAS ANGLE
@@ -662,10 +663,25 @@ object FalakEngine {
         // DHUHA
         // --------------------------------------------------------
 
+        /**
+         * Dhuha ditentukan dari tinggi Matahari +4°30'.
+         *
+         * Jangan lagi memakai:
+         *     terbit + 20 menit
+         *
+         * karena interval tersebut tidak konstan terhadap
+         * tanggal, lintang, dan deklinasi Matahari.
+         */
         val dhuhaRaw =
-            terbitRaw +
-                DHUHA_AFTER_SUNRISE_MINUTES /
-                60.0
+            calculateEventTime(
+                date = date,
+                localHourForEphemeris = 6.0,
+                latitude = safeLatitude,
+                longitude = safeLongitude,
+                timeZone = timeZone,
+                altitudeDegrees = DHUHA_ALTITUDE,
+                morning = true
+            )
 
         // --------------------------------------------------------
         // DZUHUR / ISTIWA
