@@ -18,10 +18,8 @@ fun SplashScreen(onTimeout: () -> Unit) {
     LaunchedEffect(Unit) { delay(2000); onTimeout() }
     Box(modifier = Modifier.fillMaxSize().background(Background), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            WahidiyahLogo(modifier = Modifier.size(100.dp))
-            Spacer(modifier = Modifier.height(32.dp))
-            Text("WAHIDIYAH", color = BrandPrimaryDark, fontSize = 28.sp, fontWeight = FontWeight.Black, letterSpacing = 8.sp)
-            Spacer(modifier = Modifier.height(8.dp))
+            WahidiyahLogo(modifier = Modifier.width(220.dp))
+            Spacer(modifier = Modifier.height(24.dp))
             Text("Aplikasi Resmi Jamaah", color = TextSecondary, fontSize = 13.sp, letterSpacing = 2.sp)
         }
     }

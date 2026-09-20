@@ -18,7 +18,7 @@ fun WahidiyahLogo(
             Res.drawable.wahidiyah_logo_home_splash
         ),
         contentDescription = "Logo Wahidiyah",
-        modifier = modifier.aspectRatio(1f),
+        modifier = modifier.aspectRatio(1346f / 1150f),
         contentScale = ContentScale.Fit
     )
 }

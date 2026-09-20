@@ -53,10 +53,8 @@ fun HomeScreen(onNavigateToSalat: () -> Unit = {}, onNavigateToPustaka: () -> Un
     Column(modifier = Modifier.fillMaxSize().background(Background).verticalScroll(scrollState)) {
         Box(modifier = Modifier.fillMaxWidth().background(BrandPrimaryDark, shape = RoundedCornerShape(bottomStart = 32.dp, bottomEnd = 32.dp)).padding(top = 40.dp, bottom = 48.dp, start = 24.dp, end = 24.dp)) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                WahidiyahLogo(modifier = Modifier.size(48.dp))
-                Spacer(modifier = Modifier.height(12.dp))
-                Text("WAHIDIYAH", color = Surface, fontSize = 20.sp, letterSpacing = 6.sp, fontWeight = FontWeight.Black)
-                Spacer(modifier = Modifier.height(12.dp))
+                WahidiyahLogo(modifier = Modifier.width(180.dp))
+                Spacer(modifier = Modifier.height(20.dp))
                 Row(modifier = Modifier.clip(RoundedCornerShape(16.dp)).clickable { onUpdateLocation() }.background(BrandPrimary).padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.LocationOn, contentDescription = null, tint = BrandAccentLight, modifier = Modifier.size(14.dp))
                     Spacer(modifier = Modifier.width(6.dp))
