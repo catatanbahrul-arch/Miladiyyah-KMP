@@ -41,7 +41,7 @@ private fun formatKegiatanDateIndonesian(raw: String): String {
     val date = runCatching { LocalDate.parse(normalized) }.getOrNull()
         ?: return raw.substringBefore(" GMT").trim()
 
-    val weekday = KegiatanDayNames[date.dayOfWeek.isoDayNumber - 1]
+    val weekday = KegiatanDayNames[date.dayOfWeek.value - 1]
     val month = KegiatanMonthNames[date.monthNumber]
 
     return "$weekday, ${date.dayOfMonth} $month ${date.year}"

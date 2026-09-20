@@ -58,7 +58,7 @@ private fun formatCalendarAgendaDate(raw: String): String {
     }.getOrNull() ?: return raw
 
     val weekday = CalendarDayNames[
-        date.dayOfWeek.isoDayNumber - 1
+        date.dayOfWeek.value - 1
     ]
 
     val month = CalendarMonthNames[
