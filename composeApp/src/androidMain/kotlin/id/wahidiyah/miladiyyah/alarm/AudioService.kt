@@ -14,7 +14,7 @@ import id.wahidiyah.miladiyyah.MainActivity
 
 class AudioService : Service() {
     private var mediaPlayer: MediaPlayer? = null
-    private val CHANNEL_ID = "WAHIDIYAH_ALARM_CHANNEL"
+    private val CHANNEL_ID = AlarmScheduler.NOTIFICATION_CHANNEL_ID
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val action = intent?.action
