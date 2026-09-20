@@ -23,6 +23,29 @@ import id.wahidiyah.miladiyyah.theme.*
 import id.wahidiyah.miladiyyah.ui.components.AppHeader
 import id.wahidiyah.miladiyyah.ui.components.AppSectionLabel
 import kotlinx.coroutines.launch
+import id.wahidiyah.miladiyyah.core.data.source.remote.normalizeKegiatanDate
+import kotlinx.datetime.LocalDate
+
+private val KegiatanDayNames = listOf(
+    "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"
+)
+
+private val KegiatanMonthNames = listOf(
+    "",
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+)
+
+private fun formatKegiatanDateIndonesian(raw: String): String {
+    val normalized = normalizeKegiatanDate(raw)
+    val date = runCatching { LocalDate.parse(normalized) }.getOrNull()
+        ?: return raw.substringBefore(" GMT").trim()
+
+    val weekday = KegiatanDayNames[date.dayOfWeek.isoDayNumber - 1]
+    val month = KegiatanMonthNames[date.monthNumber]
+
+    return "$weekday, ${date.dayOfMonth} $month ${date.year}"
+}
 
 @Composable
 fun KegiatanScreen() {
@@ -159,7 +182,7 @@ fun KegiatanScreen() {
                                         )
                                         Spacer(modifier = Modifier.height(6.dp))
                                         Text(
-                                            item.date,
+                                            formatKegiatanDateIndonesian(item.date),
                                             style = MaterialTheme.typography.bodyMedium,
                                             color = BrandPrimary,
                                             fontWeight = FontWeight.SemiBold

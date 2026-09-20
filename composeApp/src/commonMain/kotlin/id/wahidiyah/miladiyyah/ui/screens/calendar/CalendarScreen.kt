@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import id.wahidiyah.miladiyyah.core.data.source.remote.KegiatanItem
 import id.wahidiyah.miladiyyah.core.data.source.remote.KegiatanRepository
+import id.wahidiyah.miladiyyah.core.data.source.remote.normalizeKegiatanDate
 import id.wahidiyah.miladiyyah.core.data.sync.RemoteSyncCoordinator
 import id.wahidiyah.miladiyyah.core.domain.calendar.engine.CalendarEngine
 import id.wahidiyah.miladiyyah.core.domain.calendar.engine.HijriAdjuster
@@ -38,6 +39,34 @@ import kotlinx.datetime.DatePeriod
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.minus
 import kotlinx.datetime.plus
+
+private val CalendarDayNames = listOf(
+    "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"
+)
+
+private val CalendarMonthNames = listOf(
+    "",
+    "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+    "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+)
+
+private fun formatCalendarAgendaDate(raw: String): String {
+    val normalized = normalizeKegiatanDate(raw)
+
+    val date = runCatching {
+        LocalDate.parse(normalized)
+    }.getOrNull() ?: return raw
+
+    val weekday = CalendarDayNames[
+        date.dayOfWeek.isoDayNumber - 1
+    ]
+
+    val month = CalendarMonthNames[
+        date.monthNumber
+    ]
+
+    return "$weekday, ${date.dayOfMonth} $month ${date.year}"
+}
 
 fun Int.toArabicDigits(): String {
     val arabicNumbers = listOf('٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩')
@@ -99,37 +128,37 @@ fun CalendarScreen(engine: CalendarEngine) {
     }
     
     // Normalisasi format tanggal kegiatan agar cocok dengan engine (YYYY-MM-DD)
-    val eventDateSet = remember(allKegiatan) {
+    val normalizedKegiatan = remember(allKegiatan) {
         allKegiatan.map { item ->
-            try {
-                val parts = item.date.split("-")
-                if (parts.size == 3) {
-                    val y = parts[0]
-                    val m = parts[1].toInt().toString() // Menghilangkan leading zero jika ada
-                    val d = parts[2].toInt().toString()
-                    "$y-$m-$d"
-                } else item.date.trim()
-            } catch (e: Exception) {
-                item.date.trim()
-            }
-        }.toSet()
-    }
-    
-    val filteredKegiatan = remember(currentDisplayMonth, allKegiatan) {
-        allKegiatan.filter { item ->
-            try {
-                val parts = item.date.split("-")
-                if (parts.size >= 2) {
-                    val year = parts[0].toInt()
-                    val month = parts[1].toInt()
-                    year == currentDisplayMonth.year && month == currentDisplayMonth.monthNumber
-                } else false
-            } catch (e: Exception) {
-                false
-            }
+            item.copy(
+                date = normalizeKegiatanDate(item.date)
+            )
         }
     }
-    
+
+    val eventDateSet = remember(normalizedKegiatan) {
+        normalizedKegiatan.mapNotNull { item ->
+            runCatching {
+                LocalDate.parse(item.date).toString()
+            }.getOrNull()
+        }.toSet()
+    }
+
+    val filteredKegiatan = remember(
+        currentDisplayMonth,
+        normalizedKegiatan
+    ) {
+        normalizedKegiatan.filter { item ->
+            val date = runCatching {
+                LocalDate.parse(item.date)
+            }.getOrNull()
+
+            date != null &&
+                date.year == currentDisplayMonth.year &&
+                date.monthNumber == currentDisplayMonth.monthNumber
+        }
+    }
+
     val firstHijri = daysInMonth.firstOrNull { it.gregorian.month == currentDisplayMonth.monthNumber }?.hijri
     val lastHijri = daysInMonth.lastOrNull { it.gregorian.month == currentDisplayMonth.monthNumber }?.hijri
     
@@ -199,10 +228,7 @@ fun CalendarScreen(engine: CalendarEngine) {
                     val isSunday = day.gregorian.localDate.dayOfWeek.value == 7
                     val isFriday = day.gregorian.localDate.dayOfWeek.value == 5
                     
-                    val y = day.gregorian.year
-                    val m = day.gregorian.month
-                    val d = day.gregorian.day
-                    val dateKey = "$y-$m-$d"
+                    val dateKey = day.gregorian.localDate.toString()
                     
                     val hasEvent = eventDateSet.contains(dateKey) && isCurrentMonth
 
@@ -258,11 +284,11 @@ fun CalendarScreen(engine: CalendarEngine) {
         Spacer(modifier = Modifier.height(8.dp))
 
         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Text("Agenda Kegiatan Bulan Ini", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+            Text("Agenda Kegiatan ${monthNames[currentDisplayMonth.monthNumber]} ${currentDisplayMonth.year}", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
             Spacer(modifier = Modifier.height(8.dp))
             
             if (filteredKegiatan.isEmpty()) {
-                Text("Tidak ada agenda kegiatan khusus pada bulan ini.", fontSize = 12.sp, color = TextSecondary)
+                Text("Tidak ada agenda kegiatan pada ${monthNames[currentDisplayMonth.monthNumber]} ${currentDisplayMonth.year}.", fontSize = 12.sp, color = TextSecondary)
             } else {
                 Column(
                     modifier = Modifier.fillMaxWidth(),
@@ -286,7 +312,7 @@ fun CalendarScreen(engine: CalendarEngine) {
                                         .padding(horizontal = 6.dp, vertical = 4.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    Text(item.date, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = BrandPrimary)
+                                    Text(formatCalendarAgendaDate(item.date), fontSize = 10.sp, fontWeight = FontWeight.Bold, color = BrandPrimary)
                                 }
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Text(
