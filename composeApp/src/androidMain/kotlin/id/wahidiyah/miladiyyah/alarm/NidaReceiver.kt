@@ -129,11 +129,9 @@ class NidaReceiver : BroadcastReceiver() {
             .setContentIntent(contentIntent)
 
         if (
-            Build.VERSION.SDK_INT >=
+            Build.VERSION.SDK_INT <
                 Build.VERSION_CODES.O
         ) {
-            builder.setSilent(true)
-        } else {
             builder
                 .setSound(null)
                 .setVibrate(
