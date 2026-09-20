@@ -6,9 +6,15 @@ import android.content.Intent
 
 class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (intent.action == Intent.ACTION_BOOT_COMPLETED || intent.action == "android.intent.action.LOCKED_BOOT_COMPLETED") {
-            // Mengembalikan jadwal alarm HANYA untuk fitur yang diset ON oleh User.
-            AlarmScheduler.rescheduleAllEnabled(context)
+        when (intent.action) {
+            Intent.ACTION_BOOT_COMPLETED,
+            Intent.ACTION_LOCKED_BOOT_COMPLETED,
+            Intent.ACTION_MY_PACKAGE_REPLACED,
+            Intent.ACTION_TIME_CHANGED,
+            Intent.ACTION_TIMEZONE_CHANGED -> {
+                AlarmScheduler.initialize(context)
+                AlarmScheduler.rescheduleAllEnabled(context)
+            }
         }
     }
 }

@@ -48,6 +48,8 @@ class MainActivity : ComponentActivity() {
 
         val prefs = getSharedPreferences("wahidiyah_cache", MODE_PRIVATE)
 
+        AlarmScheduler.initialize(this)
+
         AppCache.save = { key, value ->
             prefs.edit().putString(key, value).apply()
         }

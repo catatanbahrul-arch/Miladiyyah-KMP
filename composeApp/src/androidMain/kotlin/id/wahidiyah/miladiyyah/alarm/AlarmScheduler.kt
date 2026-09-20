@@ -16,6 +16,19 @@ import java.util.Calendar
 object AlarmScheduler {
     private const val TAG = "AlarmScheduler"
 
+    @Volatile
+    private var initializedContext: Context? = null
+
+    fun initialize(context: Context) {
+        initializedContext = context.applicationContext
+    }
+
+    fun rescheduleInitialized() {
+        initializedContext?.let { context ->
+            rescheduleAllEnabled(context)
+        }
+    }
+
     // ID Unik untuk memastikan PendingIntent konsisten saat pembuatan & pembatalan
     private const val ID_SUBUH = 101
     private const val ID_DZUHUR = 102
@@ -28,16 +41,121 @@ object AlarmScheduler {
     private const val ID_DANABOX_EVENING = 402
 
     fun rescheduleAllEnabled(context: Context) {
+        initialize(context)
+
         Log.d(TAG, "Mengeksekusi ulang seluruh jadwal alarm...")
-        val isAdzanOn = AppCache.loadBoolean("ALARM_ADZAN", true)
-        val isTarhimOn = AppCache.loadBoolean("ALARM_TARHIM", true)
-        val isTasyafuanOn = AppCache.loadBoolean("ALARM_TASYAFUAN", true)
-        val isDanaBoxOn = AppCache.loadBoolean("ALARM_DANABOX", true)
+
+        // Selalu cabut SEMUA alarm lama lebih dulu.
+        // Ini mencegah alarm hasil perhitungan lama tetap hidup ketika
+        // hasil FalakEngine berubah beberapa menit.
+        cancelAllKnownAlarms(context)
+
+        // Pastikan scheduler yang dipanggil dari BootReceiver / package update
+        // memakai lokasi cache terbaru, bukan koordinat default engine.
+        restoreCachedLocation(context)
+
+        // Jangan bergantung pada AppCache saat scheduler dipanggil
+        // dari BootReceiver / package replacement. Pada titik itu
+        // MainActivity bisa belum pernah dijalankan sehingga
+        // AppCache.load belum terhubung ke SharedPreferences.
+        val isAdzanOn =
+            loadBooleanFromPreferences(
+                context,
+                "ALARM_ADZAN",
+                true
+            )
+
+        val isTarhimOn =
+            loadBooleanFromPreferences(
+                context,
+                "ALARM_TARHIM",
+                true
+            )
+
+        val isTasyafuanOn =
+            loadBooleanFromPreferences(
+                context,
+                "ALARM_TASYAFUAN",
+                true
+            )
+
+        val isDanaBoxOn =
+            loadBooleanFromPreferences(
+                context,
+                "ALARM_DANABOX",
+                true
+            )
 
         if (isAdzanOn) scheduleAdzan(context) else cancelAdzan(context)
         if (isTarhimOn) scheduleTarhim(context) else cancelTarhim(context)
         if (isTasyafuanOn) scheduleTasyafuan(context) else cancelTasyafuan(context)
         if (isDanaBoxOn) scheduleDanaBox(context) else cancelDanaBox(context)
+    }
+
+    private fun loadBooleanFromPreferences(
+        context: Context,
+        key: String,
+        default: Boolean
+    ): Boolean {
+        val prefs =
+            context.getSharedPreferences(
+                "wahidiyah_cache",
+                Context.MODE_PRIVATE
+            )
+
+        return prefs
+            .getString(key, null)
+            ?.toBooleanStrictOrNull()
+            ?: default
+    }
+
+    private fun cancelAllKnownAlarms(context: Context) {
+        cancelAdzan(context)
+        cancelTarhim(context)
+        cancelTasyafuan(context)
+        cancelDanaBox(context)
+    }
+
+    private fun restoreCachedLocation(context: Context) {
+        val prefs =
+            context.getSharedPreferences(
+                "wahidiyah_cache",
+                Context.MODE_PRIVATE
+            )
+
+        val latitude =
+            prefs.getString("LOCATION_LATITUDE", null)
+                ?.toDoubleOrNull()
+
+        val longitude =
+            prefs.getString("LOCATION_LONGITUDE", null)
+                ?.toDoubleOrNull()
+
+        val name =
+            prefs.getString("LOCATION_NAME", null)
+                ?.takeIf { it.isNotBlank() }
+
+        val elevation =
+            prefs.getString("LOCATION_ELEVATION", null)
+                ?.toDoubleOrNull()
+                ?.takeIf { it.isFinite() && it >= 0.0 }
+                ?: 0.0
+
+        if (
+            latitude != null &&
+            longitude != null &&
+            latitude.isFinite() &&
+            longitude.isFinite() &&
+            latitude in -90.0..90.0 &&
+            longitude in -180.0..180.0
+        ) {
+            PrayerTimeEngine.updateLocation(
+                latitude = latitude,
+                longitude = longitude,
+                name = name ?: PrayerTimeEngine.locationName,
+                elevationMeters = elevation
+            )
+        }
     }
 
     private fun setAlarm(context: Context, id: Int, actionStr: String, title: String, timeInMillis: Long) {
