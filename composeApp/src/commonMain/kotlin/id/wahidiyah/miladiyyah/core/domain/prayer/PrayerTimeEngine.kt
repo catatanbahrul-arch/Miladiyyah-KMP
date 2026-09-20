@@ -17,6 +17,27 @@ object PrayerTimeEngine {
     var longitude = 112.0178
     var locationName by mutableStateOf("Mengambil lokasi...") // State dinamis untuk nama kota
 
+
+    // Titik tunggal perubahan koordinat.
+    // Semua perhitungan waktu salat membaca latitude/longitude
+    // dari object ini.
+    fun updateLocation(
+        latitude: Double,
+        longitude: Double,
+        name: String
+    ) {
+        if (
+            latitude !in -90.0..90.0 ||
+            longitude !in -180.0..180.0
+        ) {
+            return
+        }
+
+        this.latitude = latitude
+        this.longitude = longitude
+        this.locationName = name
+    }
+
     fun getPrayers(date: LocalDate): List<PrayerTime> {
         val timeZone = TimeZone.currentSystemDefault()
         // Menggunakan offset dari waktu sekarang agar GMT tetap akurat

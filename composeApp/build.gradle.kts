@@ -97,6 +97,11 @@ kotlin {
             implementation(
                 "io.ktor:ktor-client-okhttp:2.3.9"
             )
+
+            // Android GPS / current location / location settings
+            implementation(
+                "com.google.android.gms:play-services-location:21.4.0"
+            )
         }
 
         // ========================================================

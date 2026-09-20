@@ -172,6 +172,135 @@ fun HomeScreen(
         }
 
         // ----------------------------------------------------
+        // IMPORTANT ANNOUNCEMENT
+        // ----------------------------------------------------
+        // Pengumuman aktif menjadi secondary-hero dan muncul
+        // tepat setelah area hero. Jika tidak ada data, blok ini
+        // tidak dirender sehingga Home kembali bersih.
+        // ----------------------------------------------------
+        if (
+            pengumuman != null &&
+            (
+                pengumuman!!.title.isNotBlank() ||
+                    pengumuman!!.content.isNotBlank()
+            )
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(
+                        start = 24.dp,
+                        end = 24.dp,
+                        top = 4.dp,
+                        bottom = 20.dp
+                    )
+            ) {
+                Row(
+                    modifier = Modifier.padding(
+                        start = 4.dp,
+                        bottom = 10.dp
+                    ),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Default.Info,
+                        contentDescription = null,
+                        tint = BrandPrimary,
+                        modifier = Modifier.size(20.dp)
+                    )
+
+                    Spacer(
+                        modifier = Modifier.width(8.dp)
+                    )
+
+                    Text(
+                        "PENGUMUMAN",
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = BrandPrimary,
+                        letterSpacing = 1.6.sp
+                    )
+                }
+
+                Card(
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = BrandPrimary
+                    ),
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 3.dp
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .width(6.dp)
+                                .fillMaxHeight()
+                                .background(BrandAccent)
+                        )
+
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(
+                                    horizontal = 20.dp,
+                                    vertical = 20.dp
+                                )
+                        ) {
+                            Text(
+                                if (
+                                    pengumuman!!.title.isNotBlank()
+                                ) {
+                                    pengumuman!!.title
+                                } else {
+                                    "Pengumuman"
+                                },
+                                fontSize = 19.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Surface,
+                                lineHeight = 26.sp
+                            )
+
+                            if (
+                                pengumuman!!.content.isNotBlank()
+                            ) {
+                                Spacer(
+                                    modifier = Modifier.height(10.dp)
+                                )
+
+                                Text(
+                                    pengumuman!!.content,
+                                    fontSize = 14.sp,
+                                    color = Surface.copy(
+                                        alpha = 0.92f
+                                    ),
+                                    lineHeight = 22.sp
+                                )
+                            }
+
+                            if (
+                                pengumuman!!.link.isNotBlank()
+                            ) {
+                                Spacer(
+                                    modifier = Modifier.height(12.dp)
+                                )
+
+                                Text(
+                                    "Lihat selengkapnya →",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = BrandAccentLight
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // ----------------------------------------------------
         // TODAY / DATE CARD
         // ----------------------------------------------------
         Box(
@@ -235,53 +364,6 @@ fun HomeScreen(
                         )
                     }
                 }
-            }
-        }
-
-        // ----------------------------------------------------
-        // IMPORTANT ANNOUNCEMENT
-        // ----------------------------------------------------
-        if (pengumuman != null && (pengumuman!!.title.isNotBlank() || pengumuman!!.content.isNotBlank())) {
-            Column(
-                modifier = Modifier
-                    .padding(horizontal = 24.dp)
-                    .offset(y = (-8).dp)
-            ) {
-                Text(
-                    "Pengumuman",
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = BrandPrimary,
-                    letterSpacing = 1.sp,
-                    modifier = Modifier.padding(bottom = 10.dp, start = 4.dp)
-                )
-
-                Card(
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = BrandAccentLight),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(modifier = Modifier.padding(20.dp)) {
-                        Text(
-                            if (pengumuman!!.title.isNotBlank()) pengumuman!!.title else "Pengumuman",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = BrandPrimary
-                        )
-
-                        if (pengumuman!!.content.isNotBlank()) {
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                pengumuman!!.content,
-                                fontSize = 14.sp,
-                                color = BrandPrimaryDark,
-                                lineHeight = 22.sp
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
             }
         }
 
