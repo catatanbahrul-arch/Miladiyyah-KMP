@@ -15,7 +15,12 @@ data class PrayerTime(val type: PrayerType, val time: LocalTime)
 object PrayerTimeEngine {
     var latitude = -7.8480
     var longitude = 112.0178
-    var locationName by mutableStateOf("Mengambil lokasi...") // State dinamis untuk nama kota
+
+    // Elevasi lokasi dalam meter di atas permukaan laut.
+    // Dipakai oleh FalakEngine khususnya untuk sunrise/Maghrib.
+    var elevationMeters = 0.0
+
+    var locationName by mutableStateOf("Mengambil lokasi...")
 
 
     // Titik tunggal perubahan koordinat.
@@ -24,7 +29,8 @@ object PrayerTimeEngine {
     fun updateLocation(
         latitude: Double,
         longitude: Double,
-        name: String
+        name: String,
+        elevationMeters: Double = this.elevationMeters
     ) {
         if (
             latitude !in -90.0..90.0 ||
@@ -35,6 +41,17 @@ object PrayerTimeEngine {
 
         this.latitude = latitude
         this.longitude = longitude
+
+        this.elevationMeters =
+            if (
+                elevationMeters.isFinite() &&
+                elevationMeters >= 0.0
+            ) {
+                elevationMeters
+            } else {
+                0.0
+            }
+
         this.locationName = name
     }
 
@@ -42,7 +59,14 @@ object PrayerTimeEngine {
         val timeZone = TimeZone.currentSystemDefault()
         // Menggunakan offset dari waktu sekarang agar GMT tetap akurat
         val offset = timeZone.offsetAt(Clock.System.now()).totalSeconds / 3600.0
-        val result = FalakEngine.calculate(date, latitude, longitude, offset)
+        val result =
+            FalakEngine.calculate(
+                date = date,
+                lat = latitude,
+                lng = longitude,
+                timeZone = offset,
+                elevationMeters = elevationMeters
+            )
 
         return listOf(
             PrayerTime(PrayerType.IMSAK, result.imsak),

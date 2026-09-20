@@ -261,6 +261,20 @@ class MainActivity : ComponentActivity() {
             return
         }
 
+        val elevationMeters =
+            if (
+                location.hasAltitude() &&
+                location.altitude.isFinite() &&
+                location.altitude >= 0.0
+            ) {
+                location.altitude
+            } else {
+                AppCache.load("LOCATION_ELEVATION")
+                    ?.toDoubleOrNull()
+                    ?.takeIf { it.isFinite() && it >= 0.0 }
+                    ?: 0.0
+            }
+
         PrayerTimeEngine.updateLocation(
             latitude = latitude,
             longitude = longitude,
@@ -268,7 +282,13 @@ class MainActivity : ComponentActivity() {
                 "Lokasi terakhir"
             } else {
                 "Menyempurnakan lokasi..."
-            }
+            },
+            elevationMeters = elevationMeters
+        )
+
+        AppCache.save(
+            "LOCATION_ELEVATION",
+            elevationMeters.toString()
         )
 
         AppCache.save(
@@ -300,7 +320,9 @@ class MainActivity : ComponentActivity() {
             PrayerTimeEngine.updateLocation(
                 latitude = latitude,
                 longitude = longitude,
-                name = finalName
+                name = finalName,
+                elevationMeters =
+                    PrayerTimeEngine.elevationMeters
             )
 
             AppCache.save(
@@ -391,6 +413,14 @@ class MainActivity : ComponentActivity() {
         val name =
             AppCache.load("LOCATION_NAME")
 
+        val elevation =
+            AppCache.load("LOCATION_ELEVATION")
+                ?.toDoubleOrNull()
+                ?.takeIf {
+                    it.isFinite() && it >= 0.0
+                }
+                ?: 0.0
+
         if (
             lat != null &&
             lng != null &&
@@ -403,7 +433,8 @@ class MainActivity : ComponentActivity() {
                 latitude = lat,
                 longitude = lng,
                 name = name?.takeIf { it.isNotBlank() }
-                    ?: "Lokasi terakhir"
+                    ?: "Lokasi terakhir",
+                elevationMeters = elevation
             )
         }
     }
