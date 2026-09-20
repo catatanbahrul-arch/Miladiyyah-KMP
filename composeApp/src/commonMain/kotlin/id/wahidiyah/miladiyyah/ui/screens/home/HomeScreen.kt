@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -35,6 +36,7 @@ fun HomeScreen(
     val tz = TimeZone.currentSystemDefault()
     var currentDateTime by remember { mutableStateOf(Clock.System.now().toLocalDateTime(tz)) }
     var pengumuman by remember { mutableStateOf(RemoteSyncCoordinator.loadCachedPengumuman()) }
+    val uriHandler = LocalUriHandler.current
 
     LaunchedEffect(Unit) {
         pengumuman = RemoteSyncCoordinator.syncPengumuman()
@@ -280,19 +282,38 @@ fun HomeScreen(
                                 )
                             }
 
-                            if (
-                                pengumuman!!.link.isNotBlank()
-                            ) {
+                            val announcementLink =
+                                pengumuman!!.link.trim()
+
+                            if (announcementLink.isNotBlank()) {
                                 Spacer(
-                                    modifier = Modifier.height(12.dp)
+                                    modifier = Modifier.height(14.dp)
                                 )
 
-                                Text(
-                                    "Lihat selengkapnya →",
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = BrandAccentLight
-                                )
+                                Button(
+                                    onClick = {
+                                        uriHandler.openUri(announcementLink)
+                                    },
+                                    enabled =
+                                        announcementLink.startsWith("https://") ||
+                                            announcementLink.startsWith("http://"),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = BrandAccentLight,
+                                        contentColor = BrandPrimaryDark,
+                                        disabledContainerColor = BrandAccentLight.copy(
+                                            alpha = 0.45f
+                                        ),
+                                        disabledContentColor = BrandPrimaryDark.copy(
+                                            alpha = 0.55f
+                                        )
+                                    )
+                                ) {
+                                    Text(
+                                        "Lihat selengkapnya →",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
                             }
                         }
                     }

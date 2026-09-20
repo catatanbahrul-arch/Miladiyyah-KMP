@@ -9,6 +9,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -32,18 +34,46 @@ fun SalatScreen(onNavigateToKiblat: () -> Unit = {}) {
     val scrollState = rememberScrollState()
     val tz = TimeZone.currentSystemDefault()
     val now = Clock.System.now().toLocalDateTime(tz)
+    val today = Clock.System.todayIn(tz)
+
+    var dayOffset by remember { mutableStateOf(0) }
+    val selectedDate =
+        today.plus(dayOffset, DateTimeUnit.DAY)
+    val isToday = selectedDate == today
 
     val prayers = try {
-        PrayerTimeEngine.getPrayers(now.date)
+        PrayerTimeEngine.getPrayers(selectedDate)
     } catch (e: Exception) {
         emptyList()
     }
 
-    val nextPrayer = try {
-        PrayerTimeEngine.getNextPrayer(now.time)
-    } catch (e: Exception) {
-        null
-    }
+    val nextPrayer =
+        if (isToday) {
+            try {
+                PrayerTimeEngine.getNextPrayer(now.time)
+            } catch (e: Exception) {
+                null
+            }
+        } else {
+            null
+        }
+
+    val dayNames = listOf(
+        "Senin", "Selasa", "Rabu", "Kamis",
+        "Jumat", "Sabtu", "Ahad"
+    )
+
+    val monthNames = listOf(
+        "", "Januari", "Februari", "Maret", "April",
+        "Mei", "Juni", "Juli", "Agustus", "September",
+        "Oktober", "November", "Desember"
+    )
+
+    val selectedDateLabel =
+        "${dayNames[selectedDate.dayOfWeek.ordinal]}, " +
+            "${selectedDate.dayOfMonth} " +
+            "${monthNames[selectedDate.monthNumber]} " +
+            "${selectedDate.year}"
 
     var adzanEnabled by remember { mutableStateOf(AppCache.loadBoolean("ALARM_ADZAN", true)) }
     var tarhimEnabled by remember { mutableStateOf(AppCache.loadBoolean("ALARM_TARHIM", true)) }
@@ -57,7 +87,7 @@ fun SalatScreen(onNavigateToKiblat: () -> Unit = {}) {
             .verticalScroll(scrollState)
     ) {
         AppHeader(
-            title = "Waktu Salat",
+            title = "Waktu Sholat",
             subtitle = PrayerTimeEngine.locationName
         )
 
@@ -67,9 +97,107 @@ fun SalatScreen(onNavigateToKiblat: () -> Unit = {}) {
                 vertical = AppSpacing.xxl
             )
         ) {
+            Card(
+                shape = MaterialTheme.shapes.large,
+                colors = CardDefaults.cardColors(
+                    containerColor = Surface
+                ),
+                elevation = CardDefaults.cardElevation(0.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                horizontal = 8.dp,
+                                vertical = 6.dp
+                            ),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(
+                            onClick = {
+                                dayOffset -= 1
+                            }
+                        ) {
+                            Icon(
+                                Icons.Default.KeyboardArrowLeft,
+                                contentDescription = "Hari sebelumnya",
+                                tint = BrandPrimary
+                            )
+                        }
+
+                        Column(
+                            modifier = Modifier.weight(1f),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                if (isToday) {
+                                    "Hari Ini"
+                                } else {
+                                    "Jadwal Sholat"
+                                },
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = BrandPrimary,
+                                letterSpacing = 1.2.sp
+                            )
+
+                            Spacer(
+                                modifier = Modifier.height(3.dp)
+                            )
+
+                            Text(
+                                selectedDateLabel,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = TextPrimary
+                            )
+                        }
+
+                        IconButton(
+                            onClick = {
+                                dayOffset += 1
+                            }
+                        ) {
+                            Icon(
+                                Icons.Default.KeyboardArrowRight,
+                                contentDescription = "Hari berikutnya",
+                                tint = BrandPrimary
+                            )
+                        }
+                    }
+
+                    if (!isToday) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            TextButton(
+                                onClick = {
+                                    dayOffset = 0
+                                }
+                            ) {
+                                Text(
+                                    "Kembali ke hari ini",
+                                    color = BrandPrimary,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            Spacer(
+                modifier = Modifier.height(AppSpacing.section)
+            )
+
             if (nextPrayer != null) {
                 AppSectionLabel(
-                    "SALAT BERIKUTNYA",
+                    "SHOLAT BERIKUTNYA",
                     modifier = Modifier.padding(start = 4.dp, bottom = AppSpacing.md)
                 )
 
@@ -113,8 +241,15 @@ fun SalatScreen(onNavigateToKiblat: () -> Unit = {}) {
             }
 
             AppSectionLabel(
-                "JADWAL HARI INI",
-                modifier = Modifier.padding(start = 4.dp, bottom = AppSpacing.md)
+                if (isToday) {
+                    "JADWAL SHOLAT HARI INI"
+                } else {
+                    "JADWAL SHOLAT"
+                },
+                modifier = Modifier.padding(
+                    start = 4.dp,
+                    bottom = AppSpacing.md
+                )
             )
 
             Card(
@@ -221,7 +356,7 @@ fun SalatScreen(onNavigateToKiblat: () -> Unit = {}) {
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                "Adzan & Salat",
+                                "Adzan & Sholat",
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = TextPrimary
