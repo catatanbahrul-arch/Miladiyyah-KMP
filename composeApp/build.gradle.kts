@@ -100,7 +100,7 @@ kotlin {
 
             // Android GPS / current location / location settings
             implementation(
-                "com.google.android.gms:play-services-location:21.4.0"
+                "com.google.android.gms:play-services-location:21.2.0"
             )
         }
 
