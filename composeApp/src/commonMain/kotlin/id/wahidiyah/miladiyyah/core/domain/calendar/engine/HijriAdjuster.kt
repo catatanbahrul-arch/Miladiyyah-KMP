@@ -7,38 +7,43 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.datetime.LocalDate
 
 object HijriAdjuster {
-    
-    // Default fallback jika offline: Mulai 2026-09-01 koreksi -1
+    // Fallback audit September 2026: baseline 7 -> reference 8 = +1.
+    // Data GAS yang berhasil dimuat akan menggantikan fallback.
     private val defaultAdjustments = listOf(
-        CascadeAdjustment("2026-09-01", -1, "Default Fallback")
+        CascadeAdjustment("2026-09-01", 1, "Fallback September 2026")
     )
 
-    private val _adjustmentsFlow = MutableStateFlow<List<CascadeAdjustment>>(defaultAdjustments)
+    private val _adjustmentsFlow = MutableStateFlow(defaultAdjustments)
     val adjustmentsFlow: StateFlow<List<CascadeAdjustment>> = _adjustmentsFlow.asStateFlow()
 
     fun updateAdjustments(newList: List<CascadeAdjustment>) {
-        if (newList.isNotEmpty()) {
-            // Urutkan berdasarkan tanggal mulai secara ascending
-            _adjustmentsFlow.value = newList.sortedBy { it.startDate }
+        if (newList.isEmpty()) {
+            println("[HIJRI-SYNC] Empty response; correction saat ini dipertahankan.")
+            return
         }
+        val normalized = newList
+            .filter { Regex("""^\\d{4}-\\d{2}-\\d{2}$""").matches(it.startDate) }
+            .filter { it.adjustment in -3..3 }
+            .sortedBy { it.startDate }
+        if (normalized.isEmpty()) {
+            println("[HIJRI-SYNC] Tidak ada correction valid; correction saat ini dipertahankan.")
+            return
+        }
+        _adjustmentsFlow.value = normalized
+        println("[HIJRI-SYNC] HijriAdjuster updated=${normalized.size}")
     }
 
     fun getOffset(date: LocalDate): Int {
-        val list = _adjustmentsFlow.value
-        if (list.isEmpty()) return 0
-
-        val dateString = date.toString() // Format "YYYY-MM-DD"
-        var activeOffset = 0
-
-        // Cari aturan aktif: Ambil koreksi dari tanggal mulai yang paling akhir 
-        // yang lebih kecil atau sama dengan tanggal target
-        for (item in list) {
-            if (dateString >= item.startDate) {
-                activeOffset = item.adjustment
-            } else {
-                break
-            }
+        val target = date.toString()
+        var active = 0
+        for (item in _adjustmentsFlow.value) {
+            if (target >= item.startDate) active = item.adjustment else break
         }
-        return activeOffset
+        return active
+    }
+
+    fun getActiveAdjustment(date: LocalDate): CascadeAdjustment? {
+        val target = date.toString()
+        return _adjustmentsFlow.value.filter { it.startDate <= target }.maxByOrNull { it.startDate }
     }
 }

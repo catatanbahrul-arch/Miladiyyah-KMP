@@ -11,6 +11,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import id.wahidiyah.miladiyyah.core.data.source.remote.CalendarNetworkService
+import id.wahidiyah.miladiyyah.core.domain.calendar.engine.HijriAdjuster
 import id.wahidiyah.miladiyyah.theme.*
 import id.wahidiyah.miladiyyah.ui.screens.calendar.CalendarScreen
 import id.wahidiyah.miladiyyah.ui.screens.home.HomeScreen
@@ -21,6 +23,10 @@ import id.wahidiyah.miladiyyah.ui.screens.pustaka.PustakaScreen
 import id.wahidiyah.miladiyyah.ui.screens.salat.SalatScreen
 import id.wahidiyah.miladiyyah.ui.screens.settings.SettingsScreen
 import id.wahidiyah.miladiyyah.ui.screens.splash.SplashScreen
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+
+const val GAS_API_URL = "https://script.google.com/macros/s/AKfycbyuM5B2TNnOvlJKIDeQCiec8-Q-jI0vDOv--n4xiLEu38hykX4wniweG4Jm5mE1H9Ew/exec"
 
 enum class AppScreen { BERANDA, KALENDER, SALAT, KEGIATAN, MENU, PUSTAKA, PENGATURAN, KIBLAT }
 
@@ -28,6 +34,36 @@ enum class AppScreen { BERANDA, KALENDER, SALAT, KEGIATAN, MENU, PUSTAKA, PENGAT
 fun App(onUpdateLocation: () -> Unit = {}) {
     var currentScreen by remember { mutableStateOf(AppScreen.BERANDA) }
     var showSplash by remember { mutableStateOf(true) }
+    val scope = rememberCoroutineScope()
+    val networkService = remember { CalendarNetworkService() }
+
+    suspend fun syncHijriCorrections() {
+        try {
+            val adjustments = networkService.fetchCascadeAdjustments(GAS_API_URL)
+            if (adjustments.isNotEmpty()) {
+                HijriAdjuster.updateAdjustments(adjustments)
+                println("[HIJRI-SYNC] Sync sukses: ${adjustments.size} records")
+            } else {
+                println("[HIJRI-SYNC] Tidak ada data baru; correction aktif dipertahankan")
+            }
+        } catch (e: Exception) {
+            println("[HIJRI-SYNC] Sync exception: ${e.message}")
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        syncHijriCorrections()
+    }
+
+    LaunchedEffect(currentScreen) {
+        if (currentScreen == AppScreen.KALENDER) {
+            syncHijriCorrections()
+            while (true) {
+                delay(10 * 60 * 1000L)
+                syncHijriCorrections()
+            }
+        }
+    }
 
     MiladiyyahTheme {
         if (showSplash) {
@@ -41,84 +77,21 @@ fun App(onUpdateLocation: () -> Unit = {}) {
                         contentColor = TextSecondary,
                         tonalElevation = 0.dp
                     ) {
-                        NavigationBarItem(
-                            icon = { Icon(Icons.Default.Home, "Beranda") },
-                            label = { Text("Beranda") },
-                            selected = currentScreen == AppScreen.BERANDA,
-                            onClick = { currentScreen = AppScreen.BERANDA },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = BrandAccentLight,
-                                selectedIconColor = BrandPrimary,
-                                selectedTextColor = BrandPrimary
-                            )
-                        )
-                        NavigationBarItem(
-                            icon = { Icon(Icons.Default.DateRange, "Kalender") },
-                            label = { Text("Kalender") },
-                            selected = currentScreen == AppScreen.KALENDER,
-                            onClick = { currentScreen = AppScreen.KALENDER },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = BrandAccentLight,
-                                selectedIconColor = BrandPrimary,
-                                selectedTextColor = BrandPrimary
-                            )
-                        )
-                        NavigationBarItem(
-                            icon = { Icon(Icons.Default.Notifications, "Salat") },
-                            label = { Text("Salat") },
-                            selected = currentScreen == AppScreen.SALAT,
-                            onClick = { currentScreen = AppScreen.SALAT },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = BrandAccentLight,
-                                selectedIconColor = BrandPrimary,
-                                selectedTextColor = BrandPrimary
-                            )
-                        )
-                        NavigationBarItem(
-                            icon = { Icon(Icons.Default.List, "Kegiatan") },
-                            label = { Text("Kegiatan") },
-                            selected = currentScreen == AppScreen.KEGIATAN,
-                            onClick = { currentScreen = AppScreen.KEGIATAN },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = BrandAccentLight,
-                                selectedIconColor = BrandPrimary,
-                                selectedTextColor = BrandPrimary
-                            )
-                        )
-                        NavigationBarItem(
-                            icon = { Icon(Icons.Default.Menu, "Menu") },
-                            label = { Text("Menu") },
-                            selected = currentScreen == AppScreen.MENU,
-                            onClick = { currentScreen = AppScreen.MENU },
-                            colors = NavigationBarItemDefaults.colors(
-                                indicatorColor = BrandAccentLight,
-                                selectedIconColor = BrandPrimary,
-                                selectedTextColor = BrandPrimary
-                            )
-                        )
+                        NavigationBarItem(icon = { Icon(Icons.Default.Home, "Beranda") }, label = { Text("Beranda") }, selected = currentScreen == AppScreen.BERANDA, onClick = { currentScreen = AppScreen.BERANDA }, colors = NavigationBarItemDefaults.colors(indicatorColor = BrandAccentLight, selectedIconColor = BrandPrimary, selectedTextColor = BrandPrimary))
+                        NavigationBarItem(icon = { Icon(Icons.Default.DateRange, "Kalender") }, label = { Text("Kalender") }, selected = currentScreen == AppScreen.KALENDER, onClick = { currentScreen = AppScreen.KALENDER }, colors = NavigationBarItemDefaults.colors(indicatorColor = BrandAccentLight, selectedIconColor = BrandPrimary, selectedTextColor = BrandPrimary))
+                        NavigationBarItem(icon = { Icon(Icons.Default.Notifications, "Salat") }, label = { Text("Salat") }, selected = currentScreen == AppScreen.SALAT, onClick = { currentScreen = AppScreen.SALAT }, colors = NavigationBarItemDefaults.colors(indicatorColor = BrandAccentLight, selectedIconColor = BrandPrimary, selectedTextColor = BrandPrimary))
+                        NavigationBarItem(icon = { Icon(Icons.Default.List, "Kegiatan") }, label = { Text("Kegiatan") }, selected = currentScreen == AppScreen.KEGIATAN, onClick = { currentScreen = AppScreen.KEGIATAN }, colors = NavigationBarItemDefaults.colors(indicatorColor = BrandAccentLight, selectedIconColor = BrandPrimary, selectedTextColor = BrandPrimary))
+                        NavigationBarItem(icon = { Icon(Icons.Default.Menu, "Menu") }, label = { Text("Menu") }, selected = currentScreen == AppScreen.MENU, onClick = { currentScreen = AppScreen.MENU }, colors = NavigationBarItemDefaults.colors(indicatorColor = BrandAccentLight, selectedIconColor = BrandPrimary, selectedTextColor = BrandPrimary))
                     }
                 }
             ) { innerPadding ->
-                Surface(
-                    modifier = Modifier.padding(innerPadding),
-                    color = Background
-                ) {
+                Surface(modifier = Modifier.padding(innerPadding), color = Background) {
                     when (currentScreen) {
-                        AppScreen.BERANDA -> HomeScreen(
-                            onNavigateToSalat = { currentScreen = AppScreen.SALAT },
-                            onNavigateToPustaka = { currentScreen = AppScreen.PUSTAKA },
-                            onUpdateLocation = onUpdateLocation
-                        )
-                        AppScreen.KALENDER -> CalendarScreen(
-                            id.wahidiyah.miladiyyah.core.domain.calendar.engine.CalendarEngine()
-                        )
-                        AppScreen.SALAT -> SalatScreen(
-                            onNavigateToKiblat = { currentScreen = AppScreen.KIBLAT }
-                        )
+                        AppScreen.BERANDA -> HomeScreen(onNavigateToSalat = { currentScreen = AppScreen.SALAT }, onNavigateToPustaka = { currentScreen = AppScreen.PUSTAKA }, onUpdateLocation = onUpdateLocation)
+                        AppScreen.KALENDER -> CalendarScreen(id.wahidiyah.miladiyyah.core.domain.calendar.engine.CalendarEngine())
+                        AppScreen.SALAT -> SalatScreen(onNavigateToKiblat = { currentScreen = AppScreen.KIBLAT })
                         AppScreen.KEGIATAN -> KegiatanScreen()
-                        AppScreen.MENU -> MenuScreen(
-                            onNavigate = { screen -> currentScreen = screen }
-                        )
+                        AppScreen.MENU -> MenuScreen(onNavigate = { screen -> currentScreen = screen })
                         AppScreen.PUSTAKA -> PustakaScreen()
                         AppScreen.PENGATURAN -> SettingsScreen()
                         AppScreen.KIBLAT -> QiblaScreen()
