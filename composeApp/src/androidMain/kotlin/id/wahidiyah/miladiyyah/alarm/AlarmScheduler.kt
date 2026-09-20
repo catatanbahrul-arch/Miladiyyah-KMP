@@ -27,6 +27,9 @@ object AlarmScheduler {
     const val NOTIFICATION_CHANNEL_ID =
         "WAHIDIYAH_ALARM_CHANNEL"
 
+    const val NIDA_NOTIFICATION_CHANNEL_ID =
+        "WAHIDIYAH_NIDA_TEXT_CHANNEL"
+
     private const val NOTIFICATION_CHANNEL_NAME =
         "Alarm Wahidiyah"
 
@@ -53,6 +56,7 @@ object AlarmScheduler {
     private const val ID_TASYAFUAN = 301
     private const val ID_DANABOX_MORNING = 401
     private const val ID_DANABOX_EVENING = 402
+    private const val ID_NIDA = 501
 
     fun initialize(context: Context) {
         initializedContext =
@@ -137,6 +141,7 @@ object AlarmScheduler {
         cancelTarhim(context)
         cancelTasyafuan(context)
         cancelDanaBox(context)
+        cancelNida(context)
     }
 
     fun rescheduleAllEnabled(
@@ -219,6 +224,17 @@ object AlarmScheduler {
                 "ALARM_DANABOX",
                 true
             )
+
+        val isNidaOn =
+            loadBooleanFromPreferences(
+                context,
+                "ALARM_NIDAA",
+                false
+            )
+
+        if (isNidaOn) {
+            scheduleNidaNext(context)
+        }
 
         if (isAdzanOn) {
             scheduleAdzan(context)
@@ -717,6 +733,129 @@ object AlarmScheduler {
                 "Gagal sinkronisasi Tarhim: ${e.message}"
             )
         }
+    }
+
+    fun scheduleNidaNext(
+        context: Context
+    ) {
+        initialize(context)
+
+        val enabled =
+            loadBooleanFromPreferences(
+                context,
+                "ALARM_NIDAA",
+                false
+            )
+
+        if (!enabled) {
+            cancelNida(context)
+            return
+        }
+
+        if (!areNotificationsReady(context)) {
+            Log.w(
+                TAG,
+                "Nida' tidak dijadwalkan: notifikasi belum siap."
+            )
+            return
+        }
+
+        val alarmManager =
+            context.getSystemService(
+                Context.ALARM_SERVICE
+            ) as AlarmManager
+
+        if (
+            Build.VERSION.SDK_INT >=
+                Build.VERSION_CODES.S &&
+            !alarmManager.canScheduleExactAlarms()
+        ) {
+            Log.w(
+                TAG,
+                "Nida' tidak dijadwalkan: exact alarm belum aktif."
+            )
+            return
+        }
+
+        val next =
+            Calendar.getInstance().apply {
+                val currentMinute =
+                    get(Calendar.MINUTE)
+
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+
+                if (currentMinute < 30) {
+                    set(Calendar.MINUTE, 30)
+                } else {
+                    set(Calendar.MINUTE, 0)
+                    add(Calendar.HOUR_OF_DAY, 1)
+                }
+            }
+
+        val intent =
+            Intent(
+                context,
+                NidaReceiver::class.java
+            ).apply {
+                action = "ACTION_NIDA_30_MIN"
+                putExtra("ALARM_ID", ID_NIDA)
+            }
+
+        val pendingIntent =
+            PendingIntent.getBroadcast(
+                context,
+                ID_NIDA,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or
+                    PendingIntent.FLAG_IMMUTABLE
+            )
+
+        try {
+            alarmManager.setExactAndAllowWhileIdle(
+                AlarmManager.RTC_WAKEUP,
+                next.timeInMillis,
+                pendingIntent
+            )
+
+            Log.d(
+                TAG,
+                "Nida' berikutnya: ${next.time}"
+            )
+        } catch (e: SecurityException) {
+            Log.e(
+                TAG,
+                "Gagal menjadwalkan Nida': ${e.message}"
+            )
+        }
+    }
+
+    private fun cancelNida(
+        context: Context
+    ) {
+        val alarmManager =
+            context.getSystemService(
+                Context.ALARM_SERVICE
+            ) as AlarmManager
+
+        val intent =
+            Intent(
+                context,
+                NidaReceiver::class.java
+            ).apply {
+                action = "ACTION_NIDA_30_MIN"
+            }
+
+        val pendingIntent =
+            PendingIntent.getBroadcast(
+                context,
+                ID_NIDA,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT or
+                    PendingIntent.FLAG_IMMUTABLE
+            )
+
+        alarmManager.cancel(pendingIntent)
     }
 
     private fun scheduleTasyafuan(

@@ -79,6 +79,7 @@ fun SalatScreen(onNavigateToKiblat: () -> Unit = {}) {
     var tarhimEnabled by remember { mutableStateOf(AppCache.loadBoolean("ALARM_TARHIM", true)) }
     var tasyafuanEnabled by remember { mutableStateOf(AppCache.loadBoolean("ALARM_TASYAFUAN", true)) }
     var danaBoxEnabled by remember { mutableStateOf(AppCache.loadBoolean("ALARM_DANABOX", true)) }
+    var nidaEnabled by remember { mutableStateOf(AppCache.loadBoolean("ALARM_NIDAA", false)) }
 
     Column(
         modifier = Modifier
@@ -474,6 +475,40 @@ fun SalatScreen(onNavigateToKiblat: () -> Unit = {}) {
                             onCheckedChange = {
                                 danaBoxEnabled = it
                                 AppCache.saveBoolean("ALARM_DANABOX", it)
+                                updateAlarmSchedules()
+                            },
+                            colors = SwitchDefaults.colors(
+                                checkedTrackColor = BrandPrimary
+                            )
+                        )
+                    }
+
+                    HorizontalDivider(color = Background, thickness = 2.dp)
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                "Pengingat Nida'",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = TextPrimary
+                            )
+                            Text(
+                                "Setiap 30 menit • tanpa suara",
+                                fontSize = 14.sp,
+                                color = TextSecondary
+                            )
+                        }
+                        Switch(
+                            checked = nidaEnabled,
+                            onCheckedChange = {
+                                nidaEnabled = it
+                                AppCache.saveBoolean("ALARM_NIDAA", it)
                                 updateAlarmSchedules()
                             },
                             colors = SwitchDefaults.colors(

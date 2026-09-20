@@ -79,6 +79,10 @@
             android:name=".alarm.AlarmReceiver"
             android:exported="false" />
 
+        <receiver
+            android:name=".alarm.NidaReceiver"
+            android:exported="false" />
+
         <service
             android:name=".alarm.AudioService"
             android:exported="false"
