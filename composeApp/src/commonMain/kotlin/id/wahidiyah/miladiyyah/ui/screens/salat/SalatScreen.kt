@@ -418,11 +418,9 @@ Column(
         Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
+                .offset(y = (-82).dp)
                 .fillMaxWidth()
-                .padding(
-                    horizontal = 28.dp,
-                    bottom = 82.dp
-                ),
+                .padding(horizontal = 28.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
