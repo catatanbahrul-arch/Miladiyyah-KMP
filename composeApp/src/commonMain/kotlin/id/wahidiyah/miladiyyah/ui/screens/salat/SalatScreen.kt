@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -32,6 +33,7 @@ import id.wahidiyah.miladiyyah.core.domain.prayer.PrayerTimeEngine
 import id.wahidiyah.miladiyyah.core.domain.prayer.PrayerType
 import id.wahidiyah.miladiyyah.core.utils.AppCache
 import id.wahidiyah.miladiyyah.theme.*
+import id.wahidiyah.miladiyyah.ui.components.AppSectionLabel
 import kotlinx.coroutines.delay
 import kotlinx.datetime.*
 
@@ -51,26 +53,26 @@ private val ShareArrowIcon: ImageVector
             )
         ) {
             moveTo(18f, 16.08f)
-            cubicTo(17.24f, 16.08f, 16.56f, 16.38f, 16.04f, 16.85f)
+            curveTo(17.24f, 16.08f, 16.56f, 16.38f, 16.04f, 16.85f)
             lineTo(8.91f, 12.7f)
-            cubicTo(8.96f, 12.47f, 9f, 12.24f, 9f, 12f)
-            cubicTo(9f, 11.76f, 8.96f, 11.53f, 8.91f, 11.3f)
+            curveTo(8.96f, 12.47f, 9f, 12.24f, 9f, 12f)
+            curveTo(9f, 11.76f, 8.96f, 11.53f, 8.91f, 11.3f)
             lineTo(15.96f, 7.19f)
-            cubicTo(16.49f, 7.69f, 17.21f, 8f, 18f, 8f)
-            cubicTo(19.66f, 8f, 21f, 6.66f, 21f, 5f)
-            cubicTo(21f, 3.34f, 19.66f, 2f, 18f, 2f)
-            cubicTo(16.34f, 2f, 15f, 3.34f, 15f, 5f)
-            cubicTo(15f, 5.24f, 15.04f, 5.47f, 15.09f, 5.7f)
+            curveTo(16.49f, 7.69f, 17.21f, 8f, 18f, 8f)
+            curveTo(19.66f, 8f, 21f, 6.66f, 21f, 5f)
+            curveTo(21f, 3.34f, 19.66f, 2f, 18f, 2f)
+            curveTo(16.34f, 2f, 15f, 3.34f, 15f, 5f)
+            curveTo(15f, 5.24f, 15.04f, 5.47f, 15.09f, 5.7f)
             lineTo(8.04f, 9.81f)
-            cubicTo(7.51f, 9.31f, 6.79f, 9f, 6f, 9f)
-            cubicTo(4.34f, 9f, 3f, 10.34f, 3f, 12f)
-            cubicTo(3f, 13.66f, 4.34f, 15f, 6f, 15f)
-            cubicTo(6.79f, 15f, 7.51f, 14.69f, 8.04f, 14.19f)
+            curveTo(7.51f, 9.31f, 6.79f, 9f, 6f, 9f)
+            curveTo(4.34f, 9f, 3f, 10.34f, 3f, 12f)
+            curveTo(3f, 13.66f, 4.34f, 15f, 6f, 15f)
+            curveTo(6.79f, 15f, 7.51f, 14.69f, 8.04f, 14.19f)
             lineTo(15.16f, 18.34f)
-            cubicTo(15.11f, 18.55f, 15.08f, 18.77f, 15.08f, 19f)
-            cubicTo(15.08f, 20.66f, 16.42f, 22f, 18.08f, 22f)
-            cubicTo(19.74f, 22f, 21.08f, 20.66f, 21.08f, 19f)
-            cubicTo(21.08f, 17.34f, 19.74f, 16.08f, 18f, 16.08f)
+            curveTo(15.11f, 18.55f, 15.08f, 18.77f, 15.08f, 19f)
+            curveTo(15.08f, 20.66f, 16.42f, 22f, 18.08f, 22f)
+            curveTo(19.74f, 22f, 21.08f, 20.66f, 21.08f, 19f)
+            curveTo(21.08f, 17.34f, 19.74f, 16.08f, 18f, 16.08f)
             close()
         }
     }.build()
@@ -807,6 +809,7 @@ private fun AlarmSettingRow(
         )
     }
 }
+
 @Composable
 private fun PrayerSettingsScreen(
     onBack: () -> Unit
@@ -1020,5 +1023,5 @@ private fun formatDms(
         if (value >= 0) "BT" else "BB"
     }
 
-    return "${degrees}°${minutes}'${seconds}" $direction"
+    return "${degrees}°${minutes}'${seconds}\" $direction"
 }
