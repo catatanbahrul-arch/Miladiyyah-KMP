@@ -105,10 +105,37 @@ private fun buildKegiatanMonthSections(
     val fallback = source
         .filterNot { it in parsedDates }
 
-    return if (fallback.isEmpty()) {
+    // Pastikan bulan berjalan selalu memiliki section,
+    // walaupun belum ada agenda pada bulan tersebut.
+    val current = currentKegiatanMonth()
+
+    val groupedWithCurrent = if (
+        grouped.any {
+            it.year == current.first &&
+                it.month == current.second &&
+                !it.isFallback
+        }
+    ) {
         grouped
     } else {
-        grouped + KegiatanMonthSection(
+        (
+            grouped + KegiatanMonthSection(
+                year = current.first,
+                month = current.second,
+                items = emptyList()
+            )
+        ).sortedWith(
+            compareBy(
+                { it.year },
+                { it.month }
+            )
+        )
+    }
+
+    return if (fallback.isEmpty()) {
+        groupedWithCurrent
+    } else {
+        groupedWithCurrent + KegiatanMonthSection(
             year = Int.MAX_VALUE,
             month = 0,
             items = fallback,
@@ -147,6 +174,27 @@ private fun findInitialMonthSectionIndex(
     }
 }
 
+private fun findInitialMonthLazyItemIndex(
+    sections: List<KegiatanMonthSection>
+): Int {
+    if (sections.isEmpty()) return 0
+
+    val targetSection = findInitialMonthSectionIndex(sections)
+
+    // Item 0 = label "AGENDA RESMI".
+    // Setiap section terdiri dari:
+    // 1 item header bulan + seluruh item kegiatan bulan tersebut.
+    var lazyItemIndex = 1
+
+    for (index in 0 until targetSection) {
+        val section = sections[index]
+        lazyItemIndex += 1
+        lazyItemIndex += section.items.size
+    }
+
+    return lazyItemIndex
+}
+
 @Composable
 fun KegiatanScreen() {
     var kegiatanList by remember {
@@ -171,10 +219,8 @@ fun KegiatanScreen() {
 
     LaunchedEffect(monthSections) {
         if (monthSections.isNotEmpty()) {
-            // Item 0 = "AGENDA RESMI".
-            // Header bulan dimulai dari item 1.
-            val targetSection = findInitialMonthSectionIndex(monthSections)
-            listState.scrollToItem(targetSection + 1)
+            val targetLazyItem = findInitialMonthLazyItemIndex(monthSections)
+            listState.scrollToItem(targetLazyItem)
         }
     }
 
