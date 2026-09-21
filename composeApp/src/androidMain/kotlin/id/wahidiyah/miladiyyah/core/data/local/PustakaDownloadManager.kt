@@ -142,7 +142,14 @@ actual object PustakaDownloadManager {
                 )
             }
 
-            val target = PustakaFileStore.getLocalFile(item)
+            val extensionFromMime =
+                extensionFromContentType(contentType)
+
+            val target =
+                PustakaFileStore.getLocalFile(
+                    item = item,
+                    preferredExtension = extensionFromMime
+                )
 
             target.parentFile?.mkdirs()
 
@@ -220,6 +227,38 @@ actual object PustakaDownloadManager {
      * Mendukung beberapa bentuk link Google Drive umum.
      * Link lain tetap digunakan apa adanya.
      */
+    private fun extensionFromContentType(
+        contentType: String
+    ): String {
+        return when (
+            contentType
+                .substringBefore(";")
+                .trim()
+                .lowercase()
+        ) {
+            "application/pdf" -> "pdf"
+
+            "image/jpeg",
+            "image/jpg" -> "jpg"
+
+            "image/png" -> "png"
+            "image/webp" -> "webp"
+            "image/gif" -> "gif"
+
+            "video/mp4" -> "mp4"
+            "video/webm" -> "webm"
+            "video/quicktime" -> "mov"
+
+            "audio/mpeg" -> "mp3"
+            "audio/mp4" -> "m4a"
+            "audio/wav",
+            "audio/x-wav" -> "wav"
+            "audio/ogg" -> "ogg"
+
+            else -> ""
+        }
+    }
+
     private fun normalizeDownloadUrl(rawUrl: String): String {
         return try {
             val uri = Uri.parse(rawUrl)

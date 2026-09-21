@@ -46,10 +46,25 @@ object PustakaFileStore {
      * Nama file stabil berdasarkan URL/link Pustaka.
      * URL yang sama -> file lokal yang sama.
      */
-    private fun fileName(item: PustakaItem): String {
+    private fun fileName(
+        item: PustakaItem,
+        preferredExtension: String? = null
+    ): String {
         val hash = sha256(item.link.trim())
 
-        val extension = extractExtension(item.link)
+        val fromPreferred =
+            preferredExtension
+                ?.trim()
+                ?.trim('.')
+                ?.lowercase()
+                ?.takeIf {
+                    it.matches(Regex("[a-z0-9]{1,8}"))
+                }
+
+        val extension =
+            fromPreferred
+                ?: extractExtension(item.link)
+
         return if (extension.isNotBlank()) {
             "$hash.$extension"
         } else {
@@ -57,11 +72,53 @@ object PustakaFileStore {
         }
     }
 
-    fun getLocalFile(item: PustakaItem): File {
-        return File(
-            storageDirectory(),
+    fun getLocalFile(
+        item: PustakaItem,
+        preferredExtension: String? = null
+    ): File {
+        val directory = storageDirectory()
+
+        val preferred =
+            preferredExtension
+                ?.trim()
+                ?.trim('.')
+                ?.lowercase()
+                ?.takeIf {
+                    it.matches(Regex("[a-z0-9]{1,8}"))
+                }
+
+        if (preferred != null) {
+            return File(
+                directory,
+                fileName(item, preferred)
+            )
+        }
+
+        val exact = File(
+            directory,
             fileName(item)
         )
+
+        if (exact.exists()) {
+            return exact
+        }
+
+        val hash = sha256(item.link.trim())
+
+        val candidates =
+            directory
+                .listFiles()
+                ?.filter { file ->
+                    file.isFile &&
+                    (
+                        file.name == hash ||
+                        file.name.startsWith("$hash.")
+                    )
+                }
+                ?.sortedByDescending { it.lastModified() }
+                .orEmpty()
+
+        return candidates.firstOrNull() ?: exact
     }
 
     fun isDownloaded(item: PustakaItem): Boolean {
