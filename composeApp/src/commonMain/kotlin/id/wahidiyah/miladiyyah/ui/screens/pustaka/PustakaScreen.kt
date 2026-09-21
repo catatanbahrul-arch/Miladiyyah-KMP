@@ -10,12 +10,13 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.draw.clip
 import id.wahidiyah.miladiyyah.core.data.source.remote.PustakaItem
+import id.wahidiyah.miladiyyah.core.data.local.PustakaDownloadManager
 import id.wahidiyah.miladiyyah.core.data.sync.RemoteSyncCoordinator
 import id.wahidiyah.miladiyyah.core.utils.UiState
 import id.wahidiyah.miladiyyah.theme.*
@@ -25,7 +26,6 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun PustakaScreen() {
-    val uriHandler = LocalUriHandler.current
     var pustakaList by remember {
         mutableStateOf(RemoteSyncCoordinator.loadCachedPustaka())
     }
@@ -33,6 +33,8 @@ fun PustakaScreen() {
     var isLoading by remember {
         mutableStateOf(pustakaList.isEmpty())
     }
+
+    val downloadScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
         isLoading = pustakaList.isEmpty()
@@ -151,19 +153,140 @@ fun PustakaScreen() {
                                         )
                                     }
 
-                                    if (item.link.isNotBlank()) {
-                                        Spacer(modifier = Modifier.height(14.dp))
+                if (item.link.isNotBlank()) {
 
-                                        Button(
-                                            onClick = {
-                                                uriHandler.openUri(item.link.trim())
-                                            },
-                                            enabled = item.link.trim().startsWith("http://") ||
-                                                item.link.trim().startsWith("https://")
+                    var isDownloaded by remember(item.link) {
+                        mutableStateOf(
+                            PustakaDownloadManager.isDownloaded(item)
+                        )
+                    }
+
+                    var isDownloading by remember(item.link) {
+                        mutableStateOf(false)
+                    }
+
+                    var downloadProgress by remember(item.link) {
+                        mutableStateOf(0)
+                    }
+
+                    var downloadError by remember(item.link) {
+                        mutableStateOf<String?>(null)
+                    }
+
+                    Spacer(
+                        modifier = Modifier.height(14.dp)
+                    )
+
+                    when {
+                        isDownloading -> {
+                            Column(
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = if (downloadProgress > 0) {
+                                        "Mengunduh... $downloadProgress%"
+                                    } else {
+                                        "Mengunduh..."
+                                    },
+                                    style =
+                                        MaterialTheme.typography.bodyMedium,
+                                    color = TextSecondary
+                                )
+
+                                Spacer(
+                                    modifier = Modifier.height(8.dp)
+                                )
+
+                                LinearProgressIndicator(
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
+                        }
+
+                        isDownloaded -> {
+                            Row(
+                                horizontalArrangement =
+                                    Arrangement.spacedBy(10.dp),
+                                verticalAlignment =
+                                    Alignment.CenterVertically
+                            ) {
+                                Button(
+                                    onClick = {
+                                        if (
+                                            PustakaDownloadManager
+                                                .delete(item)
                                         ) {
-                                            Text("Buka Dokumen")
+                                            isDownloaded = false
                                         }
                                     }
+                                ) {
+                                    Text("Hapus")
+                                }
+
+                                Text(
+                                    text = "Tersimpan offline",
+                                    style =
+                                        MaterialTheme.typography.bodyMedium,
+                                    color = TextSecondary
+                                )
+                            }
+                        }
+
+                        else -> {
+                            Button(
+                                onClick = {
+                                    downloadScope.launch {
+                                        isDownloading = true
+                                        downloadProgress = 0
+                                        downloadError = null
+
+                                        try {
+                                            val success =
+                                                PustakaDownloadManager.download(
+                                                    item
+                                                ) { progress ->
+                                                    downloadProgress =
+                                                        progress
+                                                }
+
+                                            isDownloaded =
+                                                success &&
+                                                PustakaDownloadManager
+                                                    .isDownloaded(item)
+
+                                            if (!isDownloaded) {
+                                                downloadError =
+                                                    "Download belum berhasil."
+                                            }
+                                        } catch (e: Exception) {
+                                            downloadError =
+                                                e.message
+                                                    ?: "Download gagal."
+                                        } finally {
+                                            isDownloading = false
+                                        }
+                                    }
+                                }
+                            ) {
+                                Text("Download")
+                            }
+                        }
+                    }
+
+                    if (downloadError != null) {
+                        Spacer(
+                            modifier = Modifier.height(8.dp)
+                        )
+
+                        Text(
+                            text = downloadError.orEmpty(),
+                            style =
+                                MaterialTheme.typography.bodySmall,
+                            color =
+                                MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
                                 }
                             }
                         }

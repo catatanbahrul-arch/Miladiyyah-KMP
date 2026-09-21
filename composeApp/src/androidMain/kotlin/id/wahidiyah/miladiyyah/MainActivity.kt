@@ -25,6 +25,7 @@ import com.google.android.gms.location.LocationSettingsRequest
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import id.wahidiyah.miladiyyah.alarm.AlarmScheduler
+import id.wahidiyah.miladiyyah.core.data.local.PustakaDownloadManager
 import id.wahidiyah.miladiyyah.core.domain.prayer.PrayerTimeEngine
 import id.wahidiyah.miladiyyah.core.utils.AppCache
 import kotlinx.coroutines.CoroutineScope
@@ -81,6 +82,7 @@ class MainActivity : ComponentActivity() {
             )
 
         AlarmScheduler.initialize(this)
+        PustakaDownloadManager.initialize(this)
         AlarmScheduler.prepareNotificationChannel(this)
 
         AppCache.save = { key, value ->
