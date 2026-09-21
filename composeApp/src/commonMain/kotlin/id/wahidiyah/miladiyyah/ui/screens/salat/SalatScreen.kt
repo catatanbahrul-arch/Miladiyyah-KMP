@@ -1,6 +1,7 @@
 package id.wahidiyah.miladiyyah.ui.screens.salat
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -13,6 +14,14 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Navigation
+import androidx.compose.material.icons.filled.NotificationsOff
+import androidx.compose.material.icons.filled.VolumeOff
+import androidx.compose.material.icons.filled.VolumeUp
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.Nightlight
+import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.filled.WbTwilight
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -21,6 +30,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.text.font.FontWeight
@@ -195,8 +207,7 @@ fun SalatScreen(
     )
 
     val selectedDateLabel =
-        "${dayNames[selectedDate.dayOfWeek.ordinal]}, " +
-            "${selectedDate.dayOfMonth} ${monthNames[selectedDate.monthNumber]} " +
+        "${selectedDate.dayOfMonth} ${monthNames[selectedDate.monthNumber]} " +
             "${selectedDate.year}"
 
     val hijriLabel = calendarDay?.hijri?.let {
@@ -235,448 +246,432 @@ fun SalatScreen(
         return
     }
 
-    Column(
+
+Column(
+    modifier = Modifier
+        .fillMaxSize()
+        .background(Background)
+        .verticalScroll(scrollState)
+) {
+    Box(
         modifier = Modifier
-            .fillMaxSize()
-            .background(Background)
-            .verticalScroll(scrollState)
+            .fillMaxWidth()
+            .height(360.dp)
     ) {
         Box(
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        listOf(BrandPrimary, BrandPrimaryDark)
+                        listOf(
+                            Color(0xFF18B8A5),
+                            Color(0xFF0B8A7C)
+                        )
                     )
                 )
+        )
+
+        MosqueHeaderSilhouette(modifier = Modifier.matchParentSize())
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    start = 16.dp,
+                    end = 16.dp,
+                    top = 8.dp,
+                    bottom = 22.dp
+                )
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(
-                        start = 12.dp,
-                        end = 12.dp,
-                        top = 10.dp,
-                        bottom = 18.dp
-                    )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.Default.ArrowBack,
-                            contentDescription = "Kembali",
-                            tint = Surface
-                        )
-                    }
-
-                    Text(
-                        text = "Jadwal Sholat",
-                        color = Surface,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.weight(1f)
+                IconButton(onClick = onBack, modifier = Modifier.size(48.dp)) {
+                    Icon(
+                        Icons.Default.ArrowBack,
+                        contentDescription = "Kembali",
+                        tint = Color.White,
+                        modifier = Modifier.size(30.dp)
                     )
-
-                    IconButton(
-                        onClick = { showShareSheet = true },
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        Icon(
-                            imageVector = ShareArrowIcon,
-                            contentDescription = "Bagikan",
-                            tint = Surface
-                        )
-                    }
-
-                    IconButton(
-                        onClick = { showInfoDialog = true },
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Info,
-                            contentDescription = "Informasi",
-                            tint = Surface
-                        )
-                    }
-
-                    IconButton(
-                        onClick = { showPrayerSettings = true },
-                        modifier = Modifier.size(40.dp)
-                    ) {
-                        Icon(
-                            Icons.Default.Settings,
-                            contentDescription = "Pengaturan",
-                            tint = Surface
-                        )
-                    }
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = "Jadwal Sholat",
+                    color = Color.White,
+                    fontSize = 23.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.weight(1f)
+                )
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(
+                    onClick = { showShareSheet = true },
+                    modifier = Modifier.size(44.dp)
+                ) {
+                    Icon(
+                        ShareArrowIcon,
+                        contentDescription = "Bagikan",
+                        tint = Color.White,
+                        modifier = Modifier.size(30.dp)
+                    )
+                }
+
+                IconButton(
+                    onClick = { showInfoDialog = true },
+                    modifier = Modifier.size(44.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Info,
+                        contentDescription = "Informasi",
+                        tint = Color.White,
+                        modifier = Modifier.size(30.dp)
+                    )
+                }
+
+                IconButton(
+                    onClick = { showPrayerSettings = true },
+                    modifier = Modifier.size(44.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Settings,
+                        contentDescription = "Pengaturan",
+                        tint = Color.White,
+                        modifier = Modifier.size(30.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.LocationOn,
+                    contentDescription = null,
+                    tint = Color(0xFFFF4D5C),
+                    modifier = Modifier.size(25.dp)
+                )
+                Spacer(modifier = Modifier.width(7.dp))
+                Text(
+                    text = compactPrayerLocation(PrayerTimeEngine.locationName),
+                    color = Color.White,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1
+                )
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            if (nextPrayer != null) {
+                Text(
+                    text =
+                        "${nextPrayer.prayer.type.title} " +
+                            "${nextPrayer.prayer.time.hour.toString().padStart(2, '0')}:" +
+                            nextPrayer.prayer.time.minute.toString().padStart(2, '0') +
+                            " WIB",
+                    color = Color.White,
+                    fontSize = 29.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "- ${formatCountdown(countdownSeconds)}",
+                    color = Color.White,
+                    fontSize = 23.sp,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                TextButton(onClick = onUpdateLocation) {
                     Icon(
                         Icons.Default.LocationOn,
                         contentDescription = null,
-                        tint = Surface,
-                        modifier = Modifier.size(22.dp)
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
                     )
-                    Spacer(modifier = Modifier.width(7.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = PrayerTimeEngine.locationName,
-                        color = Surface,
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Medium
+                        "Update",
+                        color = Color.White,
+                        fontSize = 17.sp
                     )
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    TextButton(onClick = onUpdateLocation) {
-                        Text(
-                            "Update",
-                            color = Surface,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
-
-                    TextButton(onClick = onNavigateToKiblat) {
-                        Text(
-                            "Arah Kiblat",
-                            color = Surface,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+                TextButton(onClick = onNavigateToKiblat) {
+                    Icon(
+                        Icons.Default.Navigation,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        "Arah Kiblat",
+                        color = Color.White,
+                        fontSize = 17.sp
+                    )
                 }
             }
         }
 
-        Column(
-            modifier = Modifier.padding(
-                horizontal = AppSizes.screenHorizontal,
-                vertical = 18.dp
-            )
+        Card(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .offset(y = 58.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            shape = MaterialTheme.shapes.large,
+            colors = CardDefaults.cardColors(containerColor = Surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
         ) {
-            Card(
-                shape = MaterialTheme.shapes.large,
-                colors = CardDefaults.cardColors(containerColor = Surface),
-                elevation = CardDefaults.cardElevation(0.dp),
-                modifier = Modifier.fillMaxWidth()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(120.dp)
+                    .padding(horizontal = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                IconButton(
+                    onClick = { dayOffset -= 1 },
+                    modifier = Modifier.size(52.dp)
                 ) {
-                    IconButton(onClick = { dayOffset -= 1 }) {
-                        Icon(
-                            Icons.Default.KeyboardArrowLeft,
-                            contentDescription = "Hari sebelumnya",
-                            tint = BrandPrimary,
-                            modifier = Modifier.size(30.dp)
-                        )
-                    }
-
-                    Column(
-                        modifier = Modifier.weight(1f),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            text = selectedDateLabel,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = TextPrimary
-                        )
-                        if (hijriLabel.isNotBlank()) {
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = hijriLabel,
-                                fontSize = 16.sp,
-                                color = TextSecondary
-                            )
-                        }
-                    }
-
-                    IconButton(onClick = { dayOffset += 1 }) {
-                        Icon(
-                            Icons.Default.KeyboardArrowRight,
-                            contentDescription = "Hari berikutnya",
-                            tint = BrandPrimary,
-                            modifier = Modifier.size(30.dp)
-                        )
-                    }
+                    Icon(
+                        Icons.Default.KeyboardArrowLeft,
+                        contentDescription = "Hari sebelumnya",
+                        tint = Color(0xFF178F83),
+                        modifier = Modifier.size(34.dp)
+                    )
                 }
-            }
 
-            if (nextPrayer != null) {
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Text(
-                    text = "SHOLAT BERIKUTNYA",
-                    fontSize = 15.sp,
-                    color = TextMuted,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 2.sp,
-                    modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)
-                )
-
-                Card(
-                    shape = MaterialTheme.shapes.extraLarge,
-                    colors = CardDefaults.cardColors(
-                        containerColor = BrandAccentLight
-                    ),
-                    elevation = CardDefaults.cardElevation(0.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp, vertical = 22.dp)
-                    ) {
-                        Text(
-                            text = nextPrayer.prayer.type.title.uppercase(),
-                            color = BrandPrimary,
-                            fontSize = 14.sp,
-                            letterSpacing = 3.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        Text(
-                            text =
-                                "${nextPrayer.prayer.time.hour.toString().padStart(2, '0')}:" +
-                                    nextPrayer.prayer.time.minute.toString().padStart(2, '0') +
-                                    " WIB",
-                            color = BrandPrimaryDark,
-                            fontSize = 48.sp,
-                            fontWeight = FontWeight.Light
-                        )
-
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        Text(
-                            text = formatCountdown(countdownSeconds),
-                            color = TextPrimary,
-                            fontSize = 22.sp,
-                            fontWeight = FontWeight.Normal
-                        )
-
-                        Spacer(modifier = Modifier.height(5.dp))
-
-                        Text(
-                            text = "Menuju waktu ${nextPrayer.prayer.type.title}",
-                            color = TextSecondary,
-                            fontSize = 14.sp
-                        )
-
-                        Spacer(modifier = Modifier.height(9.dp))
-
-                        Icon(
-                            Icons.Default.Notifications,
-                            contentDescription = null,
-                            tint = BrandPrimary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = if (isToday) {
-                    "JADWAL SHOLAT HARI INI"
-                } else {
-                    "JADWAL SHOLAT"
-                },
-                fontSize = 15.sp,
-                color = TextMuted,
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 2.sp,
-                modifier = Modifier.padding(start = 8.dp, bottom = 10.dp)
-            )
-
-            Card(
-                shape = MaterialTheme.shapes.extraLarge,
-                colors = CardDefaults.cardColors(containerColor = Surface),
-                elevation = CardDefaults.cardElevation(0.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
                 Column(
-                    modifier = Modifier.padding(horizontal = 18.dp, vertical = 6.dp)
+                    modifier = Modifier.weight(1f),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    prayers.forEachIndexed { index, prayer ->
-                        val isCurrent =
-                            nextPrayer?.prayer?.type == prayer.type &&
-                                nextPrayer.date == selectedDate
+                    Text(
+                        text = selectedDateLabel,
+                        fontSize = 21.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
+                    )
 
-                        val isInactive =
-                            prayer.type == PrayerType.IMSAK ||
-                                prayer.type == PrayerType.TERBIT ||
-                                prayer.type == PrayerType.DHUHA
-
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(MaterialTheme.shapes.medium)
-                                .background(
-                                    if (isCurrent) BrandAccentLight else Surface
-                                )
-                                .padding(horizontal = 10.dp, vertical = 14.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .size(11.dp)
-                                    .background(
-                                        when {
-                                            isCurrent -> BrandPrimary
-                                            isInactive -> Border
-                                            else -> BrandAccent
-                                        },
-                                        CircleShape
-                                    )
-                            )
-
-                            Spacer(modifier = Modifier.width(16.dp))
-
-                            Text(
-                                text = prayer.type.title,
-                                fontSize = 17.sp,
-                                color = if (isInactive) TextSecondary else TextPrimary,
-                                fontWeight =
-                                    if (isCurrent) FontWeight.Bold
-                                    else FontWeight.Medium,
-                                modifier = Modifier.weight(1f)
-                            )
-
-                            Text(
-                                text =
-                                    "${prayer.time.hour.toString().padStart(2, '0')}:" +
-                                        prayer.time.minute.toString().padStart(2, '0'),
-                                fontSize = 19.sp,
-                                color = TextPrimary,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            if (!isInactive) {
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Icon(
-                                    Icons.Default.Notifications,
-                                    contentDescription = null,
-                                    tint =
-                                        if (isCurrent) BrandPrimary else TextMuted,
-                                    modifier = Modifier.size(19.dp)
-                                )
-                            }
-                        }
-
-                        if (index < prayers.lastIndex) {
-                            HorizontalDivider(
-                                color = Background,
-                                thickness = 1.dp
-                            )
-                        }
+                    if (hijriLabel.isNotBlank()) {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = hijriLabel,
+                            fontSize = 17.sp,
+                            color = TextSecondary
+                        )
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(AppSpacing.section))
-
-            AppSectionLabel(
-                "PENGATURAN PENGINGAT",
-                modifier = Modifier.padding(
-                    start = 4.dp,
-                    bottom = AppSpacing.md
-                )
-            )
-
-            Card(
-                shape = MaterialTheme.shapes.extraLarge,
-                colors = CardDefaults.cardColors(containerColor = Surface),
-                elevation = CardDefaults.cardElevation(0.dp)
-            ) {
-                Column {
-                    AlarmSettingRow(
-                        title = "Adzan & Sholat",
-                        subtitle = "Peringatan masuk waktu",
-                        checked = adzanEnabled,
-                        onCheckedChange = {
-                            adzanEnabled = it
-                            AppCache.saveBoolean("ALARM_ADZAN", it)
-                            updateAlarmSchedules()
-                        }
-                    )
-
-                    HorizontalDivider(color = Background, thickness = 2.dp)
-
-                    AlarmSettingRow(
-                        title = "Pengingat Tarhim",
-                        subtitle = "Sebelum waktu Subuh",
-                        checked = tarhimEnabled,
-                        onCheckedChange = {
-                            tarhimEnabled = it
-                            AppCache.saveBoolean("ALARM_TARHIM", it)
-                            updateAlarmSchedules()
-                        }
-                    )
-
-                    HorizontalDivider(color = Background, thickness = 2.dp)
-
-                    AlarmSettingRow(
-                        title = "Tasyafu'an",
-                        subtitle = "Setiap 03:00 WIB",
-                        checked = tasyafuanEnabled,
-                        onCheckedChange = {
-                            tasyafuanEnabled = it
-                            AppCache.saveBoolean("ALARM_TASYAFUAN", it)
-                            updateAlarmSchedules()
-                        }
-                    )
-
-                    HorizontalDivider(color = Background, thickness = 2.dp)
-
-                    AlarmSettingRow(
-                        title = "Dana Box",
-                        subtitle = "Pukul 06:00 & 19:00",
-                        checked = danaBoxEnabled,
-                        onCheckedChange = {
-                            danaBoxEnabled = it
-                            AppCache.saveBoolean("ALARM_DANABOX", it)
-                            updateAlarmSchedules()
-                        }
-                    )
-
-                    HorizontalDivider(color = Background, thickness = 2.dp)
-
-                    AlarmSettingRow(
-                        title = "Pengingat Nida'",
-                        subtitle = "Setiap 30 menit • tanpa suara",
-                        checked = nidaEnabled,
-                        onCheckedChange = {
-                            nidaEnabled = it
-                            AppCache.saveBoolean("ALARM_NIDAA", it)
-                            updateAlarmSchedules()
-                        }
+                IconButton(
+                    onClick = { dayOffset += 1 },
+                    modifier = Modifier.size(52.dp)
+                ) {
+                    Icon(
+                        Icons.Default.KeyboardArrowRight,
+                        contentDescription = "Hari berikutnya",
+                        tint = Color(0xFF178F83),
+                        modifier = Modifier.size(34.dp)
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(AppSpacing.section))
         }
     }
 
-    if (showShareSheet) {
+    Spacer(modifier = Modifier.height(68.dp))
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+    ) {
+        prayers.forEach { prayer ->
+            val isCurrent =
+                nextPrayer?.prayer?.type == prayer.type &&
+                    nextPrayer.date == selectedDate
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(
+                        if (isCurrent) BrandAccentLight
+                        else Color.Transparent
+                    )
+                    .padding(
+                        horizontal = 10.dp,
+                        vertical = 15.dp
+                    )
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = prayerVisualIcon(prayer.type),
+                        contentDescription = prayer.type.title,
+                        tint = if (prayer.type == PrayerType.IMSAK) {
+                            TextMuted
+                        } else if (isCurrent) {
+                            BrandPrimary
+                        } else {
+                            TextSecondary
+                        },
+                        modifier = Modifier.size(29.dp)
+                    )
+
+                    Spacer(modifier = Modifier.width(18.dp))
+
+                    Text(
+                        text = prayer.type.title,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = if (prayer.type == PrayerType.IMSAK) {
+                            TextSecondary
+                        } else {
+                            TextPrimary
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Text(
+                        text =
+                            "${prayer.time.hour.toString().padStart(2, '0')}:" +
+                                prayer.time.minute.toString().padStart(2, '0'),
+                        fontSize = 19.sp,
+                        fontWeight = FontWeight.Normal,
+                        color = TextPrimary
+                    )
+
+                    Spacer(modifier = Modifier.width(18.dp))
+
+                    Icon(
+                        imageVector = if (prayer.type == PrayerType.IMSAK) {
+                            Icons.Default.VolumeOff
+                        } else {
+                            Icons.Default.VolumeUp
+                        },
+                        contentDescription = if (prayer.type == PrayerType.IMSAK) {
+                            "Pengingat tidak aktif"
+                        } else {
+                            "Pengingat aktif"
+                        },
+                        tint = if (prayer.type == PrayerType.IMSAK) {
+                            TextMuted
+                        } else {
+                            TextSecondary
+                        },
+                        modifier = Modifier.size(25.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+
+        Spacer(modifier = Modifier.height(AppSpacing.section))
+
+        AppSectionLabel(
+            "PENGATURAN PENGINGAT",
+            modifier = Modifier.padding(
+                start = 4.dp,
+                bottom = AppSpacing.md
+            )
+        )
+
+        Card(
+            shape = MaterialTheme.shapes.extraLarge,
+            colors = CardDefaults.cardColors(containerColor = Surface),
+            elevation = CardDefaults.cardElevation(0.dp)
+        ) {
+            Column {
+                AlarmSettingRow(
+                    title = "Adzan & Sholat",
+                    subtitle = "Peringatan masuk waktu",
+                    checked = adzanEnabled,
+                    onCheckedChange = {
+                        adzanEnabled = it
+                        AppCache.saveBoolean("ALARM_ADZAN", it)
+                        updateAlarmSchedules()
+                    }
+                )
+
+                HorizontalDivider(color = Background, thickness = 2.dp)
+
+                AlarmSettingRow(
+                    title = "Pengingat Tarhim",
+                    subtitle = "Sebelum waktu Subuh",
+                    checked = tarhimEnabled,
+                    onCheckedChange = {
+                        tarhimEnabled = it
+                        AppCache.saveBoolean("ALARM_TARHIM", it)
+                        updateAlarmSchedules()
+                    }
+                )
+
+                HorizontalDivider(color = Background, thickness = 2.dp)
+
+                AlarmSettingRow(
+                    title = "Tasyafu'an",
+                    subtitle = "Setiap 03:00 WIB",
+                    checked = tasyafuanEnabled,
+                    onCheckedChange = {
+                        tasyafuanEnabled = it
+                        AppCache.saveBoolean("ALARM_TASYAFUAN", it)
+                        updateAlarmSchedules()
+                    }
+                )
+
+                HorizontalDivider(color = Background, thickness = 2.dp)
+
+                AlarmSettingRow(
+                    title = "Dana Box",
+                    subtitle = "Pukul 06:00 & 19:00",
+                    checked = danaBoxEnabled,
+                    onCheckedChange = {
+                        danaBoxEnabled = it
+                        AppCache.saveBoolean("ALARM_DANABOX", it)
+                        updateAlarmSchedules()
+                    }
+                )
+
+                HorizontalDivider(color = Background, thickness = 2.dp)
+
+                AlarmSettingRow(
+                    title = "Pengingat Nida'",
+                    subtitle = "Setiap 30 menit • tanpa suara",
+                    checked = nidaEnabled,
+                    onCheckedChange = {
+                        nidaEnabled = it
+                        AppCache.saveBoolean("ALARM_NIDAA", it)
+                        updateAlarmSchedules()
+                    }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(AppSpacing.section))
+    }
+}
+
+if (showShareSheet) {
         ModalBottomSheet(
             onDismissRequest = { showShareSheet = false }
         ) {
@@ -768,6 +763,89 @@ fun SalatScreen(
                 }
             }
         )
+    }
+}
+
+
+
+private fun compactPrayerLocation(name: String): String {
+    val cleaned = name.trim()
+    if (cleaned.isBlank()) return "Lokasi belum siap"
+
+    return cleaned
+        .substringBefore(", Kabupaten")
+        .substringBefore(", Kota")
+        .replace("Kecamatan ", "Kec. ")
+        .replace("Kecamatan", "Kec.")
+        .trim()
+        .removeSuffix(",")
+}
+
+private fun prayerVisualIcon(type: PrayerType): ImageVector {
+    return when (type) {
+        PrayerType.IMSAK -> Icons.Default.Nightlight
+        PrayerType.SUBUH -> Icons.Default.Cloud
+        PrayerType.TERBIT -> Icons.Default.WbTwilight
+        PrayerType.DHUHA -> Icons.Default.WbSunny
+        PrayerType.DZUHUR -> Icons.Default.WbSunny
+        PrayerType.ASHAR -> Icons.Default.Cloud
+        PrayerType.MAGHRIB -> Icons.Default.WbTwilight
+        PrayerType.ISYA -> Icons.Default.Nightlight
+    }
+}
+
+@Composable
+private fun MosqueHeaderSilhouette(modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier) {
+        val c = Color.White.copy(alpha = 0.10f)
+        val baseY = size.height * 0.88f
+
+        drawRect(
+            color = c,
+            topLeft = Offset(0f, baseY),
+            size = Size(size.width, size.height - baseY)
+        )
+
+        val domeFractions = listOf(0.10f, 0.28f, 0.50f, 0.72f, 0.90f)
+        domeFractions.forEachIndexed { index, fraction ->
+            val radius = if (index == 2) {
+                size.width * 0.075f
+            } else {
+                size.width * 0.055f
+            }
+            val x = size.width * fraction
+
+            drawCircle(
+                color = c,
+                radius = radius,
+                center = Offset(x, baseY)
+            )
+
+            drawRect(
+                color = c,
+                topLeft = Offset(x - radius, baseY),
+                size = Size(radius * 2f, size.height * 0.13f)
+            )
+        }
+
+        listOf(0.19f, 0.39f, 0.61f, 0.81f).forEach { fraction ->
+            val x = size.width * fraction
+            val towerWidth = size.width * 0.012f
+            val towerHeight = size.height * 0.43f
+            val towerTop = baseY - towerHeight
+
+            drawRect(
+                color = c,
+                topLeft = Offset(x - towerWidth, towerTop),
+                size = Size(towerWidth * 2f, towerHeight)
+            )
+
+            drawCircle(
+                color = c,
+                radius = towerWidth * 2.3f,
+                center = Offset(x, towerTop)
+            )
+        }
     }
 }
 
