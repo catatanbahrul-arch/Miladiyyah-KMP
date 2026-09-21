@@ -17,7 +17,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.font.FontWeight
 import id.wahidiyah.miladiyyah.core.data.source.remote.KegiatanItem
-import id.wahidiyah.miladiyyah.core.data.source.remote.RemoteSyncCoordinator
+import id.wahidiyah.miladiyyah.core.data.sync.RemoteSyncCoordinator
 import id.wahidiyah.miladiyyah.core.data.source.remote.normalizeKegiatanDate
 import id.wahidiyah.miladiyyah.theme.*
 import id.wahidiyah.miladiyyah.ui.components.AppHeader
