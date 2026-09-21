@@ -129,6 +129,7 @@ private fun formatCountdown(seconds: Long): String {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SalatScreen(
     onNavigateToKiblat: () -> Unit = {},
@@ -770,6 +771,7 @@ fun SalatScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AlarmSettingRow(
     title: String,
@@ -810,6 +812,7 @@ private fun AlarmSettingRow(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun PrayerSettingsScreen(
     onBack: () -> Unit
