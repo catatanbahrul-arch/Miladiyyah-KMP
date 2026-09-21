@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import id.wahidiyah.miladiyyah.core.data.source.remote.CalendarNetworkService
 import id.wahidiyah.miladiyyah.core.domain.calendar.engine.HijriAdjuster
 import id.wahidiyah.miladiyyah.core.data.sync.RemoteSyncCoordinator
+import id.wahidiyah.miladiyyah.core.utils.AppCache
 import id.wahidiyah.miladiyyah.theme.*
 import id.wahidiyah.miladiyyah.ui.screens.calendar.CalendarScreen
 import id.wahidiyah.miladiyyah.ui.screens.home.HomeScreen
@@ -33,6 +34,9 @@ enum class AppScreen { BERANDA, KALENDER, SALAT, KEGIATAN, MENU, PUSTAKA, PENGAT
 fun App(onUpdateLocation: () -> Unit = {}) {
     var currentScreen by remember { mutableStateOf(AppScreen.BERANDA) }
     var showSplash by remember { mutableStateOf(true) }
+    var autoSyncEnabled by remember {
+        mutableStateOf(AppCache.loadBoolean("SETTING_AUTO_SYNC", true))
+    }
     val scope = rememberCoroutineScope()
     val networkService = remember { CalendarNetworkService() }
 
@@ -82,11 +86,13 @@ fun App(onUpdateLocation: () -> Unit = {}) {
     }
 
     LaunchedEffect(Unit) {
-        syncHijriCorrections()
+        if (autoSyncEnabled) {
+            syncHijriCorrections()
+        }
     }
 
-    LaunchedEffect(currentScreen) {
-        if (currentScreen == AppScreen.KALENDER) {
+    LaunchedEffect(currentScreen, autoSyncEnabled) {
+        if (currentScreen == AppScreen.KALENDER && autoSyncEnabled) {
             syncHijriCorrections()
             while (true) {
                 delay(10 * 60 * 1000L)
@@ -123,7 +129,17 @@ fun App(onUpdateLocation: () -> Unit = {}) {
                         AppScreen.KEGIATAN -> KegiatanScreen()
                         AppScreen.MENU -> MenuScreen(onNavigate = { screen -> currentScreen = screen })
                         AppScreen.PUSTAKA -> PustakaScreen()
-                        AppScreen.PENGATURAN -> SettingsScreen()
+                        AppScreen.PENGATURAN -> SettingsScreen(
+                            autoSyncEnabled = autoSyncEnabled,
+                            onAutoSyncChanged = { enabled ->
+                                autoSyncEnabled = enabled
+                            },
+                            onSyncNow = {
+                                scope.launch {
+                                    syncHijriCorrections()
+                                }
+                            }
+                        )
                         AppScreen.KIBLAT -> QiblaScreen()
                     }
                 }
