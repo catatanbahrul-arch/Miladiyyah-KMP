@@ -1,4 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
-    android:src="@drawable/wahidiyah_app_icon"
-    android:gravity="center" />
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!--
+        Adaptive icon foreground.
+        Android launcher memiliki safe zone yang lebih kecil
+        daripada seluruh 108dp adaptive canvas. Asset logo asli
+        berbentuk horizontal, sehingga jangan dibiarkan memenuhi
+        seluruh foreground atau sistem launcher akan memotongnya.
+
+        Rasio asset asli dipertahankan sekitar 1.77:1.
+        60dp x 34dp menjaga seluruh mark tetap berada di dalam lingkaran safe-zone.
+    -->
+    <item
+        android:width="54dp"
+        android:height="30dp"
+        android:gravity="center">
+
+        <bitmap
+            android:src="@drawable/wahidiyah_app_icon"
+            android:gravity="fill" />
+
+    </item>
+
+</layer-list>
