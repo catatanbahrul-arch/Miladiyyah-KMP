@@ -30,6 +30,9 @@ object AlarmScheduler {
     const val NIDA_NOTIFICATION_CHANNEL_ID =
         "WAHIDIYAH_NIDA_TEXT_CHANNEL"
 
+    const val PRAYER_PRE_ALERT_CHANNEL_ID =
+        "WAHIDIYAH_PRAYER_PRE_ALERT_CHANNEL"
+
     private const val NOTIFICATION_CHANNEL_NAME =
         "Alarm Wahidiyah"
 
@@ -51,6 +54,14 @@ object AlarmScheduler {
     private const val ID_ASHAR = 103
     private const val ID_MAGHRIB = 104
     private const val ID_ISYA = 105
+
+    private const val ID_PRE_IMSAK = 601
+    private const val ID_PRE_SUBUH = 602
+    private const val ID_PRE_TERBIT = 603
+    private const val ID_PRE_DZUHUR = 604
+    private const val ID_PRE_ASHAR = 605
+    private const val ID_PRE_MAGHRIB = 606
+    private const val ID_PRE_ISYA = 607
 
     private const val ID_TARHIM = 201
     private const val ID_TASYAFUAN = 301
@@ -88,6 +99,21 @@ object AlarmScheduler {
                 }
 
             manager.createNotificationChannel(channel)
+
+            val preAlertChannel =
+                NotificationChannel(
+                    PRAYER_PRE_ALERT_CHANNEL_ID,
+                    "Pengingat Waktu Shalat",
+                    NotificationManager.IMPORTANCE_HIGH
+                ).apply {
+                    description =
+                        "Peringatan 10 menit sebelum Imsak, waktu shalat, dan Terbit"
+                    setSound(null, null)
+                    enableVibration(false)
+                    setShowBadge(true)
+                }
+
+            manager.createNotificationChannel(preAlertChannel)
         }
     }
 
@@ -138,6 +164,7 @@ object AlarmScheduler {
         context: Context
     ) {
         cancelAdzan(context)
+        cancelPrayerPreAlerts(context)
         cancelTarhim(context)
         cancelTasyafuan(context)
         cancelDanaBox(context)
@@ -238,6 +265,7 @@ object AlarmScheduler {
 
         if (isAdzanOn) {
             scheduleAdzan(context)
+            schedulePrayerPreAlerts(context)
         }
 
         if (isTarhimOn) {
@@ -645,6 +673,65 @@ object AlarmScheduler {
         }
     }
 
+    private fun schedulePrayerPreAlerts(
+        context: Context
+    ) {
+        try {
+            val tz = TimeZone.currentSystemDefault()
+            val now = Clock.System.now().toLocalDateTime(tz)
+            val today = now.date
+            val tomorrow = today.plus(1, DateTimeUnit.DAY)
+            val todayPrayers = PrayerTimeEngine.getPrayers(today)
+            val tomorrowPrayers = PrayerTimeEngine.getPrayers(tomorrow)
+            val prayerTypes = listOf(
+                PrayerType.IMSAK,
+                PrayerType.SUBUH,
+                PrayerType.TERBIT,
+                PrayerType.DZUHUR,
+                PrayerType.ASHAR,
+                PrayerType.MAGHRIB,
+                PrayerType.ISYA
+            )
+
+            for (type in prayerTypes) {
+                val id = prayerPreAlertId(type) ?: continue
+                val todayPrayer = todayPrayers.firstOrNull { it.type == type }
+                val todayPreAlert = todayPrayer?.let {
+                    localDateTimeToMillis(today, it.time) - 10L * 60L * 1000L
+                }
+
+                if (todayPreAlert != null && todayPreAlert > System.currentTimeMillis()) {
+                    setAlarm(context, id, "ACTION_PRAYER_PRE_ALERT", "10 menit lagi ${type.title}", todayPreAlert)
+                    continue
+                }
+
+                val tomorrowPrayer = tomorrowPrayers.firstOrNull { it.type == type }
+                val tomorrowPreAlert = tomorrowPrayer?.let {
+                    localDateTimeToMillis(tomorrow, it.time) - 10L * 60L * 1000L
+                }
+
+                if (tomorrowPreAlert != null && tomorrowPreAlert > System.currentTimeMillis()) {
+                    setAlarm(context, id, "ACTION_PRAYER_PRE_ALERT", "10 menit lagi ${type.title}", tomorrowPreAlert)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Gagal sinkronisasi pre-alert waktu shalat: ${e.message}")
+        }
+    }
+
+    private fun prayerPreAlertId(type: PrayerType): Int? {
+        return when (type) {
+            PrayerType.IMSAK -> ID_PRE_IMSAK
+            PrayerType.SUBUH -> ID_PRE_SUBUH
+            PrayerType.TERBIT -> ID_PRE_TERBIT
+            PrayerType.DZUHUR -> ID_PRE_DZUHUR
+            PrayerType.ASHAR -> ID_PRE_ASHAR
+            PrayerType.MAGHRIB -> ID_PRE_MAGHRIB
+            PrayerType.ISYA -> ID_PRE_ISYA
+            else -> null
+        }
+    }
+
     private fun scheduleTarhim(
         context: Context
     ) {
@@ -1008,6 +1095,25 @@ object AlarmScheduler {
             ID_ISYA,
             "ACTION_ADZAN_ISYA"
         )
+    }
+
+    private fun cancelPrayerPreAlerts(context: Context) {
+        val ids = listOf(
+            ID_PRE_IMSAK,
+            ID_PRE_SUBUH,
+            ID_PRE_TERBIT,
+            ID_PRE_DZUHUR,
+            ID_PRE_ASHAR,
+            ID_PRE_MAGHRIB,
+            ID_PRE_ISYA
+        )
+        ids.forEach { id ->
+            cancelSpecificAlarm(
+                context,
+                id,
+                "ACTION_PRAYER_PRE_ALERT"
+            )
+        }
     }
 
     private fun cancelTarhim(
