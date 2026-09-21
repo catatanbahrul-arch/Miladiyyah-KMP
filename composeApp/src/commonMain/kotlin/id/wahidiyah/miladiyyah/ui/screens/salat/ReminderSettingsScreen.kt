@@ -40,18 +40,18 @@ fun ReminderSettingsScreen(
     Column(
         modifier = Modifier.fillMaxSize().background(Background)
     ) {
-        Surface(color = Surface, tonalElevation = 0.dp) {
+        Surface(color = BrandAccentLight, tonalElevation = 0.dp) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Kembali", tint = TextPrimary)
+                    Icon(Icons.Default.ArrowBack, contentDescription = "Kembali", tint = BrandPrimaryDark)
                 }
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Pengaturan Pengingat", fontSize = 21.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                    Text("Pengaturan Pengingat", fontSize = 19.sp, fontWeight = FontWeight.Bold, color = BrandPrimaryDark)
                     Spacer(modifier = Modifier.height(2.dp))
-                    Text("Atur semua pengingat ibadah dan kegiatan", fontSize = 13.sp, color = TextSecondary)
+                    Text("Atur semua pengingat ibadah dan kegiatan", fontSize = 12.sp, color = BrandPrimary)
                 }
                 Icon(
                     imageVector = Icons.Default.Notifications,
@@ -111,15 +111,15 @@ private fun ReminderCard(
     Row(
         modifier = Modifier.fillMaxWidth()
             .background(Surface, MaterialTheme.shapes.large)
-            .padding(horizontal = 18.dp, vertical = 17.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(Icons.Default.Notifications, contentDescription = null, tint = BrandPrimary, modifier = Modifier.size(23.dp))
-        Spacer(modifier = Modifier.width(15.dp))
+        Icon(Icons.Default.Notifications, contentDescription = null, tint = BrandPrimary, modifier = Modifier.size(21.dp))
+        Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, fontSize = 17.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
-            Spacer(modifier = Modifier.height(3.dp))
-            Text(subtitle, fontSize = 14.sp, color = TextSecondary)
+            Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(subtitle, fontSize = 13.sp, color = TextSecondary)
         }
         Switch(
             checked = checked,

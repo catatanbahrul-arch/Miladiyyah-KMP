@@ -19,7 +19,7 @@ fun AppHeader(
     onBack: (() -> Unit)? = null,
     actions: @Composable RowScope.() -> Unit = {}
 ) {
-    Surface(color = Surface, tonalElevation = 0.dp) {
+    Surface(color = BrandAccentLight, tonalElevation = 0.dp) {
         Column {
             Row(
                 modifier = Modifier
@@ -44,7 +44,7 @@ fun AppHeader(
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = title,
-                        color = TextPrimary,
+                        color = BrandPrimaryDark,
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Black
                     )
@@ -53,7 +53,7 @@ fun AppHeader(
                         Spacer(modifier = Modifier.height(AppSpacing.xs))
                         Text(
                             text = subtitle,
-                            color = TextSecondary,
+                            color = BrandPrimary,
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }

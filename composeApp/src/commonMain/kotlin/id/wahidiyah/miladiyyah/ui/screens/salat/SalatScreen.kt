@@ -21,7 +21,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -224,14 +223,7 @@ Column(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            Color(0xFF18B8A5),
-                            Color(0xFF0B8A7C)
-                        )
-                    )
-                )
+                .background(BrandAccentLight)
         )
 
         MosqueHeaderSilhouette(modifier = Modifier.matchParentSize())
@@ -254,15 +246,15 @@ Column(
                     Icon(
                         Icons.Default.ArrowBack,
                         contentDescription = "Kembali",
-                        tint = Color.White,
-                        modifier = Modifier.size(30.dp)
+                        tint = BrandPrimaryDark,
+                        modifier = Modifier.size(26.dp)
                     )
                 }
 
                 Text(
                     text = "Jadwal Sholat",
-                    color = Color.White,
-                    fontSize = 21.sp,
+                    color = BrandPrimaryDark,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.weight(1f)
                 )
@@ -274,8 +266,8 @@ Column(
                     Icon(
                         Icons.Default.Info,
                         contentDescription = "Informasi",
-                        tint = Color.White,
-                        modifier = Modifier.size(30.dp)
+                        tint = BrandPrimaryDark,
+                        modifier = Modifier.size(26.dp)
                     )
                 }
 
@@ -286,8 +278,8 @@ Column(
                     Icon(
                         Icons.Default.Settings,
                         contentDescription = "Pengaturan",
-                        tint = Color.White,
-                        modifier = Modifier.size(30.dp)
+                        tint = BrandPrimaryDark,
+                        modifier = Modifier.size(26.dp)
                     )
                 }
             }
@@ -302,14 +294,14 @@ Column(
                 Icon(
                     Icons.Default.LocationOn,
                     contentDescription = null,
-                    tint = Color(0xFFFF4D5C),
-                    modifier = Modifier.size(25.dp)
+                    tint = BrandPrimary,
+                    modifier = Modifier.size(23.dp)
                 )
                 Spacer(modifier = Modifier.width(7.dp))
                 Text(
                     text = compactPrayerLocation(PrayerTimeEngine.locationName),
-                    color = Color.White,
-                    fontSize = 17.sp,
+                    color = BrandPrimaryDark,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Medium,
                     maxLines = 1
                 )
@@ -324,8 +316,8 @@ Column(
                             "${nextPrayer.prayer.time.hour.toString().padStart(2, '0')}:" +
                             nextPrayer.prayer.time.minute.toString().padStart(2, '0') +
                             " WIB",
-                    color = Color.White,
-                    fontSize = 26.sp,
+                    color = BrandPrimaryDark,
+                    fontSize = 25.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -335,8 +327,8 @@ Column(
 
                 Text(
                     text = "- ${formatCountdown(countdownSeconds)}",
-                    color = Color.White,
-                    fontSize = 20.sp,
+                    color = BrandPrimaryDark.copy(alpha = 0.78f),
+                    fontSize = 18.sp,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
@@ -364,17 +356,17 @@ Column(
                 Icon(
                     imageVector = Icons.Default.LocationOn,
                     contentDescription = "Perbarui lokasi",
-                    tint = Color.White,
-                    modifier = Modifier.size(23.dp)
+                    tint = BrandPrimaryDark,
+                    modifier = Modifier.size(21.dp)
                 )
 
                 Spacer(modifier = Modifier.width(6.dp))
 
                 Text(
                     text = "Update",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
+                    color = BrandPrimaryDark,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
 
@@ -388,17 +380,17 @@ Column(
                 Icon(
                     imageVector = QiblaCompassIcon,
                     contentDescription = "Arah Kiblat",
-                    tint = Color.White,
-                    modifier = Modifier.size(23.dp)
+                    tint = BrandPrimaryDark,
+                    modifier = Modifier.size(21.dp)
                 )
 
                 Spacer(modifier = Modifier.width(6.dp))
 
                 Text(
                     text = "Arah Kiblat",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
+                    color = BrandPrimaryDark,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
         }
@@ -489,8 +481,8 @@ Column(
                         else Color.Transparent
                     )
                     .padding(
-                        horizontal = 8.dp,
-                        vertical = 7.dp
+                        horizontal = 6.dp,
+                        vertical = 4.dp
                     )
             ) {
                 Row(
@@ -507,14 +499,14 @@ Column(
                         } else {
                             TextSecondary
                         },
-                        modifier = Modifier.size(23.dp)
+                        modifier = Modifier.size(20.dp)
                     )
 
-                    Spacer(modifier = Modifier.width(18.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
 
                     Text(
                         text = prayer.type.title,
-                        fontSize = 16.sp,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.Normal,
                         color = if (prayer.type == PrayerType.IMSAK) {
                             TextSecondary
@@ -528,12 +520,12 @@ Column(
                         text =
                             "${prayer.time.hour.toString().padStart(2, '0')}:" +
                                 prayer.time.minute.toString().padStart(2, '0'),
-                        fontSize = 17.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Normal,
                         color = TextPrimary
                     )
 
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
 
                     Icon(
                         imageVector = Icons.Default.Notifications,
@@ -548,7 +540,7 @@ Column(
                         } else {
                             TextSecondary
                         },
-                        modifier = Modifier.size(22.dp)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }
@@ -684,7 +676,7 @@ private fun PrayerSettingsScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(BrandPrimary)
+                .background(BrandAccentLight)
         ) {
             Row(
                 modifier = Modifier
@@ -699,14 +691,14 @@ private fun PrayerSettingsScreen(
                     Icon(
                         Icons.Default.ArrowBack,
                         contentDescription = "Kembali",
-                        tint = Surface
+                        tint = BrandPrimaryDark
                     )
                 }
 
                 Text(
                     text = "Pengaturan Waktu Shalat",
-                    color = Surface,
-                    fontSize = 23.sp,
+                    color = BrandPrimaryDark,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Medium
                 )
             }
@@ -719,18 +711,18 @@ private fun PrayerSettingsScreen(
         ) {
             Column(
                 modifier = Modifier.padding(
-                    horizontal = 32.dp,
-                    vertical = 28.dp
+                    horizontal = 24.dp,
+                    vertical = 22.dp
                 )
             ) {
                 Text(
                     text = "Lokasi Waktu Shalat",
-                    fontSize = 22.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary
                 )
 
-                Spacer(modifier = Modifier.height(30.dp))
+                Spacer(modifier = Modifier.height(22.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -738,14 +730,14 @@ private fun PrayerSettingsScreen(
                 ) {
                     Text(
                         text = "Pilih Lokasi",
-                        fontSize = 19.sp,
+                        fontSize = 16.sp,
                         color = TextPrimary,
                         modifier = Modifier.weight(1f)
                     )
 
                     Text(
                         text = PrayerTimeEngine.locationName,
-                        fontSize = 17.sp,
+                        fontSize = 15.sp,
                         color = TextSecondary
                     )
 
@@ -755,35 +747,35 @@ private fun PrayerSettingsScreen(
                         Icons.Default.KeyboardArrowRight,
                         contentDescription = null,
                         tint = TextPrimary,
-                        modifier = Modifier.size(28.dp)
+                        modifier = Modifier.size(24.dp)
                     )
                 }
 
-                Spacer(modifier = Modifier.height(36.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 Text(
                     text = "Koordinat: $latitudeText  $longitudeText",
-                    fontSize = 17.sp,
+                    fontSize = 15.sp,
                     color = TextSecondary
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(6.dp))
 
                 Text(
                     text = "Ketinggian: ${PrayerTimeEngine.elevationMeters.toInt()} meter",
-                    fontSize = 17.sp,
+                    fontSize = 15.sp,
                     color = TextSecondary
                 )
 
-                Spacer(modifier = Modifier.height(34.dp))
+                Spacer(modifier = Modifier.height(22.dp))
 
                 Text(
                     text =
                         "Data ketinggian diperoleh otomatis dari koordinat lokasi " +
                             "Anda, sehingga waktu maghrib dan terbit ditampilkan " +
                             "lebih akurat.",
-                    fontSize = 16.sp,
-                    lineHeight = 25.sp,
+                    fontSize = 14.sp,
+                    lineHeight = 22.sp,
                     color = TextSecondary
                 )
             }
@@ -795,18 +787,18 @@ private fun PrayerSettingsScreen(
 
             Column(
                 modifier = Modifier.padding(
-                    horizontal = 32.dp,
-                    vertical = 28.dp
+                    horizontal = 24.dp,
+                    vertical = 22.dp
                 )
             ) {
                 Text(
                     text = "Perhitungan Waktu Shalat",
-                    fontSize = 22.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
                     color = TextPrimary
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(22.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -814,7 +806,7 @@ private fun PrayerSettingsScreen(
                 ) {
                     Text(
                         text = "Pengaturan Otomatis",
-                        fontSize = 19.sp,
+                        fontSize = 16.sp,
                         color = TextPrimary,
                         modifier = Modifier.weight(1f)
                     )
@@ -831,27 +823,7 @@ private fun PrayerSettingsScreen(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(28.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Lembaga Falakiyah NU, Indonesia",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
-                    )
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Text(
-                        text = "✓",
-                        color = BrandPrimary,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
+                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }
