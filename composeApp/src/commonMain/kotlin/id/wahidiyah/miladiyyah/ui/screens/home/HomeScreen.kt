@@ -35,14 +35,22 @@ import kotlinx.coroutines.delay
 import kotlinx.datetime.*
 
 
+private data class LocalPromoItem(
+    val text: String
+)
+
+private object LocalPromoData {
+    val items = listOf(
+        LocalPromoItem("Sudah Berdana BOX hari ini?"),
+        LocalPromoItem("Sudah Mujahadah hari ini?"),
+        LocalPromoItem("Bacalah selalu YAASAYIDII YAARASUULALLAH")
+    )
+}
+
 @Composable
 private fun LocalPromoCarousel() {
     val messages = remember {
-        listOf(
-            "Sudah Berdana BOX hari ini?",
-            "Sudah Mujahadah hari ini?",
-            "Bacalah selalu YAASAYIDII YAARASUULALLAH"
-        )
+        LocalPromoData.items
     }
 
     var currentIndex by remember { mutableStateOf(0) }
@@ -103,7 +111,7 @@ private fun LocalPromoCarousel() {
                 label = "local_promo_carousel"
             ) { index ->
                 Text(
-                    text = messages[index],
+                    text = messages[index].text,
                     modifier = Modifier.fillMaxWidth(),
                     color = BrandPrimaryDark,
                     fontSize = 18.sp,
