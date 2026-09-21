@@ -6,6 +6,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -13,9 +18,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -26,6 +33,111 @@ import id.wahidiyah.miladiyyah.theme.*
 import id.wahidiyah.miladiyyah.ui.components.WahidiyahLogo
 import kotlinx.coroutines.delay
 import kotlinx.datetime.*
+
+
+@Composable
+private fun LocalPromoCarousel() {
+    val messages = remember {
+        listOf(
+            "Sudah Berdana BOX hari ini?",
+            "Sudah Mujahadah hari ini?",
+            "Bacalah selalu YAASAYIDII YAARASUULALLAH"
+        )
+    }
+
+    var currentIndex by remember { mutableStateOf(0) }
+    var dragAmount by remember { mutableStateOf(0f) }
+
+    LaunchedEffect(currentIndex) {
+        delay(5000L)
+        currentIndex = (currentIndex + 1) % messages.size
+    }
+
+    Card(
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = BrandAccentLight
+        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 8.dp)
+            .pointerInput(Unit) {
+                detectHorizontalDragGestures(
+                    onDragStart = { dragAmount = 0f },
+                    onHorizontalDrag = { _, amount ->
+                        dragAmount += amount
+                    },
+                    onDragEnd = {
+                        when {
+                            dragAmount <= -60f -> {
+                                currentIndex = (currentIndex + 1) % messages.size
+                            }
+                            dragAmount >= 60f -> {
+                                currentIndex =
+                                    (currentIndex - 1 + messages.size) % messages.size
+                            }
+                        }
+                        dragAmount = 0f
+                    },
+                    onDragCancel = { dragAmount = 0f }
+                )
+            }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 18.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            AnimatedContent(
+                targetState = currentIndex,
+                transitionSpec = {
+                    if (targetState > initialState) {
+                        slideInHorizontally { it } togetherWith
+                            slideOutHorizontally { -it }
+                    } else {
+                        slideInHorizontally { -it } togetherWith
+                            slideOutHorizontally { it }
+                    }
+                },
+                label = "local_promo_carousel"
+            ) { index ->
+                Text(
+                    text = messages[index],
+                    modifier = Modifier.fillMaxWidth(),
+                    color = BrandPrimaryDark,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 26.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                messages.indices.forEach { index ->
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 3.dp)
+                            .size(if (index == currentIndex) 7.dp else 6.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (index == currentIndex) {
+                                    BrandPrimary
+                                } else {
+                                    BrandPrimary.copy(alpha = 0.25f)
+                                }
+                            )
+                    )
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun HomeScreen(
@@ -324,6 +436,11 @@ fun HomeScreen(
                 }
             }
         }
+
+        // ----------------------------------------------------
+        // LOCAL TEXT CAROUSEL / PREVIEW
+        // ----------------------------------------------------
+        LocalPromoCarousel()
 
         // ----------------------------------------------------
         // TODAY / DATE CARD
