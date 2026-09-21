@@ -5,8 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Sync
-import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -85,7 +85,7 @@ fun SettingsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            Icons.Default.Sync,
+                            Icons.Default.Settings,
                             contentDescription = null,
                             tint = BrandPrimary
                         )
@@ -126,7 +126,7 @@ fun SettingsScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Icon(
-                            Icons.Default.Sync,
+                            Icons.Default.Settings,
                             contentDescription = null
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -155,7 +155,7 @@ fun SettingsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            Icons.Default.Storage,
+                            Icons.Default.Info,
                             contentDescription = null,
                             tint = BrandPrimary
                         )
