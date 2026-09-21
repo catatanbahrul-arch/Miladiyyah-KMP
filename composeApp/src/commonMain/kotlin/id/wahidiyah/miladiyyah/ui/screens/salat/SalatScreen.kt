@@ -14,14 +14,6 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Navigation
-import androidx.compose.material.icons.filled.NotificationsOff
-import androidx.compose.material.icons.filled.VolumeOff
-import androidx.compose.material.icons.filled.VolumeUp
-import androidx.compose.material.icons.filled.Cloud
-import androidx.compose.material.icons.filled.Nightlight
-import androidx.compose.material.icons.filled.WbSunny
-import androidx.compose.material.icons.filled.WbTwilight
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
@@ -415,7 +407,7 @@ Column(
 
                 TextButton(onClick = onNavigateToKiblat) {
                     Icon(
-                        Icons.Default.Navigation,
+                        Icons.Default.LocationOn,
                         contentDescription = null,
                         tint = Color.White,
                         modifier = Modifier.size(24.dp)
@@ -563,16 +555,13 @@ Column(
                     Spacer(modifier = Modifier.width(18.dp))
 
                     Icon(
-                        imageVector = if (prayer.type == PrayerType.IMSAK) {
-                            Icons.Default.VolumeOff
-                        } else {
-                            Icons.Default.VolumeUp
-                        },
-                        contentDescription = if (prayer.type == PrayerType.IMSAK) {
-                            "Pengingat tidak aktif"
-                        } else {
-                            "Pengingat aktif"
-                        },
+                        imageVector = Icons.Default.Notifications,
+                        contentDescription =
+                            if (prayer.type == PrayerType.IMSAK) {
+                                "Pengingat tidak aktif"
+                            } else {
+                                "Pengingat aktif"
+                            },
                         tint = if (prayer.type == PrayerType.IMSAK) {
                             TextMuted
                         } else {
@@ -782,16 +771,7 @@ private fun compactPrayerLocation(name: String): String {
 }
 
 private fun prayerVisualIcon(type: PrayerType): ImageVector {
-    return when (type) {
-        PrayerType.IMSAK -> Icons.Default.Nightlight
-        PrayerType.SUBUH -> Icons.Default.Cloud
-        PrayerType.TERBIT -> Icons.Default.WbTwilight
-        PrayerType.DHUHA -> Icons.Default.WbSunny
-        PrayerType.DZUHUR -> Icons.Default.WbSunny
-        PrayerType.ASHAR -> Icons.Default.Cloud
-        PrayerType.MAGHRIB -> Icons.Default.WbTwilight
-        PrayerType.ISYA -> Icons.Default.Nightlight
-    }
+    return Icons.Default.Notifications
 }
 
 @Composable
