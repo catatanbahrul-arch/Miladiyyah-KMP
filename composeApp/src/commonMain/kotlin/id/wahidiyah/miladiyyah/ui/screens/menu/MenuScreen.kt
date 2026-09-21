@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.KeyboardArrowRight
@@ -117,6 +118,16 @@ fun MenuScreen(onNavigate: (AppScreen) -> Unit) {
                 colors = CardDefaults.cardColors(containerColor = Surface),
                 elevation = CardDefaults.cardElevation(0.dp)
             ) {
+                MenuRow(
+                    title = "Pengaturan Pengingat",
+                    subtitle = "Adzan, Tarhim, Tasyafu'an, Dana Box & Nida'",
+                    icon = Icons.Default.Notifications,
+                    onClick = {
+                        onNavigate(AppScreen.PENGATURAN_PENGINGAT)
+                    }
+                )
+
+                HorizontalDivider(color = Background)
                 MenuRow(
                     title = "Pengaturan Umum",
                     subtitle = "Data dan sinkronisasi lokal",

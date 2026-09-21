@@ -23,12 +23,25 @@ import id.wahidiyah.miladiyyah.ui.screens.kiblat.QiblaScreen
 import id.wahidiyah.miladiyyah.ui.screens.menu.MenuScreen
 import id.wahidiyah.miladiyyah.ui.screens.pustaka.PustakaScreen
 import id.wahidiyah.miladiyyah.ui.screens.salat.SalatScreen
+import id.wahidiyah.miladiyyah.ui.screens.salat.ReminderSettingsScreen
+import id.wahidiyah.miladiyyah.ui.screens.semuafitur.AllFeaturesScreen
 import id.wahidiyah.miladiyyah.ui.screens.settings.SettingsScreen
 import id.wahidiyah.miladiyyah.ui.screens.splash.SplashScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-enum class AppScreen { BERANDA, KALENDER, SALAT, KEGIATAN, MENU, PUSTAKA, PENGATURAN, KIBLAT }
+enum class AppScreen {
+    BERANDA,
+    KALENDER,
+    SALAT,
+    KEGIATAN,
+    MENU,
+    PUSTAKA,
+    PENGATURAN,
+    KIBLAT,
+    SEMUA_FITUR,
+    PENGATURAN_PENGINGAT
+}
 
 @Composable
 fun App(onUpdateLocation: () -> Unit = {}) {
@@ -123,7 +136,18 @@ fun App(onUpdateLocation: () -> Unit = {}) {
             ) { innerPadding ->
                 Surface(modifier = Modifier.padding(innerPadding), color = Background) {
                     when (currentScreen) {
-                        AppScreen.BERANDA -> HomeScreen(onNavigateToSalat = { currentScreen = AppScreen.SALAT }, onNavigateToPustaka = { currentScreen = AppScreen.PUSTAKA }, onUpdateLocation = onUpdateLocation)
+                        AppScreen.BERANDA -> HomeScreen(
+                            onNavigateToSalat = {
+                                currentScreen = AppScreen.SALAT
+                            },
+                            onNavigateToPustaka = {
+                                currentScreen = AppScreen.PUSTAKA
+                            },
+                            onUpdateLocation = onUpdateLocation,
+                            onNavigateToAllFeatures = {
+                                currentScreen = AppScreen.SEMUA_FITUR
+                            }
+                        )
                         AppScreen.KALENDER -> CalendarScreen(id.wahidiyah.miladiyyah.core.domain.calendar.engine.CalendarEngine())
                         AppScreen.SALAT -> SalatScreen(
                             onNavigateToKiblat = {
@@ -138,7 +162,22 @@ fun App(onUpdateLocation: () -> Unit = {}) {
                             }
                         )
                         AppScreen.KEGIATAN -> KegiatanScreen()
-                        AppScreen.MENU -> MenuScreen(onNavigate = { screen -> currentScreen = screen })
+                        AppScreen.MENU -> MenuScreen(
+                            onNavigate = { screen ->
+                                currentScreen = screen
+                            }
+                        )
+                        AppScreen.SEMUA_FITUR -> AllFeaturesScreen(
+                            onNavigate = { screen ->
+                                currentScreen = screen
+                            }
+                        )
+                        AppScreen.PENGATURAN_PENGINGAT ->
+                            ReminderSettingsScreen(
+                                onBack = {
+                                    currentScreen = AppScreen.MENU
+                                }
+                            )
                         AppScreen.PUSTAKA -> PustakaScreen()
                         AppScreen.PENGATURAN -> SettingsScreen(
                             autoSyncEnabled = autoSyncEnabled,

@@ -31,7 +31,8 @@ import kotlinx.datetime.*
 fun HomeScreen(
     onNavigateToSalat: () -> Unit = {},
     onNavigateToPustaka: () -> Unit = {},
-    onUpdateLocation: () -> Unit = {}
+    onUpdateLocation: () -> Unit = {},
+    onNavigateToAllFeatures: () -> Unit = {}
 ) {
     val scrollState = rememberScrollState()
     val tz = TimeZone.currentSystemDefault()
@@ -112,28 +113,26 @@ fun HomeScreen(
 
                 Row(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(16.dp))
                         .clickable { onUpdateLocation() }
-                        .background(BrandPrimary)
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                        .padding(horizontal = 8.dp, vertical = 4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
                         Icons.Default.LocationOn,
-                        contentDescription = null,
-                        tint = BrandAccentLight,
-                        modifier = Modifier.size(14.dp)
+                        contentDescription = "Perbarui lokasi",
+                        tint = BrandPrimary,
+                        modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
                         PrayerTimeEngine.locationName,
-                        color = Surface,
-                        fontSize = 12.sp,
+                        color = BrandPrimaryDark,
+                        fontSize = 13.sp,
                         fontWeight = FontWeight.Medium,
                         maxLines = 1,
                         softWrap = false,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.widthIn(max = 260.dp)
+                        modifier = Modifier.widthIn(max = 280.dp)
                     )
                 }
 
@@ -394,86 +393,67 @@ fun HomeScreen(
         }
 
         // ----------------------------------------------------
-        // REMINDER
+        // SEMUA FITUR
         // ----------------------------------------------------
         Column(
             modifier = Modifier
                 .padding(horizontal = 24.dp)
                 .offset(y = (-8).dp)
         ) {
-            Text(
-                "Pengingat Khusus",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextMuted,
-                letterSpacing = 1.sp,
-                modifier = Modifier.padding(bottom = 12.dp, start = 4.dp)
-            )
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(14.dp)
+            Card(
+                shape = RoundedCornerShape(22.dp),
+                colors = CardDefaults.cardColors(containerColor = Surface),
+                elevation = CardDefaults.cardElevation(1.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onNavigateToAllFeatures() }
             ) {
-                Card(
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Surface),
+                Row(
                     modifier = Modifier
-                        .weight(1f)
-                        .clickable { onNavigateToSalat() }
+                        .fillMaxWidth()
+                        .padding(horizontal = 18.dp, vertical = 18.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column(modifier = Modifier.padding(18.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(BrandAccentLight),
+                        contentAlignment = Alignment.Center
+                    ) {
                         Icon(
-                            Icons.Default.Info,
+                            Icons.Default.Menu,
                             contentDescription = null,
                             tint = BrandPrimary,
-                            modifier = Modifier.size(22.dp)
+                            modifier = Modifier.size(25.dp)
                         )
-                        Spacer(modifier = Modifier.height(14.dp))
+                    }
+                    Spacer(modifier = Modifier.width(14.dp))
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            "Tasyafu'an",
-                            fontSize = 15.sp,
+                            text = "Semua Fitur",
+                            fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = TextPrimary
                         )
+                        Spacer(modifier = Modifier.height(3.dp))
                         Text(
-                            "03:00 WIB",
+                            text = "Jadwal sholat, kompas, kegiatan, pustaka & pengingat",
                             fontSize = 13.sp,
-                            color = TextSecondary
+                            color = TextSecondary,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
-                }
-
-                Card(
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = Surface),
-                    modifier = Modifier
-                        .weight(1f)
-                        .clickable { onNavigateToSalat() }
-                ) {
-                    Column(modifier = Modifier.padding(18.dp)) {
-                        Icon(
-                            Icons.Default.Favorite,
-                            contentDescription = null,
-                            tint = BrandPrimary,
-                            modifier = Modifier.size(22.dp)
-                        )
-                        Spacer(modifier = Modifier.height(14.dp))
-                        Text(
-                            "Dana Box",
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = TextPrimary
-                        )
-                        Text(
-                            "06:00 & 19:00",
-                            fontSize = 13.sp,
-                            color = TextSecondary
-                        )
-                    }
+                    Icon(
+                        Icons.Default.KeyboardArrowRight,
+                        contentDescription = null,
+                        tint = TextMuted,
+                        modifier = Modifier.size(28.dp)
+                    )
                 }
             }
         }
-
         Spacer(modifier = Modifier.height(32.dp))
     }
 }

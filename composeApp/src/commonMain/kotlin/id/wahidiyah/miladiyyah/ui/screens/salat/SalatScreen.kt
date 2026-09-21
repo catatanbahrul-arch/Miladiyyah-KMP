@@ -35,9 +35,7 @@ import id.wahidiyah.miladiyyah.core.domain.calendar.engine.CalendarEngine
 import id.wahidiyah.miladiyyah.core.domain.prayer.PrayerTime
 import id.wahidiyah.miladiyyah.core.domain.prayer.PrayerTimeEngine
 import id.wahidiyah.miladiyyah.core.domain.prayer.PrayerType
-import id.wahidiyah.miladiyyah.core.utils.AppCache
 import id.wahidiyah.miladiyyah.theme.*
-import id.wahidiyah.miladiyyah.ui.components.AppSectionLabel
 import kotlinx.coroutines.delay
 import kotlinx.datetime.*
 
@@ -243,22 +241,6 @@ fun SalatScreen(
                 nowInstant.toEpochMilliseconds()
         ) / 1000L
     } ?: 0L
-
-    var adzanEnabled by remember {
-        mutableStateOf(AppCache.loadBoolean("ALARM_ADZAN", true))
-    }
-    var tarhimEnabled by remember {
-        mutableStateOf(AppCache.loadBoolean("ALARM_TARHIM", true))
-    }
-    var tasyafuanEnabled by remember {
-        mutableStateOf(AppCache.loadBoolean("ALARM_TASYAFUAN", true))
-    }
-    var danaBoxEnabled by remember {
-        mutableStateOf(AppCache.loadBoolean("ALARM_DANABOX", true))
-    }
-    var nidaEnabled by remember {
-        mutableStateOf(AppCache.loadBoolean("ALARM_NIDAA", false))
-    }
 
     if (showPrayerSettings) {
         PrayerSettingsScreen(
@@ -626,87 +608,11 @@ Column(
             Spacer(modifier = Modifier.height(0.dp))
         }
 
-        Spacer(modifier = Modifier.height(AppSpacing.section))
+        Spacer(modifier = Modifier.height(12.dp))
+    }
+}
 
-        AppSectionLabel(
-            "PENGATURAN PENGINGAT",
-            modifier = Modifier.padding(
-                start = 4.dp,
-                bottom = AppSpacing.md
-            )
-        )
-
-        Card(
-            shape = MaterialTheme.shapes.extraLarge,
-            colors = CardDefaults.cardColors(containerColor = Surface),
-            elevation = CardDefaults.cardElevation(0.dp)
-        ) {
-            Column {
-                AlarmSettingRow(
-                    title = "Adzan & Sholat",
-                    subtitle = "Peringatan masuk waktu",
-                    checked = adzanEnabled,
-                    onCheckedChange = {
-                        adzanEnabled = it
-                        AppCache.saveBoolean("ALARM_ADZAN", it)
-                        updateAlarmSchedules()
-                    }
-                )
-
-                HorizontalDivider(color = Background, thickness = 2.dp)
-
-                AlarmSettingRow(
-                    title = "Pengingat Tarhim",
-                    subtitle = "Sebelum waktu Subuh",
-                    checked = tarhimEnabled,
-                    onCheckedChange = {
-                        tarhimEnabled = it
-                        AppCache.saveBoolean("ALARM_TARHIM", it)
-                        updateAlarmSchedules()
-                    }
-                )
-
-                HorizontalDivider(color = Background, thickness = 2.dp)
-
-                AlarmSettingRow(
-                    title = "Tasyafu'an",
-                    subtitle = "Setiap 03:00 WIB",
-                    checked = tasyafuanEnabled,
-                    onCheckedChange = {
-                        tasyafuanEnabled = it
-                        AppCache.saveBoolean("ALARM_TASYAFUAN", it)
-                        updateAlarmSchedules()
-                    }
-                )
-
-                HorizontalDivider(color = Background, thickness = 2.dp)
-
-                AlarmSettingRow(
-                    title = "Dana Box",
-                    subtitle = "Pukul 06:00 & 19:00",
-                    checked = danaBoxEnabled,
-                    onCheckedChange = {
-                        danaBoxEnabled = it
-                        AppCache.saveBoolean("ALARM_DANABOX", it)
-                        updateAlarmSchedules()
-                    }
-                )
-
-                HorizontalDivider(color = Background, thickness = 2.dp)
-
-                AlarmSettingRow(
-                    title = "Pengingat Nida'",
-                    subtitle = "Setiap 30 menit • tanpa suara",
-                    checked = nidaEnabled,
-                    onCheckedChange = {
-                        nidaEnabled = it
-                        AppCache.saveBoolean("ALARM_NIDAA", it)
-                        updateAlarmSchedules()
-                    }
-                )
-            }
-        }
-
+if (showShareSheet) {
         Spacer(modifier = Modifier.height(AppSpacing.section))
     }
 }
@@ -877,47 +783,6 @@ private fun MosqueHeaderSilhouette(modifier: Modifier = Modifier) {
                 center = Offset(x, towerTop)
             )
         }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun AlarmSettingRow(
-    title: String,
-    subtitle: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(20.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = title,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimary
-            )
-
-            Spacer(modifier = Modifier.height(3.dp))
-
-            Text(
-                text = subtitle,
-                fontSize = 14.sp,
-                color = TextSecondary
-            )
-        }
-
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedTrackColor = BrandPrimary
-            )
-        )
     }
 }
 

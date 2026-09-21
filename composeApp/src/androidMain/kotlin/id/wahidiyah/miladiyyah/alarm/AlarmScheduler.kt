@@ -229,7 +229,7 @@ object AlarmScheduler {
             loadBooleanFromPreferences(
                 context,
                 "ALARM_NIDAA",
-                false
+                true
             )
 
         if (isNidaOn) {
@@ -744,7 +744,7 @@ object AlarmScheduler {
             loadBooleanFromPreferences(
                 context,
                 "ALARM_NIDAA",
-                false
+                true
             )
 
         if (!enabled) {
