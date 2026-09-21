@@ -1,8 +1,12 @@
 package id.wahidiyah.miladiyyah.core.data.local
 
 import android.content.Context
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.net.Uri
 import id.wahidiyah.miladiyyah.core.data.source.remote.PustakaItem
+import androidx.core.content.FileProvider
+import android.webkit.MimeTypeMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -32,6 +36,45 @@ actual object PustakaDownloadManager {
     actual fun isDownloaded(item: PustakaItem): Boolean {
         requireInitialized()
         return PustakaFileStore.isDownloaded(item)
+    }
+
+    actual fun open(item: PustakaItem): Boolean {
+        requireInitialized()
+
+        val context = requireNotNull(appContext)
+        val file = PustakaFileStore.getLocalFile(item)
+
+        if (!file.exists() || file.length() <= 0L) {
+            return false
+        }
+
+        return try {
+            val uri = FileProvider.getUriForFile(
+                context,
+                context.packageName + ".fileprovider",
+                file
+            )
+
+            val mimeType =
+                MimeTypeMap.getSingleton()
+                    .getMimeTypeFromExtension(
+                        file.extension.lowercase()
+                    )
+                    ?: "application/octet-stream"
+
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, mimeType)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+
+            context.startActivity(intent)
+            true
+        } catch (_: ActivityNotFoundException) {
+            false
+        } catch (_: Exception) {
+            false
+        }
     }
 
     actual fun delete(item: PustakaItem): Boolean {

@@ -212,15 +212,10 @@ fun PustakaScreen() {
                             ) {
                                 Button(
                                     onClick = {
-                                        if (
-                                            PustakaDownloadManager
-                                                .delete(item)
-                                        ) {
-                                            isDownloaded = false
-                                        }
+                                        PustakaDownloadManager.open(item)
                                     }
                                 ) {
-                                    Text("Hapus")
+                                    Text("Buka File")
                                 }
 
                                 Text(

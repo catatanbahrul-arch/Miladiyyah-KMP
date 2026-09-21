@@ -11,5 +11,7 @@ expect object PustakaDownloadManager {
         onProgress: suspend (Int) -> Unit
     ): Boolean
 
+    fun open(item: PustakaItem): Boolean
+
     fun delete(item: PustakaItem): Boolean
 }
