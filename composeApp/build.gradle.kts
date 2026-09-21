@@ -153,7 +153,7 @@ android {
 
     namespace = "id.wahidiyah.miladiyyah"
 
-    compileSdk = 34
+    compileSdk = 36
 
     // ============================================================
     // Android source directories
@@ -182,7 +182,7 @@ android {
 
         minSdk = 24
 
-        targetSdk = 34
+        targetSdk = 36
 
         versionCode = 1
 

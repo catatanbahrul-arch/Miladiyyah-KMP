@@ -1,12 +1,13 @@
-name: Build Android APK
+name: Build Android Artifacts
 
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  build-apk:
+  build-android:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Source Code
         uses: actions/checkout@v4
@@ -17,16 +18,23 @@ jobs:
           java-version: '17'
           distribution: 'zulu'
 
-      - name: Setup Gradle 8.6
+      - name: Setup Gradle 8.13
         uses: gradle/actions/setup-gradle@v3
         with:
-          gradle-version: 8.6
+          gradle-version: 8.13
 
-      - name: Build APK
-        run: gradle :composeApp:assembleDebug
+      - name: Build Debug APK and Release AAB
+        run: |
+          gradle :composeApp:assembleDebug :composeApp:bundleRelease
 
-      - name: Upload APK Output
+      - name: Upload Debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: Miladiyyah-Beranda-UI-APK
+          name: Wahidiyah-debug-apk
           path: composeApp/build/outputs/apk/debug/*.apk
+
+      - name: Upload Release AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: Wahidiyah-release-aab
+          path: composeApp/build/outputs/bundle/release/*.aab
