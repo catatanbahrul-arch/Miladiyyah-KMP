@@ -613,11 +613,6 @@ Column(
 }
 
 if (showShareSheet) {
-        Spacer(modifier = Modifier.height(AppSpacing.section))
-    }
-}
-
-if (showShareSheet) {
         ModalBottomSheet(
             onDismissRequest = { showShareSheet = false }
         ) {
