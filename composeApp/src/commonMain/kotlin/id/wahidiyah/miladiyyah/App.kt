@@ -125,7 +125,18 @@ fun App(onUpdateLocation: () -> Unit = {}) {
                     when (currentScreen) {
                         AppScreen.BERANDA -> HomeScreen(onNavigateToSalat = { currentScreen = AppScreen.SALAT }, onNavigateToPustaka = { currentScreen = AppScreen.PUSTAKA }, onUpdateLocation = onUpdateLocation)
                         AppScreen.KALENDER -> CalendarScreen(id.wahidiyah.miladiyyah.core.domain.calendar.engine.CalendarEngine())
-                        AppScreen.SALAT -> SalatScreen(onNavigateToKiblat = { currentScreen = AppScreen.KIBLAT })
+                        AppScreen.SALAT -> SalatScreen(
+                            onNavigateToKiblat = {
+                                currentScreen = AppScreen.KIBLAT
+                            },
+                            onBack = {
+                                currentScreen = AppScreen.BERANDA
+                            },
+                            onUpdateLocation = onUpdateLocation,
+                            onNavigateToSettings = {
+                                currentScreen = AppScreen.PENGATURAN
+                            }
+                        )
                         AppScreen.KEGIATAN -> KegiatanScreen()
                         AppScreen.MENU -> MenuScreen(onNavigate = { screen -> currentScreen = screen })
                         AppScreen.PUSTAKA -> PustakaScreen()
