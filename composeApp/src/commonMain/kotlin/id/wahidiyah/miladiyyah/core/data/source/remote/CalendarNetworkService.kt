@@ -44,7 +44,7 @@ class CalendarNetworkService {
     }
 
     suspend fun fetchCascadeAdjustments(
-        url: String
+        url: String = GasEndpointConfig.KOREKSI_HIJRI
     ): RemoteFetchResult<List<CascadeAdjustment>> {
         return try {
             val ts = Clock.System.now().toEpochMilliseconds()

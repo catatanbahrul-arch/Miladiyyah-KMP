@@ -31,12 +31,19 @@ object PengumumanRepository {
     }
 
     private const val BASE_URL =
-        "https://script.google.com/macros/s/AKfycbyuM5B2TNnOvlJKIDeQCiec8-Q-jI0vDOv--n4xiLEu38hykX4wniweG4Jm5mE1H9Ew/exec?action=pengumuman"
+        GasEndpointConfig.PENGUMUMAN_PENTING
 
     suspend fun fetchPengumuman(): RemoteFetchResult<PengumumanData?> {
         return try {
             val timestamp = Clock.System.now().toEpochMilliseconds()
-            val response = client.get("$BASE_URL&t=$timestamp") {
+            val endpoint =
+                if (BASE_URL.contains("?")) {
+                    "$BASE_URL&t=$timestamp"
+                } else {
+                    "$BASE_URL?t=$timestamp"
+                }
+
+            val response = client.get(endpoint) {
                 headers {
                     append("Cache-Control", "no-cache, no-store, max-age=0")
                     append("Pragma", "no-cache")

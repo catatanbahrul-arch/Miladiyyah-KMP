@@ -27,8 +27,6 @@ import id.wahidiyah.miladiyyah.ui.screens.splash.SplashScreen
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-const val GAS_API_URL = "https://script.google.com/macros/s/AKfycbyuM5B2TNnOvlJKIDeQCiec8-Q-jI0vDOv--n4xiLEu38hykX4wniweG4Jm5mE1H9Ew/exec"
-
 enum class AppScreen { BERANDA, KALENDER, SALAT, KEGIATAN, MENU, PUSTAKA, PENGATURAN, KIBLAT }
 
 @Composable
@@ -41,7 +39,7 @@ fun App(onUpdateLocation: () -> Unit = {}) {
     suspend fun syncHijriCorrections() {
         try {
             val result =
-                networkService.fetchCascadeAdjustments(GAS_API_URL)
+                networkService.fetchCascadeAdjustments()
 
             if (result.success) {
                 HijriAdjuster.updateAdjustments(result.data)
