@@ -81,6 +81,35 @@ private val ShareArrowIcon: ImageVector
         }
     }.build()
 
+
+private val QiblaCompassIcon: ImageVector
+    get() = ImageVector.Builder(
+        name = "QiblaCompassIcon",
+        defaultWidth = Dp(24f),
+        defaultHeight = Dp(24f),
+        viewportWidth = 24f,
+        viewportHeight = 24f
+    ).apply {
+        path(
+            fill = androidx.compose.ui.graphics.SolidColor(
+                androidx.compose.ui.graphics.Color.White
+            )
+        ) {
+            moveTo(12f, 2f)
+            curveTo(6.48f, 2f, 2f, 6.48f, 2f, 12f)
+            curveTo(2f, 17.52f, 6.48f, 22f, 12f, 22f)
+            curveTo(17.52f, 22f, 22f, 17.52f, 22f, 12f)
+            curveTo(22f, 6.48f, 17.52f, 2f, 12f, 2f)
+            close()
+
+            moveTo(15.65f, 8.35f)
+            lineTo(13.55f, 13.55f)
+            lineTo(8.35f, 15.65f)
+            lineTo(10.45f, 10.45f)
+            close()
+        }
+    }.build()
+
 private data class NextPrayerTarget(
     val date: LocalDate,
     val prayer: PrayerTime
@@ -291,7 +320,7 @@ Column(
                 Text(
                     text = "Jadwal Sholat",
                     color = Color.White,
-                    fontSize = 23.sp,
+                    fontSize = 21.sp,
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.weight(1f)
                 )
@@ -366,7 +395,7 @@ Column(
                             nextPrayer.prayer.time.minute.toString().padStart(2, '0') +
                             " WIB",
                     color = Color.White,
-                    fontSize = 29.sp,
+                    fontSize = 26.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
@@ -377,48 +406,72 @@ Column(
                 Text(
                     text = "- ${formatCountdown(countdownSeconds)}",
                     color = Color.White,
-                    fontSize = 23.sp,
+                    fontSize = 20.sp,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = androidx.compose.ui.text.style.TextAlign.Center
                 )
             }
 
             Spacer(modifier = Modifier.weight(1f))
+        }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .padding(
+                    horizontal = 28.dp,
+                    bottom = 82.dp
+                ),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TextButton(
+                onClick = onUpdateLocation,
+                contentPadding = PaddingValues(
+                    horizontal = 2.dp,
+                    vertical = 4.dp
+                )
             ) {
-                TextButton(onClick = onUpdateLocation) {
-                    Icon(
-                        Icons.Default.LocationOn,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        "Update",
-                        color = Color.White,
-                        fontSize = 17.sp
-                    )
-                }
+                Icon(
+                    imageVector = Icons.Default.LocationOn,
+                    contentDescription = "Perbarui lokasi",
+                    tint = Color.White,
+                    modifier = Modifier.size(23.dp)
+                )
 
-                TextButton(onClick = onNavigateToKiblat) {
-                    Icon(
-                        Icons.Default.LocationOn,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        "Arah Kiblat",
-                        color = Color.White,
-                        fontSize = 17.sp
-                    )
-                }
+                Spacer(modifier = Modifier.width(6.dp))
+
+                Text(
+                    text = "Update",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+
+            TextButton(
+                onClick = onNavigateToKiblat,
+                contentPadding = PaddingValues(
+                    horizontal = 2.dp,
+                    vertical = 4.dp
+                )
+            ) {
+                Icon(
+                    imageVector = QiblaCompassIcon,
+                    contentDescription = "Arah Kiblat",
+                    tint = Color.White,
+                    modifier = Modifier.size(23.dp)
+                )
+
+                Spacer(modifier = Modifier.width(6.dp))
+
+                Text(
+                    text = "Arah Kiblat",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
             }
         }
 
@@ -457,7 +510,7 @@ Column(
                 ) {
                     Text(
                         text = selectedDateLabel,
-                        fontSize = 21.sp,
+                        fontSize = 19.sp,
                         fontWeight = FontWeight.Bold,
                         color = TextPrimary
                     )
@@ -466,7 +519,7 @@ Column(
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             text = hijriLabel,
-                            fontSize = 17.sp,
+                            fontSize = 15.sp,
                             color = TextSecondary
                         )
                     }
@@ -508,8 +561,8 @@ Column(
                         else Color.Transparent
                     )
                     .padding(
-                        horizontal = 10.dp,
-                        vertical = 15.dp
+                        horizontal = 8.dp,
+                        vertical = 7.dp
                     )
             ) {
                 Row(
@@ -526,14 +579,14 @@ Column(
                         } else {
                             TextSecondary
                         },
-                        modifier = Modifier.size(29.dp)
+                        modifier = Modifier.size(23.dp)
                     )
 
                     Spacer(modifier = Modifier.width(18.dp))
 
                     Text(
                         text = prayer.type.title,
-                        fontSize = 18.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Normal,
                         color = if (prayer.type == PrayerType.IMSAK) {
                             TextSecondary
@@ -547,12 +600,12 @@ Column(
                         text =
                             "${prayer.time.hour.toString().padStart(2, '0')}:" +
                                 prayer.time.minute.toString().padStart(2, '0'),
-                        fontSize = 19.sp,
+                        fontSize = 17.sp,
                         fontWeight = FontWeight.Normal,
                         color = TextPrimary
                     )
 
-                    Spacer(modifier = Modifier.width(18.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
 
                     Icon(
                         imageVector = Icons.Default.Notifications,
@@ -567,12 +620,12 @@ Column(
                         } else {
                             TextSecondary
                         },
-                        modifier = Modifier.size(25.dp)
+                        modifier = Modifier.size(22.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(0.dp))
         }
 
         Spacer(modifier = Modifier.height(AppSpacing.section))
