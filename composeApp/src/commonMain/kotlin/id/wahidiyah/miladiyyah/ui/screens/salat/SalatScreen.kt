@@ -41,45 +41,6 @@ import kotlinx.datetime.*
 
 expect fun updateAlarmSchedules()
 
-private val ShareArrowIcon: ImageVector
-    get() = ImageVector.Builder(
-        name = "ShareArrowIcon",
-        defaultWidth = Dp(24f),
-        defaultHeight = Dp(24f),
-        viewportWidth = 24f,
-        viewportHeight = 24f
-    ).apply {
-        path(
-            fill = androidx.compose.ui.graphics.SolidColor(
-                androidx.compose.ui.graphics.Color.White
-            )
-        ) {
-            moveTo(18f, 16.08f)
-            curveTo(17.24f, 16.08f, 16.56f, 16.38f, 16.04f, 16.85f)
-            lineTo(8.91f, 12.7f)
-            curveTo(8.96f, 12.47f, 9f, 12.24f, 9f, 12f)
-            curveTo(9f, 11.76f, 8.96f, 11.53f, 8.91f, 11.3f)
-            lineTo(15.96f, 7.19f)
-            curveTo(16.49f, 7.69f, 17.21f, 8f, 18f, 8f)
-            curveTo(19.66f, 8f, 21f, 6.66f, 21f, 5f)
-            curveTo(21f, 3.34f, 19.66f, 2f, 18f, 2f)
-            curveTo(16.34f, 2f, 15f, 3.34f, 15f, 5f)
-            curveTo(15f, 5.24f, 15.04f, 5.47f, 15.09f, 5.7f)
-            lineTo(8.04f, 9.81f)
-            curveTo(7.51f, 9.31f, 6.79f, 9f, 6f, 9f)
-            curveTo(4.34f, 9f, 3f, 10.34f, 3f, 12f)
-            curveTo(3f, 13.66f, 4.34f, 15f, 6f, 15f)
-            curveTo(6.79f, 15f, 7.51f, 14.69f, 8.04f, 14.19f)
-            lineTo(15.16f, 18.34f)
-            curveTo(15.11f, 18.55f, 15.08f, 18.77f, 15.08f, 19f)
-            curveTo(15.08f, 20.66f, 16.42f, 22f, 18.08f, 22f)
-            curveTo(19.74f, 22f, 21.08f, 20.66f, 21.08f, 19f)
-            curveTo(21.08f, 17.34f, 19.74f, 16.08f, 18f, 16.08f)
-            close()
-        }
-    }.build()
-
-
 private val QiblaCompassIcon: ImageVector
     get() = ImageVector.Builder(
         name = "QiblaCompassIcon",
@@ -173,7 +134,6 @@ fun SalatScreen(
 
     var nowInstant by remember { mutableStateOf(Clock.System.now()) }
     var dayOffset by remember { mutableStateOf(0) }
-    var showShareSheet by remember { mutableStateOf(false) }
     var showInfoDialog by remember { mutableStateOf(false) }
     var showPrayerSettings by remember { mutableStateOf(false) }
 
@@ -306,18 +266,6 @@ Column(
                     fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.weight(1f)
                 )
-
-                IconButton(
-                    onClick = { showShareSheet = true },
-                    modifier = Modifier.size(44.dp)
-                ) {
-                    Icon(
-                        ShareArrowIcon,
-                        contentDescription = "Bagikan",
-                        tint = Color.White,
-                        modifier = Modifier.size(30.dp)
-                    )
-                }
 
                 IconButton(
                     onClick = { showInfoDialog = true },
@@ -611,76 +559,6 @@ Column(
         Spacer(modifier = Modifier.height(12.dp))
     }
 }
-
-if (showShareSheet) {
-        ModalBottomSheet(
-            onDismissRequest = { showShareSheet = false }
-        ) {
-            Column(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            showShareSheet = false
-                        }
-                        .padding(
-                            horizontal = 28.dp,
-                            vertical = 18.dp
-                        ),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = ShareArrowIcon,
-                        contentDescription = null,
-                        tint = TextPrimary,
-                        modifier = Modifier.size(28.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(20.dp))
-
-                    Text(
-                        text = "Bagikan jadwal shalat hari ini",
-                        color = TextPrimary,
-                        fontSize = 18.sp
-                    )
-                }
-
-                HorizontalDivider()
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            showShareSheet = false
-                        }
-                        .padding(
-                            horizontal = 28.dp,
-                            vertical = 18.dp
-                        ),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.DateRange,
-                        contentDescription = null,
-                        tint = TextPrimary,
-                        modifier = Modifier.size(28.dp)
-                    )
-
-                    Spacer(modifier = Modifier.width(20.dp))
-
-                    Text(
-                        text = "Lihat jadwal shalat bulanan",
-                        color = TextPrimary,
-                        fontSize = 18.sp
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(18.dp))
-            }
-        }
-    }
 
     if (showInfoDialog) {
         AlertDialog(
