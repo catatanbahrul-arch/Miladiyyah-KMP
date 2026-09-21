@@ -74,10 +74,12 @@ fun MenuScreen(onNavigate: (AppScreen) -> Unit) {
         )
 
         Column(
-            modifier = Modifier.padding(
-                horizontal = AppSizes.screenHorizontal,
-                vertical = AppSpacing.xxl
-            )
+            modifier = Modifier
+                .weight(1f)
+                .padding(
+                    horizontal = AppSizes.screenHorizontal,
+                    vertical = AppSpacing.xxl
+                )
         ) {
             AppSectionLabel(
                 "FITUR WAHIDIYAH",
@@ -137,6 +139,27 @@ fun MenuScreen(onNavigate: (AppScreen) -> Unit) {
             }
 
             Spacer(modifier = Modifier.height(AppSpacing.section))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Dikembangkan oleh",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextMuted
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = "Bahrul Project",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = BrandPrimary
+                )
+            }
+
+            Spacer(modifier = Modifier.height(AppSpacing.xl))
         }
     }
 }
