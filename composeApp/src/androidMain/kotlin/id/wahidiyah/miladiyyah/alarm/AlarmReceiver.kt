@@ -40,9 +40,8 @@ class AlarmReceiver : BroadcastReceiver() {
                 AlarmScheduler.PRAYER_PRE_ALERT_CHANNEL_ID
             )
                 .setSmallIcon(smallIcon)
-                .setContentTitle("Pengingat Waktu Shalat")
-                .setContentText(text)
-                .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+                .setContentTitle(text)
+                        .setStyle(NotificationCompat.BigTextStyle().bigText(text))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_REMINDER)
                 .setContentIntent(pendingIntent)
